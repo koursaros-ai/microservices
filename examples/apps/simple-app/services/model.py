@@ -1,5 +1,5 @@
 from koursaros import Service
-from ..models import Factorer
+from ..models.factorer import Factorer
 from ..messages import Factors
 
 service = Service(__name__)

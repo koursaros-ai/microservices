@@ -170,6 +170,7 @@ my-app
 │       ├── stubs.yaml
 │       └── messages.proto
 └── models
+    └── factorer.py
 ```
 
 Now let's create a new microservice called counter.
