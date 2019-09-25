@@ -14,6 +14,7 @@ RESET = '\033[0m'
 
 class KctlStdout:
     stdout = None
+    fileno = 1
     outfile = open('kctl-stdout.log', 'w')
 
     @staticmethod
@@ -45,6 +46,7 @@ class KctlStdout:
 
 class KctlStderr:
     stderr = None
+    fileno = 2
     errfile = open('kctl-stderr.log', 'w')
 
     @staticmethod
