@@ -118,10 +118,13 @@ def create_model(args):
 
 @allow_keyboard_interrupt
 def pull_app(args):
-    # from git import Repo
-    # Repo.clone_from(args.git, 'temp')
-    import subprocess
-    subprocess.call(['git', 'clone', args.git, '--filter', 'examples'])
+    from git import Repo
+    Repo.clone_from(args.git, args.name)
+    if args.dir:
+        from distutils.dir_util import copy_tree
+        with open(args.name):
+            copy_tree(args.dir, args.name)
+
 
 
 def main():
@@ -193,10 +196,16 @@ def main():
     # kctl pull app
     kctl_pull_app_parser = kctl_pull_subparsers.add_parser('app')
     kctl_pull_app_parser.set_defaults(func=pull_app)
+    kctl_pull_app_parser.add_argument('name')
     kctl_pull_app_parser.add_argument(
         '-g', '--git',
         action='store',
         help='pull an app from a git directory'
+    )
+    kctl_pull_app_parser.add_argument(
+        '-d', '--dir',
+        action='store',
+        help='which directory the app is in'
     )
 
     args = kctl_parser.parse_args()
