@@ -18,35 +18,9 @@ def allow_keyboard_interrupt(func):
 
 
 @allow_keyboard_interrupt
-def deploy():
-    from .constants import PUSH
-    pushparser = argparse.ArgumentParser(description=PUSH, prog='kctl push')
-    pushparser.add_argument('push')
-    pushparser.add_argument(
-        '--connection', '-c',
-        action='store',
-        help='connection parameters to use from koursaros.yaml'
-    )
-    pushparser.add_argument(
-        '--actions', '-x',
-        action='store',
-        help='action in actions.yaml to run',
-        required=True,
-        nargs='+'
-    )
-    pushparser.add_argument(
-        '--bind', '-b',
-        action='store_true',
-        help='rebind and flush rabbitmq on entry according to actions.yaml'
-    )
-    pushparser.add_argument(*ALL_ARGS, **ALL_KWARGS)
-    pushparser.add_argument(*MICROSERVICES_ARGS, **MICROSERVICES_KWARGS)
+def deploy_app(args):
 
-    pushargs = pushparser.parse_args()
-
-    if not pushargs.all and not pushargs.microservices:
-        log.exception('Must select microservices in kctl push')
-        raise SystemExit
+    raise SystemExit
 
     # 1. Compile koursaros.proto located in koursaros/protos
     from koursaros.protos import codegen
@@ -101,67 +75,114 @@ def deploy():
 
 
 @allow_keyboard_interrupt
-def create():
+def deploy_pipeline(args):
+
+    raise SystemExit
+
+
+@allow_keyboard_interrupt
+def create_app(args):
+
+    raise SystemExit
     from .builders import create_microservice
     from .constants import CREATE
 
-    createargs = createparser.parse_args()
 
-    create_microservice(createargs)
+    create_microservice()
 
 
-def handle_exceptions(type_, value, tb):
-    logging.exception((type_, value, tb))
+@allow_keyboard_interrupt
+def create_pipeline(args):
+
+    raise SystemExit
+    from .builders import create_microservice
+    from .constants import CREATE
+
+
+    create_microservice()
+
+
+@allow_keyboard_interrupt
+def create_service(args):
+
+    print(args)
+    raise SystemExit
+    from .builders import create_microservice
+    from .constants import CREATE
+
+
+    create_microservice()
+
+
+@allow_keyboard_interrupt
+def create_model(args):
+    raise SystemExit
+    from .builders import create_microservice
+    from .constants import CREATE
+
+
+    create_microservice()
+
 
 
 if __name__ == "__main__":
-
-    import logging
-    import sys
-    from .logger import redirect_kctl_out
-
-    redirect_kctl_out()
-
-    print('erwe')
-
-    print('hello')
-    z = 1/0
-    print('hll')
-    raise SystemExit
-    # log = logging.getLogger('kctl')
-    # sys.stdout = LoggerWriter()
-    # sys.stderr = LoggerWriter()
-    # handler = handle(sys.stdout)
-    # handler.setLevel(logging.INFO)
-    #
-    # logger.addHandler(handler)
+    from .logger import redirect_out
+    redirect_out()
 
     from .constants import DESCRIPTION
 
+    # kctl
     kctl_parser = argparse.ArgumentParser(description=DESCRIPTION, prog='kctl')
     kctl_subparsers = kctl_parser.add_subparsers()
 
-    kctl_create_parser = kctl_subparsers.add_parser('create')
+    # kctl create
+    kctl_create_parser = kctl_subparsers.add_parser(
+        'create',
+        description='create an app, pipeline, service, or model'
+    )
     kctl_create_subparsers = kctl_create_parser.add_subparsers()
+    # kctl create app
     kctl_create_app_parser = kctl_create_subparsers.add_parser('app')
+    kctl_create_app_parser.set_defaults(func=create_app)
     kctl_create_app_parser.add_argument('name')
+    # kctl create pipeline
     kctl_create_pipeline_parser = kctl_create_subparsers.add_parser('pipeline')
+    kctl_create_pipeline_parser.set_defaults(func=create_pipeline)
     kctl_create_pipeline_parser.add_argument('name')
+    # kctl create service
     kctl_create_service_parser = kctl_create_subparsers.add_parser('service')
+    kctl_create_service_parser.set_defaults(func=create_service)
     kctl_create_service_parser.add_argument('name')
+    # kctl create model
     kctl_create_model_parser = kctl_create_subparsers.add_parser('model')
+    kctl_create_model_parser.set_defaults(func=create_model)
     kctl_create_model_parser.add_argument('name')
     kctl_create_model_parser.add_argument('--base_image', default='koursaros-base')
 
-    kctl_deploy_parser = kctl_subparsers.add_parser('deploy')
+    # kctl deploy
+    kctl_deploy_parser = kctl_subparsers.add_parser(
+        'deploy',
+        description='deploy an app or pipeline'
+    )
     kctl_deploy_subparsers = kctl_deploy_parser.add_subparsers()
+    # kctl deploy app
     kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
+    kctl_deploy_app_parser.set_defaults(func=deploy_app)
     kctl_deploy_app_parser.add_argument('name')
+    kctl_deploy_app_parser.add_argument(
+        '-c', '--connection',
+        action='store',
+        help='connection parameters to use from koursaros.yaml'
+    )
+    # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
+    kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     kctl_deploy_pipeline_parser.add_argument('name')
+    kctl_deploy_pipeline_parser.add_argument(
+        '-c', '--connection',
+        action='store',
+        help='connection parameters to use from koursaros.yaml'
+    )
 
     args = kctl_parser.parse_args()
-
-    print(args)
-    # argfunc = choices[cmdargs.command]
-    # argfunc()
+    args.func(args)
