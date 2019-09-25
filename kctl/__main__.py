@@ -1,9 +1,3 @@
-import argparse
-
-ALL_ARGS = ('--all', '-a')
-ALL_KWARGS = {'action': 'store_true', 'help': 'get all microservices'}
-MICROSERVICES_ARGS = ('microservices',)
-MICROSERVICES_KWARGS = {'nargs': '*'}
 
 
 def allow_keyboard_interrupt(func):
@@ -122,10 +116,17 @@ def create_model(args):
     create_microservice()
 
 
+@allow_keyboard_interrupt
+def pull_app(args):
+    from git import Repo
+    Repo.clone_from(args.git, '.')
+
+
 def main():
     from .logger import redirect_out
     redirect_out()
 
+    import argparse
     from .constants import DESCRIPTION
 
     # kctl
@@ -179,6 +180,21 @@ def main():
         '-c', '--connection',
         action='store',
         help='connection parameters to use from koursaros.yaml'
+    )
+
+    # kctl pull
+    kctl_pull_parser = kctl_subparsers.add_parser(
+        'pull',
+        description='pull an app'
+    )
+    kctl_pull_subparsers = kctl_pull_parser.add_subparsers()
+    # kctl pull app
+    kctl_pull_app_parser = kctl_pull_subparsers.add_parser('app')
+    kctl_pull_app_parser.set_defaults(func=pull_app)
+    kctl_pull_app_parser.add_argument(
+        '-g', '--git',
+        action='store',
+        help='pull an app from a git directory'
     )
 
     args = kctl_parser.parse_args()

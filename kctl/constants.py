@@ -34,7 +34,7 @@ spec:
   selector:
     matchLabels:
       app: "{microservice}"
-  template:
+  app_template:
     metadata:
       labels:
         app: "{microservice}"
