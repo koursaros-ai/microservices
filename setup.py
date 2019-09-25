@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='koursaros',
-    packages=['koursaros'],
+    packages=['kctl', 'koursaros'],
     version='0.0.1',
     license='MIT',
     description='Koursaros is a distributed, cloud-'
@@ -11,7 +11,7 @@ setup(
     author='Koursaros',
     author_email='cole.thienes@gmail.com',
     url='https://github.com/koursaros-ai/koursaros',
-    download_url='https://github.com/user/koursaros/archive/v_01.tar.gz',
+    # download_url='https://github.com/koursaros-ai/koursaros/archive/0.0.1.tar.gz',
     keywords=['koursaros', 'distributed', 'cloud-native', 'neural', 'inference'],
     install_requires=[
         'pika',
