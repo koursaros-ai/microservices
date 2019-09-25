@@ -120,7 +120,7 @@ def create_model(args):
 def pull_app(args):
     from subprocess import PIPE, Popen, call
     import sys
-    call(['git', 'clone', args.git, args.name], stdout=sys.stdout)
+    call(['git', 'clone', args.git, args.name], stdout=sys.stderr)
     if args.dir:
         from shutil import rmtree, copytree
         copytree(f'{args.name}/{args.dir}', '.kctlcache')
