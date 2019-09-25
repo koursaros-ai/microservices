@@ -1,20 +1,4 @@
-INIT_TEMPLATE = '''from ..base import Microservice
-
-{setup}
-
-################
-# Microservice #
-################
-
-microservice = Microservice(__name__)
-
-{pubber}
-
-@microservice.subber
-{subber}
-
-@microservice.main
-{main}
+INIT_TEMPLATE = '''
 
 '''
 
