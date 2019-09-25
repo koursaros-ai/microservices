@@ -14,12 +14,15 @@ RESET = '\033[0m'
 
 class KctlStdout:
     stdout = None
-    fileno = 1
     outfile = open('kctl-stdout.log', 'w')
 
     @staticmethod
     def __init__(stdout):
         KctlStdout.stdout = stdout
+
+    @staticmethod
+    def fileno():
+        return 2
 
     @staticmethod
     def write(record=''):
@@ -46,12 +49,15 @@ class KctlStdout:
 
 class KctlStderr:
     stderr = None
-    fileno = 2
     errfile = open('kctl-stderr.log', 'w')
 
     @staticmethod
     def __init__(stderr):
         KctlStderr.stderr = stderr
+
+    @staticmethod
+    def fileno():
+        return 2
 
     @staticmethod
     def write(record=''):
