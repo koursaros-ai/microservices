@@ -26,7 +26,7 @@ wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a app_template
+#  Usually these files are written by a python script from a fact-checking
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec

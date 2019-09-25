@@ -173,7 +173,6 @@ def main():
     # kctl deploy app
     kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
     kctl_deploy_app_parser.set_defaults(func=deploy_app)
-    kctl_deploy_app_parser.add_argument('name')
     kctl_deploy_app_parser.add_argument(
         '-c', '--connection',
         action='store',
