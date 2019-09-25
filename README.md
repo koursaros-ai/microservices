@@ -196,7 +196,6 @@ stubs:
 <td width="30%">
    <sub>
    <pre lang="yaml">
- stubs:
 stubs:
  send: sender.request() -> Number                     | factor
  factor: model.factor(Number) -> Factors              | count
