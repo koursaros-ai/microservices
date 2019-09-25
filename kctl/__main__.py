@@ -122,7 +122,7 @@ def create_model(args):
     create_microservice()
 
 
-if __name__ == "__main__":
+def main():
     from .logger import redirect_out
     redirect_out()
 
@@ -183,3 +183,7 @@ if __name__ == "__main__":
 
     args = kctl_parser.parse_args()
     args.func(args)
+
+
+if __name__ == "__main__":
+    main()
