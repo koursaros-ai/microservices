@@ -13,7 +13,7 @@ setup(
     url='https://github.com/koursaros-ai/koursaros',
     download_url='https://github.com/user/koursaros/archive/v_01.tar.gz',
     keywords=['koursaros', 'distributed', 'cloud-native', 'neural', 'inference'],
-    install_requires=[  # I get to this in a second
+    install_requires=[
         'pika',
     ],
     classifiers=[
