@@ -147,7 +147,7 @@ pip3 install git+https://git@github.com/koursaros-ai/koursaros.git
 kctl create app MyApp
 cd MyApp
 kctl create pipeline MyPipeline
-kctl start -p MyPipeline
+kctl deploy -p MyPipeline
 ```
 
 Then open [http://localhost:5200/](http://localhost:5200/) to see your pipeline running!
@@ -170,10 +170,11 @@ MyApp
 │   │   └── __init__.py
 │   └── model
 │       └── __init__.py
-└── pipelines
-    └── MyPipeline
-        ├── stubs.yaml
-        └── messages.proto
+├── pipelines
+│   └── MyPipeline
+│       ├── stubs.yaml
+│       └── messages.proto
+└── models
 ```
 
 Now let's create a new microservice called counter.
@@ -340,7 +341,7 @@ message FactorsWithCount {
 </tr>
 </table>
 
-Now start your app again with ```kctl start -p MyPipeline``` and see the changes!
+Now start your app again with ```kctl deploy -p MyPipeline``` and see the changes!
     
 ## Tutorials
 - <a href = 'tutorials/fever'>Use Koursaros to get SoTA results in dev environment</a> on the <a href='fever.ai'>fever.ai</a> benchmark using pretrained models.
