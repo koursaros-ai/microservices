@@ -118,8 +118,10 @@ def create_model(args):
 
 @allow_keyboard_interrupt
 def pull_app(args):
-    from git import Repo
-    Repo.clone_from(args.git, args.name)
+    # from git import Repo
+    # Repo.clone_from(args.git, args.name)
+    import subprocess
+    subprocess.call(['git', 'clone', args.git])
     if args.dir:
         from shutil import rmtree, copytree
         copytree(f'{args.name}/{args.dir}', '.kctlcache')
