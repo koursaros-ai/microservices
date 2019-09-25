@@ -164,7 +164,6 @@ my-app
 ├── .gitignore
 ├── services
 │   ├── sender
-│   ├── preprocesser
 │   └── model
 ├── pipelines
 │   └── factor-number
