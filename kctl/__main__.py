@@ -1,4 +1,7 @@
 
+import os
+
+__location__ = os.path.dirname(__file__)
 
 def allow_keyboard_interrupt(func):
     def wrapper(*args, **kwargs):
@@ -76,6 +79,7 @@ def deploy_pipeline(args):
 
 @allow_keyboard_interrupt
 def create_app(args):
+
 
     raise SystemExit
     from .create import create_microservice
@@ -210,8 +214,8 @@ def main():
     )
 
     args = kctl_parser.parse_args()
-    args.func(args)
-
+    # args.func(args)
+    print(__location__)
 
 if __name__ == "__main__":
     main()
