@@ -18,7 +18,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'kctl = kctl:__main__',
+            'kctl = kctl:__main__.py',
         ],
     },
     classifiers=[
