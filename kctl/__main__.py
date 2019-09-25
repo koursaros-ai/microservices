@@ -121,11 +121,11 @@ def pull_app(args):
     from git import Repo
     Repo.clone_from(args.git, args.name)
     if args.dir:
-        from distutils.dir_util import copy_tree, rm_tree
-        copy_tree(f'{args.name}/{args.dir}', '.kctlcache')
-        rm_tree(args.name)
-        copy_tree('.kctlcache', args.name)
-        rm_tree('.kctlcache')
+        from shutil import rmtree, copytree
+        copytree(f'{args.name}/{args.dir}', '.kctlcache')
+        rmtree(args.name)
+        copytree('.kctlcache', args.name)
+        rmtree('.kctlcache')
 
 
 def main():
