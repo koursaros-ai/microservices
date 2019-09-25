@@ -144,8 +144,8 @@ pip3 install git+https://git@github.com/koursaros-ai/koursaros.git
 ## Getting Started
 ### Creating a pipeline
 ```
-kctl pull app fact-check-app --git koursaros --dir examples/fact-checking
-cd fact-checking
+kctl pull app my-app --git koursaros --dir examples/simple-app
+cd my-app
 kctl deploy app
 ```
 
@@ -159,18 +159,15 @@ The model gets only the number, factors it, and sends it back to the sender.
 kctl created a directory called MyPipeline with the following project structure:
 
 ```
-fact-check-app
+my-app
 ├── README.md
 ├── .gitignore
 ├── services
 │   ├── sender
-│   │   └── __init__.py
 │   ├── preprocesser
-│   │   └── __init__.py
 │   └── model
-│       └── __init__.py
 ├── pipelines
-│   └── MyPipeline
+│   └── factor-number
 │       ├── stubs.yaml
 │       └── messages.proto
 └── models
