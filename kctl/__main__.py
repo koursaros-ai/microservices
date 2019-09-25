@@ -118,8 +118,10 @@ def create_model(args):
 
 @allow_keyboard_interrupt
 def pull_app(args):
-    from git import Repo
-    Repo.clone_from(args.git, 'temp')
+    # from git import Repo
+    # Repo.clone_from(args.git, 'temp')
+    import subprocess
+    subprocess.call(['git', 'clone', args.git, '--filter', 'examples'])
 
 
 def main():
