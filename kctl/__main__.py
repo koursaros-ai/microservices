@@ -119,7 +119,7 @@ def create_model(args):
 @allow_keyboard_interrupt
 def pull_app(args):
     from git import Repo
-    Repo.clone_from(args.git, '.')
+    Repo.clone_from(args.git, 'temp')
 
 
 def main():
