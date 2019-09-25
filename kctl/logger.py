@@ -22,7 +22,7 @@ class KctlStdout:
 
     @staticmethod
     def fileno():
-        return 2
+        return 1
 
     @staticmethod
     def write(record=''):
