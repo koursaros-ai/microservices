@@ -1,13 +1,13 @@
 
 CLOUDBUILD_TEMPLATE = '''
 steps:  
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'gcr.io/cloud-create/docker'
   args: ['build','-t','{image}:{tag}','-f','/workspace/koursaros/microservices/{microservice}/transpiled/Dockerfile','.']
 
-- name: 'gcr.io/cloud-builders/docker'
+- name: 'gcr.io/cloud-create/docker'
   args: ['push','{image}:{tag}']
 
-- name: 'gcr.io/cloud-builders/kubectl'
+- name: 'gcr.io/cloud-create/kubectl'
   id: Deploy
   args:
   - 'apply'

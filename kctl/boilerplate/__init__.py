@@ -20,7 +20,8 @@ microservice = Microservice(__name__)
 
 HELLO_SETUP = 'SEND_SUP = False'
 
-HELLO_MAIN ='''def main(connection):
+HELLO_MAIN = '''
+def main(connection):
     global SEND_SUP
     if connection == 'dev_local':
         SEND_SUP = True
@@ -34,16 +35,19 @@ def send_hello(publish):
         publish(proto)
 '''
 
-HELLO_SUBBER = '''def respond_to_hello(proto, publish):
+HELLO_SUBBER = '''
+def respond_to_hello(proto, publish):
     print('Received', proto)
-    new_proto = 'hello there from {microservice}!'
+    new_proto = 'hello there from the {service}!'
     publish(new_proto)
 '''
 
-HELLO_TEMPLATE = INIT_TEMPLATE.format(setup=HELLO_SETUP,
-                                      pubber=HELLO_PUBBER,
-                                      subber=HELLO_SUBBER,
-                                      main=HELLO_MAIN)
+HELLO_TEMPLATE = INIT_TEMPLATE.format(
+    setup=HELLO_SETUP,
+    pubber=HELLO_PUBBER,
+    subber=HELLO_SUBBER,
+    main=HELLO_MAIN
+)
 
 MODEL_SETUP = '''
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -144,7 +148,7 @@ def inference(sample: Sample, publish):
 '''
 
 
-MICROSERVICE_TEMPLATE = '''
+SERVICE_TEMPLATE = '''
 version: '3.7'
 
 microservice:

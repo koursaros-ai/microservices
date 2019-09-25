@@ -34,39 +34,6 @@ def git_push(**kwargs):
     origin.push(progress=Progress())
 
 
-def create_microservice(args):
-    from ..boilerplate import HELLO_TEMPLATE, MICROSERVICE_TEMPLATE
-    from koursaros.constants import MICROSERVICES_PATH
-    import os
-
-    print(args.microservices)
-
-    for microservice in args.microservices:
-        microservice_path = f'{MICROSERVICES_PATH}/{microservice}'
-        os.makedirs(microservice_path)
-
-        init_settings = {
-            'microservice' : microservice
-        }
-
-        with open(f'{microservice_path}/__init__.py', 'w') as fh:
-            if not args.model:
-                fh.write(HELLO_TEMPLATE.format(**init_settings))
-
-        microservice_settings = {
-            "microservice" : microservice,
-            "registry" : os.environ.get('CONTAINER_REGISTRY'),
-            "base_image" : args.base_image,
-            "dependencies" : "pip install --upgrade pip"
-        }
-
-        microservice_yaml = MICROSERVICE_TEMPLATE.format(**microservice_settings)
-        with open(microservice_path + '/microservice.yaml', 'w') as fh:
-            fh.write(microservice_yaml)
-
-        log.info(f'Created {microservice_path}.')
-
-
 def build_dockerfile(**kwargs):
     from koursaros.utils.yamls import get_microservice_yamls
     microservice_yamls = get_microservice_yamls(**kwargs)
