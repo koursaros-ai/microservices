@@ -121,7 +121,7 @@ def pull_app(args):
     # from git import Repo
     # Repo.clone_from(args.git, args.name)
     import subprocess
-    subprocess.call(['git', 'clone', args.git])
+    subprocess.call(['git', 'clone', args.git, args.name])
     if args.dir:
         from shutil import rmtree, copytree
         copytree(f'{args.name}/{args.dir}', '.kctlcache')
