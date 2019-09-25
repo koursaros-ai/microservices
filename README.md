@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href='https://koursaros-ai.github.io'>Blog</a> •
   <a href="#highlights">Highlights</a> •
   <a href="#overview">Overview</a> •
   <a href="#install">Install</a> •
