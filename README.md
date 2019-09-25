@@ -186,11 +186,10 @@ Let's say the counter will receive the Factors message and will return a Factors
 <td width="30%">
    <sub>
    <pre lang="yaml">
- stubs:
-   send: sender.request() -> Request                    | preprocess
-   preprocess: preprocesser.parse(Request) -> Number    | compare
-   factor: model.factor(Number) -> Factors              | count
-   response: sender.getResponse(Factors)              ->|
+stubs:
+ send: sender.request() -> Number                     | factor
+ factor: model.factor(Number) -> Factors              | sendback
+ sendback: sender.receive(Factors)                  ->|
    </pre>
    </sub>
 </td>
@@ -198,11 +197,11 @@ Let's say the counter will receive the Factors message and will return a Factors
    <sub>
    <pre lang="yaml">
  stubs:
-   send: sender.request() -> Request                    | preprocess
-   preprocess: preprocesser.parse(Request) -> Number    | compare
-   factor: model.factor(Number) -> Factors              | count
-   count: counter.count(Factors) -> FactorsWithCount    | response
-   response: sender.getResponse(FactorsWithCount)     ->|
+stubs:
+ send: sender.request() -> Number                     | factor
+ factor: model.factor(Number) -> Factors              | count
+ count: counter.count(Factors) -> FactorsWithCount    | sendback
+ sendback: sender.receive(Factors)                  ->|
    </pre>
    </sub>
 </td>
@@ -251,16 +250,16 @@ def main(connection):
     
    <pre lang="python">
 from koursaros import Service
-from ..protos import FactorsWithCount
+from ..messages import FactorsWithCount
 
 service = Service(__name__)
 
 
 @service.subber
 def process(factors, publish):
-    count = len(factors.numbers)
+    count = len(factors.factors)
     factors_with_count = FactorsWithCount(
-        factors=factors,
+        factors=factors.factors,
         count=count
     )
     publish(factors_with_count)
