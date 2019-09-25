@@ -119,7 +119,6 @@ def create_model(args):
 @allow_keyboard_interrupt
 def pull_app(args):
     from subprocess import call
-    print('hello')
     call(['git', 'clone', args.git, args.name])
 
     if args.dir:
