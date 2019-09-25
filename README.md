@@ -335,7 +335,7 @@ message FactorsWithCount {
 </tr>
 </table>
 
-Now start your app again with ```kctl deploy -p MyPipeline``` and see the changes!
+Now start your app again with ```kctl deploy app``` and see the changes!
     
 ## Tutorials
 - <a href = 'tutorials/fever'>Use Koursaros to get SoTA results in dev environment</a> on the <a href='fever.ai'>fever.ai</a> benchmark using pretrained models.
