@@ -16,6 +16,11 @@ setup(
     install_requires=[
         'pika',
     ],
+    entry_points={
+        'console_scripts': [
+            'kctl = kctl:main',
+        ],
+    },
     classifiers=[
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
