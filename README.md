@@ -20,7 +20,7 @@
 
 Koursaros is a distributed, cloud-native platform for developing and deploying neural search and inference applications.
 
-Koursaros leverages a general-purpose microservice architecture to enable low-latency, scalable deep neural network training and can be directly deployed to kubernetes for production.
+Koursaros leverages a general-purpose microservice / broker architecture to enable low-latency, scalable deep neural network training and can be directly deployed to kubernetes for production.
 
 ## Results
 
