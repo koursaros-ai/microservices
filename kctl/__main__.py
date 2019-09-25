@@ -122,9 +122,7 @@ def pull_app(args):
     Repo.clone_from(args.git, args.name)
     if args.dir:
         from distutils.dir_util import copy_tree
-        with open(args.name):
-            copy_tree(args.dir, args.name)
-
+        copy_tree(f'{args.name}/{args.dir}', args.name)
 
 
 def main():
