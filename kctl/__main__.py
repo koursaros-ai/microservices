@@ -1,5 +1,5 @@
-
 import argparse
+
 ALL_ARGS = ('--all', '-a')
 ALL_KWARGS = {'action': 'store_true', 'help': 'get all microservices'}
 MICROSERVICES_ARGS = ('microservices',)
@@ -13,11 +13,12 @@ def allow_keyboard_interrupt(func):
         except KeyboardInterrupt:
             print()
             raise SystemExit
+
     return wrapper
 
 
 @allow_keyboard_interrupt
-def push():
+def deploy():
     from .constants import PUSH
     pushparser = argparse.ArgumentParser(description=PUSH, prog='kctl push')
     pushparser.add_argument('push')
@@ -48,7 +49,8 @@ def push():
         raise SystemExit
 
     # 1. Compile koursaros.proto located in koursaros/protos
-    protoc()
+    from koursaros.protos import codegen
+    codegen()
 
     # 2. Check actions.yaml
     from .checks import check_stubs, check_protos, check_rabbitmq
@@ -103,38 +105,9 @@ def create():
     from .builders import create_microservice
     from .constants import CREATE
 
-    createparser = argparse.ArgumentParser(description=CREATE, prog='kctl create')
-    createparser.add_argument('create')
-    createparser.add_argument(*MICROSERVICES_ARGS, **MICROSERVICES_KWARGS)
-    createparser.add_argument(*ALL_ARGS, **ALL_KWARGS)
-    createparser.add_argument('--model', action='store_true')
-    createparser.add_argument('--base_image', default='koursaros-base')
     createargs = createparser.parse_args()
 
     create_microservice(createargs)
-
-
-@allow_keyboard_interrupt
-def untrigger():
-    from .builders import delete_trigger
-    from .constants import UNTRIGGER
-
-    untrigparser = argparse.ArgumentParser(description=UNTRIGGER, prog='kctl untrigger')
-    untrigparser.add_argument(*MICROSERVICES_ARGS, **MICROSERVICES_KWARGS)
-    untrigparser.add_argument(*ALL_ARGS, **ALL_KWARGS)
-    untrigargs = parser.parse_args()
-
-    if untrigargs.all:
-        delete_trigger(all=True)
-
-    else:
-        delete_trigger(microservices=untrigargs.microservices)
-
-
-@allow_keyboard_interrupt
-def protoc():
-    from koursaros.protos import codegen
-    codegen()
 
 
 def handle_exceptions(type_, value, tb):
@@ -142,22 +115,53 @@ def handle_exceptions(type_, value, tb):
 
 
 if __name__ == "__main__":
-    import logging
-    from .logger import set_kctl_logger
-    set_kctl_logger()
-    log = logging.getLogger("kctl")
 
-    choices = {
-        'push': push,
-        'create': create,
-        'untrigger': untrigger,
-        'protoc': protoc
-    }
+    import logging
+    import sys
+    from .logger import redirect_kctl_out
+
+    redirect_kctl_out()
+
+    print('erwe')
+
+    print('hello')
+    z = 1/0
+    print('hll')
+    raise SystemExit
+    # log = logging.getLogger('kctl')
+    # sys.stdout = LoggerWriter()
+    # sys.stderr = LoggerWriter()
+    # handler = handle(sys.stdout)
+    # handler.setLevel(logging.INFO)
+    #
+    # logger.addHandler(handler)
 
     from .constants import DESCRIPTION
-    parser = argparse.ArgumentParser(description=DESCRIPTION, prog='kctl')
-    parser.add_argument('command', choices=choices.keys())
-    cmdargs, options = parser.parse_known_args()
 
-    argfunc = choices[cmdargs.command]
-    argfunc()
+    kctl_parser = argparse.ArgumentParser(description=DESCRIPTION, prog='kctl')
+    kctl_subparsers = kctl_parser.add_subparsers()
+
+    kctl_create_parser = kctl_subparsers.add_parser('create')
+    kctl_create_subparsers = kctl_create_parser.add_subparsers()
+    kctl_create_app_parser = kctl_create_subparsers.add_parser('app')
+    kctl_create_app_parser.add_argument('name')
+    kctl_create_pipeline_parser = kctl_create_subparsers.add_parser('pipeline')
+    kctl_create_pipeline_parser.add_argument('name')
+    kctl_create_service_parser = kctl_create_subparsers.add_parser('service')
+    kctl_create_service_parser.add_argument('name')
+    kctl_create_model_parser = kctl_create_subparsers.add_parser('model')
+    kctl_create_model_parser.add_argument('name')
+    kctl_create_model_parser.add_argument('--base_image', default='koursaros-base')
+
+    kctl_deploy_parser = kctl_subparsers.add_parser('deploy')
+    kctl_deploy_subparsers = kctl_deploy_parser.add_subparsers()
+    kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
+    kctl_deploy_app_parser.add_argument('name')
+    kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
+    kctl_deploy_pipeline_parser.add_argument('name')
+
+    args = kctl_parser.parse_args()
+
+    print(args)
+    # argfunc = choices[cmdargs.command]
+    # argfunc()
