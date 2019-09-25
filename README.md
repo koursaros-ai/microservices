@@ -3,7 +3,7 @@
 <hr/>
 
 <p align="center">
-<a href='https://github.com/crt68/koursaros/blob/master/LICENSE'>
+<a href='https://github.com/koursaros-ai/koursaros/blob/master/LICENSE'>
     <img alt="PyPI - License" src="https://img.shields.io/badge/license-MIT-green.svg">
 </a>
 </p>
