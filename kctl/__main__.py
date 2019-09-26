@@ -41,10 +41,10 @@ def deploy_pipeline(args):
 
     protoc.main((
         '',
-        f'-I{APP_PATH}/pipelines',
+        f'-I{messages_path}',
         f'--python_out={messages_path}',
         f'--grpc_python_out={messages_path}',
-        f'{messages_path}/koursaros.proto',
+        f'{APP_PATH}/pipelines/messages.proto',
     ))
 
 
