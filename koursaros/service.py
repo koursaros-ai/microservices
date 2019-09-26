@@ -20,11 +20,9 @@ class Service:
     def __init__(self, file, prefetch=1):
 
         app_path = find_app_path(file)
-        spec = importlib.util.spec_from_file_location(
-            'messages', f'{app_path}/.koursaros/messages_pb2.py'
-        )
+        sys.path.append(f'{app_path}/.koursaros/')
+        module = __import__('messages_pb2')
 
-        module = importlib.util.module_from_spec(spec)
         print(module)
         for m in dir(module):
             a = getattr(module, m, None)
