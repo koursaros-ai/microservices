@@ -1,0 +1,8 @@
+version: '3.7'
+
+microservice:
+  from: ubuntu:latest
+  image: example/image
+  deps:
+    - pip3 install elasticsearch
+  replicas: 1
