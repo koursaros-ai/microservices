@@ -24,7 +24,7 @@ class Service:
         print(cwd)
         print(app_path)
         import os
-        print(os.getvwd())
+        print(os.getcwd())
         self._stubs = dict()
         self._pubbers = list()
         self._subbers = list()
