@@ -24,7 +24,6 @@ def compile_yamls(app_path):
             if 'pipelines' not in yamls:
                 yamls['pipelines'] = dict()
 
-            print(pipeline)
             stubs = yaml_safe_load(pipelines + pipeline, 'stubs.yaml')
             yamls['pipelines'][pipeline] = stubs['stubs']
 
@@ -38,5 +37,5 @@ def compile_yamls(app_path):
             yamls['services'][service] = yam['service']
 
     with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
-        fh.write(json.dumps(yamls))
+        fh.write(json.dumps(yamls, indent=4))
 
