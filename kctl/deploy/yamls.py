@@ -31,19 +31,6 @@ def parse_stub_string(stub_string):
     return groups
 
 
-def get_actions():
-    actions_yaml = get_actions_yaml()
-    actions = dict()
-
-    for action_name, stubs_config in actions_yaml.items():
-        if not actions.get(action_name):
-            actions[action_name] = []
-
-        stubs_config = stubs_config['stubs']
-
-    return actions
-
-
 def compile_yamls(app_path):
     yamls = dict()
 
