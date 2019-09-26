@@ -45,7 +45,7 @@ def deploy_pipeline(args):
     # 3. Check stubs.yaml
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
 
-    stubs = yamls['pipelines'][args.name]['stubs']
+    stubs = yamls['pipelines'][args.name]
     services = yamls['services']
     check_stubs(services, stubs)
     check_protos(APP_PATH, stubs)
