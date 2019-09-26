@@ -124,6 +124,7 @@ class Stub:
     def rabbitmq_connect(self):
         while True:
             try:
+                print(self.service, self.password)
                 credentials = pika.credentials.PlainCredentials(
                     self.service,
                     self.password
