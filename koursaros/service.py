@@ -29,6 +29,7 @@ class Service:
         #     print(m, a)
         raise SystemExit
 
+
         service = file.split('/')[-2]
         self._stubs = dict()
         self._pubbers = list()
