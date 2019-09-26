@@ -57,9 +57,9 @@ class Service:
         self._subbers.append(stub)
 
     def main(self, main_func):
-        def main_wrap(pipelines, connection_name, *connection):
+        def main_wrap(pipelines, connection_name, **connection):
             main_func(connection_name)
-            self.run(pipelines, *connection)
+            self.run(pipelines, **connection)
 
         return main_wrap
 
