@@ -86,8 +86,8 @@ def write(record=''):
             f'{RESET} {dots}{file} → ️{name}(): {record}\n'
         )
 
-        KctlStdout.stdout.write(log)
-        KctlStdout.outfile.write(log)
+        # KctlStdout.stdout.write(log)
+        # KctlStdout.outfile.write(log)
 
 
 def redirect_out():
