@@ -1,13 +1,11 @@
 import functools
 import threading
-import logging
 import time
 import sys
 import json
 import pika
 import pika.exceptions
 from kctl.utils import find_app_path
-import importlib.util
 
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
@@ -33,7 +31,7 @@ class Service:
 
         for pipeline, stubs in yamls['pipelines'].items():
             for stub in stubs:
-                stub = Stub(pipeline, *stub)
+                stub = Stub(self.messages, pipeline, *stub)
                 if stub.service == service:
                     stub.prefetch = prefetch
                     self._stubs[stub.func_name] = stub
@@ -108,13 +106,13 @@ class Stub:
     __slots__ = ['service', 'proto_in', 'proto_out', 'func_name', 'func', 'prefetch',
                  'connection', 'channel', 'pin_out', 'host', 'password', 'pipeline', 'port']
 
-    def __init__(self, pipeline, pin_in, service, func_name, proto_in, proto_out, pin_out):
+    def __init__(self, messages, pipeline, pin_in, service, func_name, proto_in, proto_out, pin_out):
         self.pipeline = pipeline
         self.service = service
         self.pin_out = pin_out
         self.func_name = func_name
-        self.proto_in = get_module_attr(proto_in)
-        self.proto_out = get_module_attr(proto_out)
+        self.proto_in = get_module_attr(messages, proto_in)
+        self.proto_out = get_module_attr(messages, proto_out)
 
         # runtime attributes
         self.func = None
@@ -183,8 +181,7 @@ def raise_name_if_none(var, obj):
         raise ValueError(f'"{obj.__name__}" not found in stubs.yaml')
 
 
-def get_module_attr(attr):
-    module = sys.modules[__name__]
+def get_module_attr(module, attr):
     if attr:
         return getattr(module, attr, None)
     else:
