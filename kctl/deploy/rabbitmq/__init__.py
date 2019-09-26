@@ -15,11 +15,6 @@ def bind_rabbitmq(
 
     api = AdminAPI(url=url, auth=(username, password))  # admin connection
 
-    try:
-        stubs = stubs.pop(pipeline)
-    except KeyError:
-        raise KeyError(f'\n\n\nAction not found in actions.yaml: "{pipeline}"\n\n')
-
     http_string = f'vhost "{pipeline}" on {BOLD.format(url)}'
     pika_string = f'vhost "{pipeline}" on {BOLD.format(ip)}'
 
