@@ -41,9 +41,8 @@ def deploy_pipeline(args):
 
     protoc.main((
         '',
-        f'-I{APP_PATH}/pipelines/',
+        f'-I={APP_PATH}/pipelines/',
         f'--python_out={messages_path}',
-        f'--grpc_python_out={messages_path}',
         f'{APP_PATH}/pipelines/{args.name}/messages.proto',
     ))
 
