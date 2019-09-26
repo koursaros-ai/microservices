@@ -4,6 +4,8 @@ import sys
 from .utils import find_app_path
 import os
 
+APP_PATH = find_app_path(os.getcwd())
+
 BOLD = '\033[1m'
 GREEN = '\033[32m'
 RED = '\033[1;31m'
@@ -16,7 +18,7 @@ RESET = '\033[0m'
 
 class KctlStdout:
     stdout = None
-    outfile = open(find_app_path(os.getcwd()) + '/kctl-stdout.log', 'w')
+    outfile = open(APP_PATH + '/kctl-stdout.log', 'w')
 
     @staticmethod
     def __init__(stdout):
@@ -41,7 +43,8 @@ class KctlStdout:
             )
 
             KctlStdout.stdout.write(log)
-            KctlStdout.outfile.write(log)
+            if KctlStdout.outfile:
+                KctlStdout.outfile.write(log)
 
 
     @staticmethod
@@ -51,7 +54,7 @@ class KctlStdout:
 
 class KctlStderr:
     stderr = None
-    errfile = open(find_app_path(os.getcwd()) + '/kctl-stderr.log', 'w')
+    errfile = open(APP_PATH+ '/kctl-stderr.log', 'w')
 
     @staticmethod
     def __init__(stderr):
@@ -68,7 +71,9 @@ class KctlStderr:
             log = f'{timestamp} [{BOLD}kctl] {RED}STDERR:{RESET} {record.rstrip()}\n'
 
             KctlStderr.stderr.write(log)
-            KctlStderr.errfile.write(log)
+
+            if KctlStderr.errfile:
+                KctlStderr.errfile.write(log)
 
     @staticmethod
     def flush():
