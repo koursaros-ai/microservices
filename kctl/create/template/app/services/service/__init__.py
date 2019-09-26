@@ -7,12 +7,12 @@ service = Service(os.getcwd())
 
 @service.pubber
 def send(publish):
-    pass
+    publish(Notification())
 
 
 @service.subber
 def receive(notification, publish):
-    pass
+    print('Got notification!')
 
 
 @service.main
