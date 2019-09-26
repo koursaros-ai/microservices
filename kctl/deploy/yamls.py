@@ -56,9 +56,9 @@ def compile_yamls(app_path):
         if not pipeline.startswith(INVALID_PIPELINE_PREFIXES):
             if 'pipelines' not in yamls:
                 yamls['pipelines'] = dict()
-                
+
             if pipeline not in yamls['pipelines']:
-                yamls['pipelines'] = []
+                yamls[pipeline] = []
 
             stubs = yaml_safe_load(pipelines + pipeline, 'stubs.yaml')
 
