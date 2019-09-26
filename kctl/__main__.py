@@ -76,9 +76,6 @@ def deploy_pipeline(args):
     deploy_pipelines(APP_PATH, args.names, services, args.connection, **connection)
 
 
-    from koursaros.microservices import run_microservices
-    run_microservices(microservices, pushargs.actions, connection_name, *connection)
-
     # else:
     #     from .create import build_trigger
     #     from .create import build_cloudbuild
