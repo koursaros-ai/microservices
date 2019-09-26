@@ -339,7 +339,7 @@ message FactorsWithCount {
 Now start your app again with ```kctl deploy app``` and see the changes!
     
 ## Tutorials
-- <a href = 'tutorials/fever'>Use Koursaros to get SoTA results in dev environment</a> on the <a href='fever.ai'>fever.ai</a> benchmark using pretrained models.
+- <a href = 'blob/master/tutorials/fact_check.md'>Use Koursaros to get SoTA results in dev environment</a> on the <a href='fever.ai'>fever.ai</a> benchmark using pretrained models.
 - Training Elastic Search BM25 algorithm using Ax Bayesian Optimizer
 - Training custom models and deploying them as stubs
 - Deploying fever.ai pipeline to production (Coming Soon)
