@@ -22,14 +22,7 @@ class Service:
         app_path = find_app_path(file)
         sys.path.append(f'{app_path}/.koursaros/')
         module = __import__('messages_pb2')
-
         self.messages = module
-        print(self.messages.Notification)
-        # for m in dir(module):
-        #     a = getattr(module, m, None)
-        #     print(m, a)
-        raise SystemExit
-
 
         service = file.split('/')[-2]
         self._stubs = dict()
