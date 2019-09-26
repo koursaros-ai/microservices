@@ -5,5 +5,5 @@ connections:
     host: localhost
     port: 5672
     http_port: 15672
-    username: root
-    password:
+    username: guest
+    password: guest
