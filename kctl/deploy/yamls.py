@@ -3,8 +3,10 @@ import yaml
 
 
 class Yamls:
-    def add(self, **entries):
+    def update(self, **entries):
         self.__dict__.update(entries)
+
+    def append(self, ):
 
 
 def yaml_safe_load(root, file):
@@ -17,19 +19,21 @@ def compile_yamls(app_path):
 
     yamls = Yamls()
 
-    for root, dirs, files in os.walk(app_path, topdown=False):
-        for file in files:
-            if file == 'connections.yaml':
-                yam = yaml_safe_load(root, file)
-                yamls.add(**yam)
+    yam = yaml_safe_load(app_path, 'connections.yaml')
+    yamls.update(**yam)
 
-            elif file == 'service.yaml':
-                yam = yaml_safe_load(root, file)
-                yamls.add(**yam)
+    # pipelines = app_path + '/pipelines'
+    # for pipeline in os.listdir(pipelines):
+    #     yam = yaml_safe_load(pipelines, file)
+    #     print(yam)
+    #     yamls.add(**yam)
+    #
+    #
+    #         elif file == 'service.yaml':
+    #             yam = yaml_safe_load(root, file)
+    #             yamls.add(**yam)
+    #
+    #         elif file == 'stubs.yaml':
 
-            elif file == 'stubs.yaml':
-                yam = yaml_safe_load(root, file)
-                print(yam)
-                yamls.add(**yam)
 
-    print(dir(yamls))
+    print(dir(yamls.connections))

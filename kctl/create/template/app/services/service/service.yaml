@@ -1,6 +1,6 @@
 version: '3.7'
 
-microservice:
+service:
   from: ubuntu:latest
   image: example/image
   deps:
