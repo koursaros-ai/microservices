@@ -33,24 +33,18 @@ def deploy_pipeline(args):
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
 
-    # 1. Compile koursaros.proto located in koursaros/protos
-    from grpc_tools import protoc
-    messages_path = f'{APP_PATH}/messages'
+    # 1. Compile messages.proto
+    from .deploy.protos import compile_messages
+    compile_messages(APP_PATH)
 
-    print(f'Compiling messages for {APP_PATH}')
-
-    protoc.main((
-        '',
-        f'-I={APP_PATH}',
-        f'--python_out={APP_PATH}/messages',
-        f'{APP_PATH}/messages.proto',
-    ))
+    # 2. Compile yamls
+    from .deploy.yamls import compile_yamls
+    compile_yamls(APP_PATH)
 
 
     raise SystemExit
-
-    # 2. Check actions.yaml
-    from .checks import check_stubs, check_protos, check_rabbitmq
+    # 2. Check stubs.yaml
+    from .deploy.checks import check_stubs, check_protos, check_rabbitmq
     check_stubs()
     check_protos()
 
