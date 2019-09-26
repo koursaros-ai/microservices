@@ -1,7 +1,8 @@
 from koursaros import Service
 from messages_pb2 import Notification
+import os
 
-service = Service(__name__)
+service = Service(os.getcwd())
 
 
 @service.pubber
