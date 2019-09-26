@@ -42,23 +42,39 @@ def deploy_pipeline(args):
     from .deploy.yamls import compile_yamls
     yamls = compile_yamls(APP_PATH)
 
-    # 3. Check stubs.yaml
+    # 3. Check stubs.yaml, messages.proto, and rmq
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
 
-    stubs = yamls['pipelines'][args.name]
-    services = yamls['services']
-    check_stubs(services, stubs)
-    check_protos(APP_PATH, stubs)
+    for pipeline in args.names:
 
-    # Check rabbitmq connection
+        stubs = yamls['pipelines'][pipeline]
+        services = yamls['services']
+        check_stubs(services, stubs)
+        check_protos(APP_PATH, stubs)
+
+    # 4. Check rabbitmq connection
     connection = yamls['connections'][args.connection]
     check_rabbitmq(**connection)
 
-    if args.rebind:
-        from .deploy.rabbitmq import bind_rabbitmq
-        bind_rabbitmq([args.name], stubs, **connection)
+    # 5. <Rebind> and deploy services
+    from .deploy.rabbitmq import bind_rabbitmq
+    from .deploy import deploy_pipelines
 
-    raise SystemExit
+    services = set()
+    for pipeline in args.names:
+        stubs = yamls['pipelines'][pipeline]
+
+        if args.rebind:
+            bind_rabbitmq(pipeline, stubs, **connection)
+
+        stubs = yamls['pipelines'][pipeline]
+
+        for stub in stubs:
+            service = stub[1]
+            services.add(service)
+
+    deploy_pipelines(APP_PATH, args.names, services, args.connection, **connection)
+
 
     from koursaros.microservices import run_microservices
     run_microservices(microservices, pushargs.actions, connection_name, *connection)
@@ -221,7 +237,7 @@ def main():
     # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
-    kctl_deploy_pipeline_parser.add_argument('name')
+    kctl_deploy_pipeline_parser.add_argument('names', nargs='+')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
 
