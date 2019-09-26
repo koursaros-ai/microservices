@@ -24,7 +24,7 @@ class Service:
         module = __import__('messages_pb2')
 
         self.messages = module
-        print(dir(self.messages))
+        print(self.messages.Notification)
         # for m in dir(module):
         #     a = getattr(module, m, None)
         #     print(m, a)
