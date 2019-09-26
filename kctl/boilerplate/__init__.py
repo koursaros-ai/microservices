@@ -1,37 +1,4 @@
-INIT_TEMPLATE = '''
 
-'''
-
-HELLO_SETUP = 'SEND_SUP = False'
-
-HELLO_MAIN = '''
-def main(connection):
-    global SEND_SUP
-    if connection == 'dev_local':
-        SEND_SUP = True
-'''
-
-HELLO_PUBBER = '''
-@microservice.pubber
-def send_hello(publish):
-    if SEND_SUP:
-        proto = 'sup'
-        publish(proto)
-'''
-
-HELLO_SUBBER = '''
-def respond_to_hello(proto, publish):
-    print('Received', proto)
-    new_proto = 'hello there from the {service}!'
-    publish(new_proto)
-'''
-
-HELLO_TEMPLATE = INIT_TEMPLATE.format(
-    setup=HELLO_SETUP,
-    pubber=HELLO_PUBBER,
-    subber=HELLO_SUBBER,
-    main=HELLO_MAIN
-)
 
 MODEL_SETUP = '''
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -129,17 +96,4 @@ def inference(sample: Sample, publish):
         label = label
     )
     publish(evaluated_claim)
-'''
-
-
-SERVICE_TEMPLATE = '''
-version: '3.7'
-
-microservice:
-  from: {registry}/{base_image}
-  image: {registry}/{microservice}
-  deps:
-    - {dependencies}
-  entrypoint: python -m koursaros.microservice.{microservice}
-  replicas: 1
 '''
