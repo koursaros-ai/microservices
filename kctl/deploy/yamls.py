@@ -24,6 +24,7 @@ def compile_yamls(app_path):
 
             elif file == 'stubs.yaml':
                 yam = yaml.safe_load(root + '/' + file)
+                print(yam)
                 yamls.add(**yam)
 
     print(dir(yamls))
