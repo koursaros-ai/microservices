@@ -1,5 +1,6 @@
 from koursaros import Service
 
+
 service = Service(__file__)
 
 
