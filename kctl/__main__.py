@@ -93,7 +93,7 @@ def create_app(args):
     new_app_path = f'{os.getcwd()}/{args.name}'
 
     from shutil import copytree
-    copytree(f'{__location__}/template/app', new_app_path)
+    copytree(f'{__location__}/create/template/app', new_app_path)
     print(f'Created app: {new_app_path}')
 
 
@@ -109,7 +109,7 @@ def create_pipeline(args):
     new_pipeline_path = pipelines_path + args.name
 
     from shutil import copytree
-    copytree(f'{__location__}/template/app/pipelines/pipeline', new_pipeline_path)
+    copytree(f'{__location__}/create/template/app/pipelines/pipeline', new_pipeline_path)
     print(f'Created pipeline: {new_pipeline_path}')
 
 
@@ -125,7 +125,7 @@ def create_service(args):
     new_service_path = services_path + args.name
 
     from shutil import copytree
-    copytree(f'{__location__}/template/app/services/service', new_service_path)
+    copytree(f'{__location__}/create/template/app/services/service', new_service_path)
     print(f'Created service: {new_service_path}')
 
 
