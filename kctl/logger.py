@@ -18,7 +18,7 @@ RESET = '\033[0m'
 
 class KctlStdout:
     stdout = None
-    outfile = open(APP_PATH + '/kctl-stdout.log', 'w')
+    outfile = open(APP_PATH + '/.koursaros/kctl-stdout.log', 'w') if APP_PATH else None
 
     @staticmethod
     def __init__(stdout):
@@ -54,7 +54,7 @@ class KctlStdout:
 
 class KctlStderr:
     stderr = None
-    errfile = open(APP_PATH+ '/kctl-stderr.log', 'w')
+    errfile = open(APP_PATH + '/.koursaros/kctl-stderr.log', 'w') if APP_PATH else None
 
     @staticmethod
     def __init__(stderr):
