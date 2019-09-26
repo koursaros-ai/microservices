@@ -1,6 +1,8 @@
 
 import time
 import sys
+from .utils import find_app_path
+import os
 
 BOLD = '\033[1m'
 GREEN = '\033[32m'
@@ -14,7 +16,7 @@ RESET = '\033[0m'
 
 class KctlStdout:
     stdout = None
-    outfile = open('kctl-stdout.log', 'w')
+    outfile = open(find_app_path(os.getcwd()) + '/kctl-stdout.log', 'w')
 
     @staticmethod
     def __init__(stdout):
@@ -49,7 +51,7 @@ class KctlStdout:
 
 class KctlStderr:
     stderr = None
-    errfile = open('kctl-stderr.log', 'w')
+    errfile = open(find_app_path(os.getcwd()) + '/kctl-stderr.log', 'w')
 
     @staticmethod
     def __init__(stderr):

@@ -1,0 +1,3 @@
+stubs:
+ send: service.send() -> Notification                    | receive
+ receive: service.receive(Notification)                   ->|
