@@ -6,7 +6,7 @@ class Yamls:
     def update(self, **entries):
         self.__dict__.update(entries)
 
-    def append(self, ):
+    # def append(self, ):
 
 
 def yaml_safe_load(root, file):
