@@ -26,9 +26,26 @@ def deploy_app(args):
 
     raise NotImplementedError
 
+
+@allow_keyboard_interrupt
+def deploy_pipeline(args):
+
     # 1. Compile koursaros.proto located in koursaros/protos
-    from koursaros.protos import codegen
-    codegen()
+    from grpc_tools import protoc
+    messages_path = f'{APP_PATH}/messages'
+
+    print(f'Compiling messages for {APP_PATH}')
+
+    protoc.main((
+        '',
+        f'-I{APP_PATH}/pipelines',
+        f'--python_out={messages_path}',
+        f'--grpc_python_out={messages_path}',
+        f'{messages_path}/koursaros.proto',
+    ))
+
+
+    raise SystemExit
 
     # 2. Check actions.yaml
     from .checks import check_stubs, check_protos, check_rabbitmq
@@ -76,12 +93,6 @@ def deploy_app(args):
     #         build_dockerfile(microservices=microservices)
     #         build_deployment(tag, microservices=microservices)
     #         git_push(microservices=microservices)
-
-
-@allow_keyboard_interrupt
-def deploy_pipeline(args):
-
-    raise NotImplementedError
 
 
 @allow_keyboard_interrupt
