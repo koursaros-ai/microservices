@@ -26,7 +26,9 @@ class Service:
 
         module = importlib.util.module_from_spec(spec)
         print(module)
-        print(dir(module))
+        for m in dir(module):
+            a = getattr(module, m, None)
+            print(m, a)
         raise SystemExit
 
         service = file.split('/')[-2]
