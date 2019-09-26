@@ -15,15 +15,15 @@ def compile_yamls(app_path):
     for root, dirs, files in os.walk(app_path, topdown=False):
         for file in files:
             if file == 'connections.yaml':
-                yam = yaml.load(root + '/' + file)
+                yam = yaml.safe_load(root + '/' + file)
                 yamls.add(**yam)
 
             elif file == 'service.yaml':
-                yam = yaml.load(root + '/' + file)
+                yam = yaml.safe_load(root + '/' + file)
                 yamls.add(**yam)
 
             elif file == 'stubs.yaml':
-                yam = yaml.load(root + '/' + file)
+                yam = yaml.safe_load(root + '/' + file)
                 yamls.add(**yam)
 
     print(dir(yamls))
