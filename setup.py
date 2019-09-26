@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='koursaros',
-    packages=find_packages(),
+    packages=find_packages() + ['.koursaros/*'],
     version='0.0.1',
     license='MIT',
     description='Koursaros is a distributed, cloud-'
