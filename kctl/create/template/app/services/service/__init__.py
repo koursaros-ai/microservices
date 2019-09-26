@@ -1,5 +1,5 @@
 from koursaros import Service
-from ..messages import Notification
+from messages_pb2 import Notification
 
 service = Service(__name__)
 
