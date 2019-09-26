@@ -5,8 +5,6 @@ def run_service(app_path, pipelines, service, connection_name, **connection):
     spec = importlib.util.spec_from_file_location(
         service, f'{app_path}/services/{service}/__init__.py'
     )
-    print(f'{app_path}/services/{service}')
-    print(spec)
 
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

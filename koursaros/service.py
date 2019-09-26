@@ -25,7 +25,7 @@ class Service:
         self._pubbers = list()
         self._subbers = list()
 
-        yamls = json.loads(open(app_path + '/.koursaros/yamls.json'))
+        yamls = json.load(open(app_path + '/.koursaros/yamls.json'))
 
         for pipeline, stubs in yamls['pipelines'].items():
             for stub in stubs:
