@@ -1,4 +1,5 @@
 
+import json
 import os
 from .utils import find_app_path
 
@@ -39,26 +40,25 @@ def deploy_pipeline(args):
 
     # 2. Compile yamls
     from .deploy.yamls import compile_yamls
-    compile_yamls(APP_PATH)
+    yamls = compile_yamls(APP_PATH)
 
-    # 2. Check stubs.yaml
+    # 3. Check stubs.yaml
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
-    check_stubs()
-    check_protos()
 
-    from koursaros.utils.yamls import get_connection
-    connection_name = pushargs.connection
-    connection = get_connection(connection_name)
-    check_rabbitmq(*connection)
+    stubs = yamls['pipelines'][args.pipeline]['stubs']
+    services = yamls['services']
+    check_stubs(services, stubs)
+    check_protos(APP_PATH, stubs)
 
-    if pushargs.bind:
-        from .rabbitmq import bind_rabbitmq
-        bind_rabbitmq(pushargs.actions, *connection)
+    # Check rabbitmq connection
+    connection = yamls['connections'][args.connection]
+    check_rabbitmq(**connection)
 
-    if pushargs.all:
-        raise NotImplementedError
-    else:
-        microservices = pushargs.microservices
+    if args.rebind:
+        from .deploy.rabbitmq import bind_rabbitmq
+        bind_rabbitmq([args.pipeline], stubs, **connection)
+
+    raise SystemExit
 
     from koursaros.microservices import run_microservices
     run_microservices(microservices, pushargs.actions, connection_name, *connection)
@@ -171,8 +171,7 @@ def main():
 
     # kctl create
     kctl_create_parser = kctl_subparsers.add_parser(
-        'create',
-        description='create an app, pipeline, service, or model'
+        'create', description='create an app, pipeline, service, or model'
     )
     kctl_create_subparsers = kctl_create_parser.add_subparsers()
     # kctl create app
@@ -190,8 +189,7 @@ def main():
 
     # kctl train
     kctl_train_parser = kctl_subparsers.add_parser(
-        'train',
-        description='train a model'
+        'train', description='train a model'
     )
     kctl_train_subparsers = kctl_train_parser.add_subparsers()
     # kctl train model
@@ -202,32 +200,34 @@ def main():
 
     # kctl deploy
     kctl_deploy_parser = kctl_subparsers.add_parser(
-        'deploy',
-        description='deploy an app or pipeline'
+        'deploy', description='deploy an app or pipeline'
     )
     kctl_deploy_subparsers = kctl_deploy_parser.add_subparsers()
+    c_args = ('-c', '--connection')
+    c_kwargs = {
+        'action': 'store',
+        'help': 'connection parameters to use from connections.yaml'
+    }
+    r_args = ('-r', '--rebind')
+    r_kwargs = {
+        'action': 'store',
+        'help': 'clear and rebind the rabbitmq binds on entrance'
+    }
     # kctl deploy app
     kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
     kctl_deploy_app_parser.set_defaults(func=deploy_app)
-    kctl_deploy_app_parser.add_argument(
-        '-c', '--connection',
-        action='store',
-        help='connection parameters to use from koursaros.yaml'
-    )
+    kctl_deploy_app_parser.add_argument(*c_args, **c_kwargs)
+    kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
     # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     kctl_deploy_pipeline_parser.add_argument('name')
-    kctl_deploy_pipeline_parser.add_argument(
-        '-c', '--connection',
-        action='store',
-        help='connection parameters to use from koursaros.yaml'
-    )
+    kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
+    kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
 
     # kctl pull
     kctl_pull_parser = kctl_subparsers.add_parser(
-        'pull',
-        description='pull an app'
+        'pull', description='pull an app'
     )
     kctl_pull_subparsers = kctl_pull_parser.add_subparsers()
     # kctl pull app
@@ -235,14 +235,10 @@ def main():
     kctl_pull_app_parser.set_defaults(func=pull_app)
     kctl_pull_app_parser.add_argument('name')
     kctl_pull_app_parser.add_argument(
-        '-g', '--git',
-        action='store',
-        help='pull an app from a git directory'
+        '-g', '--git', action='store', help='pull an app from a git directory'
     )
     kctl_pull_app_parser.add_argument(
-        '-d', '--dir',
-        action='store',
-        help='which directory the app is in'
+        '-d', '--dir', action='store', help='which directory the app is in'
     )
 
     args = kctl_parser.parse_args()

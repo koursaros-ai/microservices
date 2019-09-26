@@ -70,3 +70,5 @@ def compile_yamls(app_path):
     with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
         fh.write(json.dumps(yamls, indent=4))
 
+    return yamls
+
