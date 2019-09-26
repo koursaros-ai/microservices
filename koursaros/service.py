@@ -21,7 +21,7 @@ class Service:
 
         app_path = find_app_path(file)
         spec = importlib.util.spec_from_file_location(
-            'messages', f'{app_path}/.koursaros'
+            'messages', f'{app_path}/.koursaros/messages_pb2.py'
         )
 
         module = importlib.util.module_from_spec(spec)
