@@ -21,7 +21,7 @@ def compile_yamls(app_path):
         if 'pipelines' not in yamls:
             yamls['pipelines'] = dict()
 
-        stubs = yaml_safe_load(pipelines + pipeline, 'stubs.yaml')
+        stubs = yaml_safe_load(pipeline, 'stubs.yaml')
         yamls['pipelines'][pipeline] = stubs['stubs']
 
     services = app_path + '/services/'
@@ -29,7 +29,7 @@ def compile_yamls(app_path):
         if 'services' not in yamls:
             yamls['services'] = dict()
 
-        service = yaml_safe_load(services + service, 'services.yaml')
+        service = yaml_safe_load(service, 'services.yaml')
         yamls['services'][service] = service['service']
 
     import json
