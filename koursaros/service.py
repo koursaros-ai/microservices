@@ -16,15 +16,17 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 class Service:
     __slots__ = ['_stubs', '_pubbers', '_subbers']
 
-    def __init__(self, cwd, prefetch=1):
+    def __init__(self, file, name, prefetch=1):
 
-        app_path = find_app_path(cwd)
-        sys.path.append(app_path + '/.koursaros')
-        service = cwd.split('/')[-2]
-        print(cwd)
-        print(app_path)
+        # app_path = find_app_path(cwd)
+        # sys.path.append(app_path + '/.koursaros')
+        # service = cwd.split('/')[-2]
+        print('asdfasdfs')
+        print(__file__)
+        print(__name__)
+        print(file)
+        print(name)
         import os
-        print(os.getcwd())
         self._stubs = dict()
         self._pubbers = list()
         self._subbers = list()
@@ -34,7 +36,7 @@ class Service:
         for pipeline, stubs in yamls['pipelines'].items():
             for stub in stubs:
                 stub = Stub(pipeline, *stub)
-                print(stub.service, service, dir(stub))
+                # print(stub.service, service, dir(stub))
                 if stub.service == service:
                     stub.prefetch = prefetch
                     self._stubs[stub.func_name] = stub
