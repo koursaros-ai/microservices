@@ -1,8 +1,0 @@
-message Number {
-    uint64 number = 1;
-}
-
-message Factors {
-    uint64 number = 1;
-    repeated uint64 factors = 2;
-}

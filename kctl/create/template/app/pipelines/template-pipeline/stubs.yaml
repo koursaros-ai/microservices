@@ -1,4 +1,0 @@
-stubs:
- send: service.request() -> Number                     | factor
- factor: model.factor(Number) -> Factors              | sendback
- sendback: service.receive(Factors)                  ->|

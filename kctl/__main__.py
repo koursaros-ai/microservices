@@ -1,7 +1,14 @@
 
 import os
+from .utils import find_app_path
 
+APP_PATH = find_app_path(os.getcwd())
 __location__ = os.path.dirname(__file__)
+
+
+class KctlError(Exception):
+    pass
+
 
 def allow_keyboard_interrupt(func):
     def wrapper(*args, **kwargs):
@@ -17,7 +24,7 @@ def allow_keyboard_interrupt(func):
 @allow_keyboard_interrupt
 def deploy_app(args):
 
-    raise SystemExit
+    raise NotImplementedError
 
     # 1. Compile koursaros.proto located in koursaros/protos
     from koursaros.protos import codegen
@@ -74,54 +81,65 @@ def deploy_app(args):
 @allow_keyboard_interrupt
 def deploy_pipeline(args):
 
-    raise SystemExit
+    raise NotImplementedError
 
 
 @allow_keyboard_interrupt
 def create_app(args):
 
+    if APP_PATH is not None:
+        raise KctlError('Current working directory is already an app')
 
-    raise SystemExit
-    from .create import create_microservice
-    from .constants import CREATE
+    new_app_path = f'{os.getcwd()}/{args.name}'
 
-
-    create_microservice()
+    from shutil import copytree
+    copytree(f'{__location__}/template/app', new_app_path)
+    print(f'Created app: {new_app_path}')
 
 
 @allow_keyboard_interrupt
 def create_pipeline(args):
+    
+    if APP_PATH is None:
+        raise KctlError('Current working directory is not an app')
 
-    raise SystemExit
-    from .create import create_microservice
-    from .constants import CREATE
+    pipelines_path = APP_PATH + '/pipelines/'
 
+    os.makedirs(pipelines_path, exist_ok=True)
+    new_pipeline_path = pipelines_path + args.name
+
+    from shutil import copytree
+    copytree(f'{__location__}/template/app/pipelines/pipeline', new_pipeline_path)
+    print(f'Created pipeline: {new_pipeline_path}')
 
 
 @allow_keyboard_interrupt
 def create_service(args):
-    from .create.service import main
-    main(args)
 
-    print(args)
-    raise SystemExit
+    if APP_PATH is None:
+        raise KctlError('Current working directory is not an app')
 
+    services_path = APP_PATH + '/services/'
 
-    create_microservice()
+    os.makedirs(services_path, exist_ok=True)
+    new_service_path = services_path + args.name
+
+    from shutil import copytree
+    copytree(f'{__location__}/template/app/services/service', new_service_path)
+    print(f'Created service: {new_service_path}')
 
 
 @allow_keyboard_interrupt
-def create_model(args):
-    raise SystemExit
-    from .create import create_microservice
-    from .constants import CREATE
-
-
-    create_microservice()
+def train_model(args):
+    raise NotImplementedError
 
 
 @allow_keyboard_interrupt
 def pull_app(args):
+
+    if APP_PATH is not None:
+        raise KctlError('Current working directory is already an app')
+
     from subprocess import call
     call(['git', 'clone', args.git, args.name])
 
@@ -214,8 +232,8 @@ def main():
     )
 
     args = kctl_parser.parse_args()
-    # args.func(args)
-    print(__location__)
+    args.func(args)
+
 
 if __name__ == "__main__":
     main()
