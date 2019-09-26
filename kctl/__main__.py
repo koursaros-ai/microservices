@@ -45,7 +45,7 @@ def deploy_pipeline(args):
     # 3. Check stubs.yaml
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
 
-    stubs = yamls['pipelines'][args.pipeline]['stubs']
+    stubs = yamls['pipelines'][args.name]['stubs']
     services = yamls['services']
     check_stubs(services, stubs)
     check_protos(APP_PATH, stubs)
@@ -56,7 +56,7 @@ def deploy_pipeline(args):
 
     if args.rebind:
         from .deploy.rabbitmq import bind_rabbitmq
-        bind_rabbitmq([args.pipeline], stubs, **connection)
+        bind_rabbitmq([args.name], stubs, **connection)
 
     raise SystemExit
 
