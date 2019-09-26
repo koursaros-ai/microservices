@@ -61,12 +61,12 @@ class KctlStderr:
 
     @staticmethod
     def write(record=''):
-        # if record != '\n':
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        log = f'{timestamp} [{BOLD}kctl] {RED}STDERR:{RESET} {record.rstrip()}\n'
+        if record != '\n':
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            log = f'{timestamp} [{BOLD}kctl] {RED}STDERR:{RESET} {record.rstrip()}\n'
 
-        KctlStderr.stderr.write(log)
-        KctlStderr.errfile.write(log)
+            KctlStderr.stderr.write(log)
+            KctlStderr.errfile.write(log)
 
     @staticmethod
     def flush():
