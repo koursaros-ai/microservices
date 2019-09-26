@@ -30,6 +30,7 @@ class Service:
         for pipeline, stubs in yamls['pipelines'].items():
             for stub in stubs:
                 stub = Stub(pipeline, *stub)
+                print(stub.service, service, dir(stub))
                 if stub.service == service:
                     stub.prefetch = prefetch
                     self._stubs[stub.func_name] = stub
