@@ -73,8 +73,26 @@ class KctlStderr:
         pass
 
 
+def write(record=''):
+    if record != '\n':
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        code = sys._getframe(1).f_code
+        name = code.co_name
+        file = code.co_filename[-30:]
+        dots = '...' if len(file) == 30 else ''
+
+        log = (
+            f'{timestamp} [{BOLD}kctl] {GREEN}STDOUT:'
+            f'{RESET} {dots}{file} → ️{name}(): {record}\n'
+        )
+
+        KctlStdout.stdout.write(log)
+        KctlStdout.outfile.write(log)
+
+
 def redirect_out():
-    sys.stdout = KctlStdout(sys.stdout)
+    sys.stdout.write = write
+    # sys.stdout = KctlStdout(sys.stdout)
     sys.stderr = KctlStderr(sys.stderr)
 
 
