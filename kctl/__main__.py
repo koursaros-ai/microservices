@@ -30,6 +30,9 @@ def deploy_app(args):
 @allow_keyboard_interrupt
 def deploy_pipeline(args):
 
+    if APP_PATH is None:
+        raise KctlError('Current working directory is not an app')
+
     # 1. Compile koursaros.proto located in koursaros/protos
     from grpc_tools import protoc
     messages_path = f'{APP_PATH}/messages'
