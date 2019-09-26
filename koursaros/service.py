@@ -7,6 +7,7 @@ import json
 import pika
 import pika.exceptions
 from kctl.utils import find_app_path
+import importlib.util
 
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
@@ -14,12 +15,20 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
 class Service:
-    __slots__ = ['_stubs', '_pubbers', '_subbers']
+    __slots__ = ['_stubs', '_pubbers', '_subbers', 'messages']
 
     def __init__(self, file, prefetch=1):
 
         app_path = find_app_path(file)
-        sys.path.append(app_path + '/.koursaros')
+        spec = importlib.util.spec_from_file_location(
+            'messages', f'{app_path}/.koursaros'
+        )
+
+        module = importlib.util.module_from_spec(spec)
+        print(module)
+        print(dir(module))
+        raise SystemExit
+
         service = file.split('/')[-2]
         self._stubs = dict()
         self._pubbers = list()
@@ -124,7 +133,6 @@ class Stub:
     def rabbitmq_connect(self):
         while True:
             try:
-                print(self.service, self.password)
                 credentials = pika.credentials.PlainCredentials(
                     self.service,
                     self.password
