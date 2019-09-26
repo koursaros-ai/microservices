@@ -223,7 +223,7 @@ def main():
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     kctl_deploy_pipeline_parser.add_argument('name')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
-    kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
+    kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
 
     # kctl pull
     kctl_pull_parser = kctl_subparsers.add_parser(
