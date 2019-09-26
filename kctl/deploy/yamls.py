@@ -1,5 +1,6 @@
 
 import yaml
+from glob import glob
 
 
 def yaml_safe_load(root, file):
@@ -16,7 +17,7 @@ def compile_yamls(app_path):
     yamls.update(**yam)
 
     pipelines = app_path + '/pipelines/'
-    for pipeline in os.listdir(pipelines):
+    for pipeline in glob(pipelines + '*'):
         if 'pipelines' not in yamls:
             yamls['pipelines'] = dict()
 
@@ -24,7 +25,7 @@ def compile_yamls(app_path):
         yamls['pipelines'][pipeline] = stubs['stubs']
 
     services = app_path + '/services/'
-    for service in os.listdir(services):
+    for service in glob(services + '*'):
         if 'services' not in yamls:
             yamls['services'] = dict()
 
