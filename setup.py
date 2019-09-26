@@ -1,8 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='koursaros',
-    packages=['kctl', 'koursaros'],
+    packages=find_packages(),
     version='0.0.1',
     license='MIT',
     description='Koursaros is a distributed, cloud-'
