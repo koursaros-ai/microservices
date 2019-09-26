@@ -1,4 +1,3 @@
 stubs:
- send: service.request() -> Notification                    | worker
- worker: worker.process(Notification) -> Notification       | receive
+ send: service.request() -> Notification                    | receive
  receive: service.receive(Notification)                   ->|
