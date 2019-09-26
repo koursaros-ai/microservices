@@ -94,6 +94,7 @@ def create_app(args):
 
     from shutil import copytree
     copytree(f'{__location__}/create/template/app', new_app_path)
+    os.makedirs(f'{new_app_path}/.koursaros', exist_ok=True)
     print(f'Created app: {new_app_path}')
 
 
