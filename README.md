@@ -35,8 +35,8 @@ Koursaros leverages a general-purpose microservice / broker architecture to enab
   <tr>
     <td><a href="fever.ai">fever.ai</a>
     <td>0.7396 (2nd)</td>
-    <td><a href='TODO'>An Automated Fact Checker in Era of Fake News</a></td>
-    <td><a href='TODO'>Scorer</a>, <a href='TODO'>Inference</a>, <a href='TODO'>Elastic Search (BM25)</a></td>
+    <td><a href='https://koursaros-ai.github.io/Live-Fact-Checking-Algorithms-in-the-Era-of-Fake-News/'>An Automated Fact Checker in Era of Fake News</a></td>
+    <td>coming soon</td>
   </tr>
 </table>
 
