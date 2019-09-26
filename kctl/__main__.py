@@ -41,9 +41,9 @@ def deploy_pipeline(args):
 
     protoc.main((
         '',
-        f'-I={APP_PATH}/pipelines/{args.name}',
+        f'-I={APP_PATH}/pipelines/',
         f'--python_out={messages_path}',
-        f'{APP_PATH}/pipelines/{args.name}/messages.proto',
+        f'{APP_PATH}/pipelines/*/*.proto',
     ))
 
     open(f'{APP_PATH}/pipelines/{args.name}/__init__.py', 'w')
