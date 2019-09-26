@@ -34,7 +34,7 @@ def compile_yamls(app_path):
             if 'services' not in yamls:
                 yamls['services'] = dict()
 
-            service = yaml_safe_load(services + service, 'services.yaml')
+            service = yaml_safe_load(services + service, 'service.yaml')
             yamls['services'][service] = service['service']
 
     import json
