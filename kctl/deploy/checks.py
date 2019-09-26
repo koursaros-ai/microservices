@@ -89,4 +89,34 @@ def check_rabbitmq(host='localhost', port=5672, username='root', password=None, 
         print(f'Successful rabbitmq channel: {bold_ip}')
         connection.close()
     except Exception as exc:
-        raise ConnectionError(f'Failed pika connection on: {bold_ip}\n{exc.args}')
+        from sys import platform
+
+        print(f'Failed pika connection on: {bold_ip}\n{exc.args}')
+
+        if platform == "linux" or platform == "linux2":
+            import distro
+
+            dist, version, codename = distro.linux_distribution()
+            if dist in ('Ubuntu', 'Debian'):
+                print('Please install rabbitmq:\n\n' +
+                      BOLD.format('sudo apt-get install rabbitmq-server -y --fix-missing'))
+
+            elif dist in ('RHEL', 'CentOS', 'Fedora'):
+                print('Please install rabbitmq:\n\n' +
+                      BOLD.format('wget https://www.rabbitmq.com/releases/'
+                                  'rabbitmq-server/v3.6.1/rabbitmq-server-3.6.1-1.noarch.rpmn\n'
+                                  'sudo yum install rabbitmq-server-3.6.1-1.noarch.rpm'))
+            else:
+                print('Please install rabbitmq')
+
+        elif platform == "darwin":
+            print('Please install rabbitmq:\n\n' +
+                  BOLD.format('brew install rabbitmq'))
+
+        elif platform == "win32":
+            print('Please install rabbitmq:\n\n' +
+                  BOLD.format('choco install rabbitmq'))
+            raise NotImplementedError
+
+        raise SystemExit
+
