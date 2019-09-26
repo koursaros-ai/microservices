@@ -2,6 +2,7 @@
 import yaml
 from glob import glob
 
+INVALID_PIPELINE_PREFIXES = ('_', '.')
 
 def yaml_safe_load(root, file):
     with open(root + '/' + file) as fh:
@@ -18,7 +19,7 @@ def compile_yamls(app_path):
 
     pipelines = app_path + '/pipelines/*/'
     for pipeline in glob(pipelines):
-        if not pipeline.startswith('_', '.'):
+        if not pipeline.startswith(INVALID_PIPELINE_PREFIXES):
             if 'pipelines' not in yamls:
                 yamls['pipelines'] = dict()
 
@@ -28,7 +29,7 @@ def compile_yamls(app_path):
 
     services = app_path + '/services/*/'
     for service in glob(services):
-        if not service.startswith('_', '.'):
+        if not service.startswith(INVALID_PIPELINE_PREFIXES):
             if 'services' not in yamls:
                 yamls['services'] = dict()
 
