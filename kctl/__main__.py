@@ -47,6 +47,8 @@ def deploy_pipeline(args):
         f'{APP_PATH}/pipelines/{args.name}/messages.proto',
     ))
 
+    open(f'{APP_PATH}/pipelines/{args.name}/__init__.py', 'w')
+
 
     raise SystemExit
 
