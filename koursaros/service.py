@@ -21,6 +21,7 @@ class Service:
         app_path = find_app_path(cwd)
         sys.path.append(app_path + '/.koursaros')
         service = cwd.split('/')[-2]
+        print(cwd)
         self._stubs = dict()
         self._pubbers = list()
         self._subbers = list()
