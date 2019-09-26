@@ -41,12 +41,10 @@ def deploy_pipeline(args):
 
     protoc.main((
         '',
-        f'-I={APP_PATH}/pipelines/',
-        f'--python_out={messages_path}',
-        f'{APP_PATH}/pipelines/{args.name}/messages.proto',
+        f'-I={APP_PATH}',
+        f'--python_out={APP_PATH}/messages',
+        f'{APP_PATH}/messages.proto',
     ))
-
-    open(f'{APP_PATH}/pipelines/{args.name}/__init__.py', 'w')
 
 
     raise SystemExit
