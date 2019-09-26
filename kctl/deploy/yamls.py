@@ -16,8 +16,8 @@ def compile_yamls(app_path):
     yam = yaml_safe_load(app_path, 'connections.yaml')
     yamls.update(**yam)
 
-    pipelines = app_path + '/pipelines/'
-    for pipeline in glob(pipelines + '*'):
+    pipelines = app_path + '/pipelines/*/'
+    for pipeline in glob(pipelines):
         if 'pipelines' not in yamls:
             yamls['pipelines'] = dict()
 
@@ -25,8 +25,8 @@ def compile_yamls(app_path):
         stubs = yaml_safe_load(pipeline, 'stubs.yaml')
         yamls['pipelines'][pipeline] = stubs['stubs']
 
-    services = app_path + '/services/'
-    for service in glob(services + '*'):
+    services = app_path + '/services/*/'
+    for service in glob(services):
         if 'services' not in yamls:
             yamls['services'] = dict()
 
