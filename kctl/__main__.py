@@ -205,8 +205,8 @@ def main():
     kctl_deploy_subparsers = kctl_deploy_parser.add_subparsers()
     c_args = ('-c', '--connection')
     c_kwargs = {
-        'action': 'store',
-        'help': 'connection parameters to use from connections.yaml'
+        'action': 'store', 'required': True,
+        'help': 'connection parameters to use from connections.yaml',
     }
     r_args = ('-r', '--rebind')
     r_kwargs = {
