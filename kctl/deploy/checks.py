@@ -2,8 +2,6 @@
 from koursaros.utils.yamls import get_actions
 from logging import getLogger
 
-log = getLogger('kctl')
-
 CHECK_TIMEOUT = 10
 
 ACTION_MATCH = r'^[a-zA-Z0-9_]*$'
@@ -20,14 +18,13 @@ DOES_NOT_SATISFY = '''
 '''
 
 
-def check_stubs():
+def check_stubs(app_path):
     import re
-    from koursaros.utils import get_microservice_names
-    from koursaros.constants import MICROSERVICES_PATH
+    import json
 
-    valid_microservices = get_microservice_names(all=True)
+    yamls = app_path + '/.koursaros/yamls.json'
 
-    for action, stubs in get_actions().items():
+    for pipeline, stubs in json.load(open(yamls))['pipelines'].items():
         pins_in = set()
         pins_out = set()
         pins = dict()

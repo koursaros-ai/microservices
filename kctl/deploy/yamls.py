@@ -11,6 +11,39 @@ def yaml_safe_load(root, file):
         return yaml.safe_load(fh)
 
 
+def parse_stub_string(stub_string):
+    import re
+    s = r'\s*'
+    ns = r'([^\s]*)'
+    nsp = r'([^\s]+)'
+    full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
+    full_regex = re.compile(full_regex)
+    example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
+    groups = full_regex.match(stub_string)
+
+    if not groups:
+        raise ValueError(f'\n"{stub_string}" does not match stub string regex{example}')
+
+    groups = groups.groups()
+    groups = groups[0].split('.') + list(groups[1:])
+    groups = tuple(group if group else None for group in groups)
+
+    return groups
+
+
+def get_actions():
+    actions_yaml = get_actions_yaml()
+    actions = dict()
+
+    for action_name, stubs_config in actions_yaml.items():
+        if not actions.get(action_name):
+            actions[action_name] = []
+
+        stubs_config = stubs_config['stubs']
+
+    return actions
+
+
 def compile_yamls(app_path):
     yamls = dict()
 
@@ -23,9 +56,20 @@ def compile_yamls(app_path):
         if not pipeline.startswith(INVALID_PIPELINE_PREFIXES):
             if 'pipelines' not in yamls:
                 yamls['pipelines'] = dict()
+                
+            if pipeline not in yamls['pipelines']:
+                yamls['pipelines'] = []
 
             stubs = yaml_safe_load(pipelines + pipeline, 'stubs.yaml')
-            yamls['pipelines'][pipeline] = stubs['stubs']
+
+            for pin, stub_strings in stubs['stubs'].items():
+
+                if isinstance(stub_strings, str):
+                    stub_strings = [stub_strings]
+
+                for stub_string in stub_strings:
+                    stub = (pin, *parse_stub_string(stub_string))
+                    yamls['pipelines'][pipeline].append(stub)
 
     services = app_path + '/services/'
     for service in next(os.walk(services))[1]:

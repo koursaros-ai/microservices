@@ -41,8 +41,6 @@ def deploy_pipeline(args):
     from .deploy.yamls import compile_yamls
     compile_yamls(APP_PATH)
 
-
-    raise SystemExit
     # 2. Check stubs.yaml
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
     check_stubs()
