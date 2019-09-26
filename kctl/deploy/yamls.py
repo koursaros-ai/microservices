@@ -58,7 +58,7 @@ def compile_yamls(app_path):
                 yamls['pipelines'] = dict()
 
             if pipeline not in yamls['pipelines']:
-                yamls[pipeline] = []
+                yamls['pipelines'][pipeline] = []
 
             stubs = yaml_safe_load(pipelines + pipeline, 'stubs.yaml')
 
