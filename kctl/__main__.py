@@ -223,7 +223,7 @@ def main():
     }
     r_args = ('-r', '--rebind')
     r_kwargs = {
-        'action': 'store',
+        'action': 'store_true',
         'help': 'clear and rebind the rabbitmq binds on entrance'
     }
     # kctl deploy app
