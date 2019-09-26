@@ -83,7 +83,7 @@ class Service:
                 t = threading.Thread(target=stub.func, args=(stub.publish,))
                 print(f'Starting thread {t.getName()}')
                 t.start()
-                threads.append(t)
+                threads.append((t, stub))
 
         # subbers
         for stub in self._subbers:
