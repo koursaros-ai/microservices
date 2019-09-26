@@ -23,7 +23,7 @@ class Service:
         sys.path.append(f'{app_path}/.koursaros/')
         module = __import__('messages_pb2')
 
-        self.messages.__dict__.update(module.__dict__)
+        self.messages = module
         print(dir(self.messages))
         # for m in dir(module):
         #     a = getattr(module, m, None)
