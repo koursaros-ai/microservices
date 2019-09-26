@@ -99,7 +99,7 @@ def create_app(args):
 
 @allow_keyboard_interrupt
 def create_pipeline(args):
-    
+
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
 
@@ -180,11 +180,18 @@ def main():
     kctl_create_service_parser = kctl_create_subparsers.add_parser('service')
     kctl_create_service_parser.set_defaults(func=create_service)
     kctl_create_service_parser.add_argument('name')
-    # kctl create model
-    kctl_create_model_parser = kctl_create_subparsers.add_parser('model')
-    kctl_create_model_parser.set_defaults(func=create_model)
-    kctl_create_model_parser.add_argument('name')
-    kctl_create_model_parser.add_argument('--base_image', default='koursaros-base')
+
+    # kctl train
+    kctl_train_parser = kctl_subparsers.add_parser(
+        'train',
+        description='train a model'
+    )
+    kctl_train_subparsers = kctl_train_parser.add_subparsers()
+    # kctl train model
+    kctl_train_model_parser = kctl_train_subparsers.add_parser('model')
+    kctl_train_model_parser.set_defaults(func=train_model)
+    kctl_train_model_parser.add_argument('name')
+    kctl_train_model_parser.add_argument('--base_image', default='koursaros-base')
 
     # kctl deploy
     kctl_deploy_parser = kctl_subparsers.add_parser(
