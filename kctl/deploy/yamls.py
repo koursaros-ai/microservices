@@ -1,8 +1,10 @@
 
 import yaml
-from glob import glob
+import os
+import json
 
 INVALID_PIPELINE_PREFIXES = ('_', '.')
+
 
 def yaml_safe_load(root, file):
     with open(root + '/' + file) as fh:
@@ -10,8 +12,6 @@ def yaml_safe_load(root, file):
 
 
 def compile_yamls(app_path):
-    import os
-
     yamls = dict()
 
     yam = yaml_safe_load(app_path, 'connections.yaml')
@@ -37,5 +37,6 @@ def compile_yamls(app_path):
             yam = yaml_safe_load(services + service, 'service.yaml')
             yamls['services'][service] = yam['service']
 
-    import json
-    print(json.dumps(yamls,indent=4))
+    with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
+        fh.write(json.dumps(yamls))
+
