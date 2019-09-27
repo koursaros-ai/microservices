@@ -12,7 +12,6 @@ def deploy_pipelines(app_path, services):
     try:
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
-            print(cmd)
             p = Popen(cmd)
             pids.append((p.pid, service))
 
