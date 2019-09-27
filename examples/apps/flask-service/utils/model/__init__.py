@@ -1,9 +1,7 @@
 from fairseq.models.roberta import RobertaModel
 from fairseq.data.data_utils import collate_tokens
-from logging import getLogger
 
 log = getLogger('model')
-
 
 class Roberta:
 
