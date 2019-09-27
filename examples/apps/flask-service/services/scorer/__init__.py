@@ -43,15 +43,15 @@ service = Service(__file__)
 @service.stub
 def rerank(claim_with_lines, publish):
     print('ranking')
-    def score(lines):
-        claims = [claim_with_lines.claim.text] * len(lines)
-        return regression_model.classify(claims, lines)
-
-    results = []
-    for scores, inputs in batch_fn(BATCH_SIZE, score, claim_with_lines.lines):
-        for score, line in zip(scores, inputs):
-            results.append((score, line))
-    results.sort(key=lambda x: x[0], reverse=True)
+    # def score(lines):
+    #     claims = [claim_with_lines.claim.text] * len(lines)
+    #     return regression_model.classify(claims, lines)
+    #
+    # results = []
+    # for scores, inputs in batch_fn(BATCH_SIZE, score, claim_with_lines.lines):
+    #     for score, line in zip(scores, inputs):
+    #         results.append((score, line))
+    # results.sort(key=lambda x: x[0], reverse=True)
     print("publishing")
     publish(service.messages.ClaimWithLines(
         claim=claim_with_lines.claim,
@@ -61,7 +61,7 @@ def rerank(claim_with_lines, publish):
 
 def main():
     print('running main scorer')
-    # import fairseq
+    # import torch
 
     threads = service.run()
     # threads.append(load_model_thread)
