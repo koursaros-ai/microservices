@@ -8,7 +8,9 @@ def run_service(app_path, service):
 
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    module.main()
+    main = getattr(module, 'main', None)
+    if main:
+        main()
 
 
 def deploy_pipelines(app_path, services):

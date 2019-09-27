@@ -11,4 +11,3 @@ def piggify(sentence, publish):
         pig_latin=' '.join(pig_latin)
     )
     publish(sentence)
-
