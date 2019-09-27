@@ -89,6 +89,8 @@ class Service:
     threads = []
     def __init__(self, file, prefetch=1):
 
+        class Stubs: pass
+        self.stubs = Stubs
         app_path = find_app_path(file)
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
