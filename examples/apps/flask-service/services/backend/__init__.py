@@ -7,7 +7,7 @@ import os
 
 service = Service(__file__)
 print(os.getcwd())
-app = Flask(__name__, static_folder='flask-service/fact-check/fever/build')
+app = Flask(__name__, static_folder='/home/jp954/koursaros/examples/apps/flask-service/fact-check/fever/build')
 sentences = dict()
 
 
