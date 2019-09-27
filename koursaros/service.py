@@ -62,7 +62,7 @@ class AbstractStub:
         queue = f'{self.service}.{self.name}'
         self.channel.basic_consume(
             queue=queue,
-            on_message_callback=self.consume_callback
+            on_message_callback=functools.partial(self.consume_callback, self)
         )
         print(f'"{self.name}" listening on {queue}...')
         self.channel.start_consuming()
