@@ -2,8 +2,8 @@
 import os
 from .utils import find_app_path
 
-APP_PATH = find_app_path(os.getcwd())
-#APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
+# APP_PATH = find_app_path(os.getcwd())
+APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
 __location__ = os.path.dirname(__file__)
 
 
