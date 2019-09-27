@@ -39,7 +39,7 @@ def inference(claim_with_lines, publish):
     claim_text = claim_with_lines.claim.text
     evidence = claim_with_lines.lines[0]
 
-    label = model.classify(claim_text, evidence, probs=False)
+    label = model.classify([claim_text], [evidence], probs=False)[0]
 
     evaluated_claim = service.messages.EvaluatedClaim(
         claim = claim_with_lines.claim,
