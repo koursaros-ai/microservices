@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0emessages.proto\"!\n\x05\x43laim\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\"=\n\x11\x43laimWithArticles\x12\x15\n\x05\x63laim\x18\x01 \x01(\x0b\x32\x06.Claim\x12\x11\n\tfever_ids\x18\x02 \x03(\tb\x06proto3')
+  serialized_pb=_b('\n\x0emessages.proto\"!\n\x05\x43laim\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\"5\n\x0e\x43laimWithLines\x12\x15\n\x05\x63laim\x18\x01 \x01(\x0b\x32\x06.Claim\x12\x0c\n\x04line\x18\x02 \x03(\t\"H\n\x0e\x45valuatedClaim\x12\x15\n\x05\x63laim\x18\x01 \x01(\x0b\x32\x06.Claim\x12\x10\n\x08\x65vidence\x18\x02 \x03(\t\x12\r\n\x05label\x18\x03 \x01(\tb\x06proto3')
 )
 
 
@@ -64,22 +64,22 @@ _CLAIM = _descriptor.Descriptor(
 )
 
 
-_CLAIMWITHARTICLES = _descriptor.Descriptor(
-  name='ClaimWithArticles',
-  full_name='ClaimWithArticles',
+_CLAIMWITHLINES = _descriptor.Descriptor(
+  name='ClaimWithLines',
+  full_name='ClaimWithLines',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='claim', full_name='ClaimWithArticles.claim', index=0,
+      name='claim', full_name='ClaimWithLines.claim', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='fever_ids', full_name='ClaimWithArticles.fever_ids', index=1,
+      name='line', full_name='ClaimWithLines.line', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -98,12 +98,59 @@ _CLAIMWITHARTICLES = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=53,
-  serialized_end=114,
+  serialized_end=106,
 )
 
-_CLAIMWITHARTICLES.fields_by_name['claim'].message_type = _CLAIM
+
+_EVALUATEDCLAIM = _descriptor.Descriptor(
+  name='EvaluatedClaim',
+  full_name='EvaluatedClaim',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='claim', full_name='EvaluatedClaim.claim', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='evidence', full_name='EvaluatedClaim.evidence', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='label', full_name='EvaluatedClaim.label', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=108,
+  serialized_end=180,
+)
+
+_CLAIMWITHLINES.fields_by_name['claim'].message_type = _CLAIM
+_EVALUATEDCLAIM.fields_by_name['claim'].message_type = _CLAIM
 DESCRIPTOR.message_types_by_name['Claim'] = _CLAIM
-DESCRIPTOR.message_types_by_name['ClaimWithArticles'] = _CLAIMWITHARTICLES
+DESCRIPTOR.message_types_by_name['ClaimWithLines'] = _CLAIMWITHLINES
+DESCRIPTOR.message_types_by_name['EvaluatedClaim'] = _EVALUATEDCLAIM
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Claim = _reflection.GeneratedProtocolMessageType('Claim', (_message.Message,), {
@@ -113,12 +160,19 @@ Claim = _reflection.GeneratedProtocolMessageType('Claim', (_message.Message,), {
   })
 _sym_db.RegisterMessage(Claim)
 
-ClaimWithArticles = _reflection.GeneratedProtocolMessageType('ClaimWithArticles', (_message.Message,), {
-  'DESCRIPTOR' : _CLAIMWITHARTICLES,
+ClaimWithLines = _reflection.GeneratedProtocolMessageType('ClaimWithLines', (_message.Message,), {
+  'DESCRIPTOR' : _CLAIMWITHLINES,
   '__module__' : 'messages_pb2'
-  # @@protoc_insertion_point(class_scope:ClaimWithArticles)
+  # @@protoc_insertion_point(class_scope:ClaimWithLines)
   })
-_sym_db.RegisterMessage(ClaimWithArticles)
+_sym_db.RegisterMessage(ClaimWithLines)
+
+EvaluatedClaim = _reflection.GeneratedProtocolMessageType('EvaluatedClaim', (_message.Message,), {
+  'DESCRIPTOR' : _EVALUATEDCLAIM,
+  '__module__' : 'messages_pb2'
+  # @@protoc_insertion_point(class_scope:EvaluatedClaim)
+  })
+_sym_db.RegisterMessage(EvaluatedClaim)
 
 
 # @@protoc_insertion_point(module_scope)

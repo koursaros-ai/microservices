@@ -1,4 +1,4 @@
 stubs:
  send: backend.send_sentence(Claim) -> Claim                 | retrieve
- retrieve: elastic.get_articles(Claim) -> ClaimWithArticles  | receive
- receive: backend.receive(ClaimWithArticles)               ->|
+ retrieve: elastic.get_articles(Claim) -> ClaimWithLines     | receive
+ receive: backend.receive(ClaimWithLines)                  ->|

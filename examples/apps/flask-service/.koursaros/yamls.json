@@ -44,6 +44,11 @@
             "from": "python3-slim:latest",
             "image": "example/image",
             "replicas": 1
+        },
+        "scorer": {
+            "from": "python3-slim:latest",
+            "image": "example/image",
+            "replicas": 1
         }
     }
 }

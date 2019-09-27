@@ -1,4 +1,5 @@
 from koursaros import Service
+from utils.database.psql import Conn
 import requests
 import json
 import time
@@ -180,9 +181,23 @@ def get_articles(claim, publish):
     hits = json.loads(res)['hits']['hits']
     fever_ids = [hit['_source']['fever_id'] for hit in hits]
 
-    results = service.messages.ClaimWithArticles(
+    conn = Conn(
+        host=POSTGRES_HOST,
+        user=USER,
+        password=PASSWORD,
+        dbname=DBNAME,
+        sslmode=SSLMODE,
+        cert_path=CERT_PATH
+    )
+
+    rows = conn.query(f'''
+    select text from wiki.lines l join wiki.articles a on l.article_id = a.id 
+    where a.fever id in {','.join(["'"+ fever_id + "'" for fever_id in fever_ids])}
+    ''')
+    lines = [row[0] for row in rows]
+    results = service.messages.ClaimWithLines(
         claim=claim,
-        fever_ids=fever_ids
+        lines=lines
     )
     publish(results)
 

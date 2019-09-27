@@ -5,7 +5,13 @@ message Claim {
     string text = 2;
 }
 
-message ClaimWithArticles {
+message ClaimWithLines {
     Claim claim = 1;
-    repeated string fever_ids = 2;
+    repeated string line = 2;
+}
+
+message EvaluatedClaim {
+    Claim claim = 1;
+    repeated string evidence = 2;
+    string label = 3;
 }
