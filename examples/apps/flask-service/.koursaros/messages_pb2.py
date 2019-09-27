@@ -20,28 +20,28 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0emessages.proto\"$\n\x08Sentence\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\";\n\tPiggified\x12\x1b\n\x08sentence\x18\x01 \x01(\x0b\x32\t.Sentence\x12\x11\n\tpig_latin\x18\x02 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x0emessages.proto\"!\n\x05\x43laim\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04text\x18\x02 \x01(\t\"=\n\x11\x43laimWithArticles\x12\x15\n\x05\x63laim\x18\x01 \x01(\x0b\x32\x06.Claim\x12\x11\n\tfever_ids\x18\x02 \x03(\tb\x06proto3')
 )
 
 
 
 
-_SENTENCE = _descriptor.Descriptor(
-  name='Sentence',
-  full_name='Sentence',
+_CLAIM = _descriptor.Descriptor(
+  name='Claim',
+  full_name='Claim',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='Sentence.id', index=0,
+      name='id', full_name='Claim.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='text', full_name='Sentence.text', index=1,
+      name='text', full_name='Claim.text', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -60,28 +60,28 @@ _SENTENCE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=18,
-  serialized_end=54,
+  serialized_end=51,
 )
 
 
-_PIGGIFIED = _descriptor.Descriptor(
-  name='Piggified',
-  full_name='Piggified',
+_CLAIMWITHARTICLES = _descriptor.Descriptor(
+  name='ClaimWithArticles',
+  full_name='ClaimWithArticles',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='sentence', full_name='Piggified.sentence', index=0,
+      name='claim', full_name='ClaimWithArticles.claim', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='pig_latin', full_name='Piggified.pig_latin', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='fever_ids', full_name='ClaimWithArticles.fever_ids', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -97,28 +97,28 @@ _PIGGIFIED = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=56,
-  serialized_end=115,
+  serialized_start=53,
+  serialized_end=114,
 )
 
-_PIGGIFIED.fields_by_name['sentence'].message_type = _SENTENCE
-DESCRIPTOR.message_types_by_name['Sentence'] = _SENTENCE
-DESCRIPTOR.message_types_by_name['Piggified'] = _PIGGIFIED
+_CLAIMWITHARTICLES.fields_by_name['claim'].message_type = _CLAIM
+DESCRIPTOR.message_types_by_name['Claim'] = _CLAIM
+DESCRIPTOR.message_types_by_name['ClaimWithArticles'] = _CLAIMWITHARTICLES
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-Sentence = _reflection.GeneratedProtocolMessageType('Sentence', (_message.Message,), {
-  'DESCRIPTOR' : _SENTENCE,
+Claim = _reflection.GeneratedProtocolMessageType('Claim', (_message.Message,), {
+  'DESCRIPTOR' : _CLAIM,
   '__module__' : 'messages_pb2'
-  # @@protoc_insertion_point(class_scope:Sentence)
+  # @@protoc_insertion_point(class_scope:Claim)
   })
-_sym_db.RegisterMessage(Sentence)
+_sym_db.RegisterMessage(Claim)
 
-Piggified = _reflection.GeneratedProtocolMessageType('Piggified', (_message.Message,), {
-  'DESCRIPTOR' : _PIGGIFIED,
+ClaimWithArticles = _reflection.GeneratedProtocolMessageType('ClaimWithArticles', (_message.Message,), {
+  'DESCRIPTOR' : _CLAIMWITHARTICLES,
   '__module__' : 'messages_pb2'
-  # @@protoc_insertion_point(class_scope:Piggified)
+  # @@protoc_insertion_point(class_scope:ClaimWithArticles)
   })
-_sym_db.RegisterMessage(Piggified)
+_sym_db.RegisterMessage(ClaimWithArticles)
 
 
 # @@protoc_insertion_point(module_scope)

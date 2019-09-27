@@ -5,6 +5,16 @@ import time
 
 service = Service(__file__)
 
+GIT_PATH = '~/Desktop/koursaros-old'
+
+DBNAME = 'fever'
+USER = 'postgres'
+HOST = 'localhost'
+PASSWORD = 'pharmasee'
+SSLMODE = 'verify-ca'
+CERT_PATH = f'{GIT_PATH}/credentials/postgres.pem'
+POSTGRES_HOST = '54.196.150.193'
+
 HEADINGS = {"Content-Type": "application/json"}
 MAPPINGS = {
     "mappings": {
@@ -172,7 +182,7 @@ def get_articles(claim, publish):
 
     results = service.messages.ClaimWithArticles(
         claim=claim,
-        articles=fever_ids
+        fever_ids=fever_ids
     )
     publish(results)
 

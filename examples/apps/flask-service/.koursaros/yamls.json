@@ -7,35 +7,35 @@
         "password": "guest"
     },
     "pipelines": {
-        "piggify": [
+        "claim_check": [
             [
                 "send",
                 "backend",
                 "send_sentence",
-                "Sentence",
-                "Sentence",
-                "piggify"
+                "Claim",
+                "Claim",
+                "retrieve"
             ],
             [
-                "piggify",
-                "pig",
-                "piggify",
-                "Sentence",
-                "Piggified",
+                "retrieve",
+                "elastic",
+                "get_articles",
+                "Claim",
+                "ClaimWithArticles",
                 "receive"
             ],
             [
                 "receive",
                 "backend",
                 "receive",
-                "Piggified",
+                "ClaimWithArticles",
                 null,
                 null
             ]
         ]
     },
     "services": {
-        "pig": {
+        "elastic": {
             "from": "python3-slim:latest",
             "image": "example/image",
             "replicas": 1

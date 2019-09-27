@@ -23,7 +23,7 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
 
-    sentence = service.messages.Sentence(id=sentence_id, text=text)
+    sentence = service.messages.Claim(id=sentence_id, text=text)
     send_sentence(sentence)
     return jsonify({
         "status": "success",
@@ -37,9 +37,9 @@ def send_sentence(sentence, publish):
 
 
 @service.stub
-def receive(piggified, publish):
+def receive(evlauated, publish):
     global sentences
-    sentences[piggified.sentence.id].put(piggified.pig_latin)
+    sentences[evlauated.claim.id].put([id for id in evlauated.fever_ids])
 
 
 def main():
