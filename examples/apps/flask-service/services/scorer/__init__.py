@@ -29,7 +29,7 @@ service = Service(__file__)
 
 
 @service.stub
-def rank(claim_with_lines, publish):
+def rerank(claim_with_lines, publish):
     # print('ranking')
     # def score(lines):
     #     claims = [claim_with_lines.claim.text] * len(lines)
