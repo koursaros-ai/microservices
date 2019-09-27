@@ -4,7 +4,7 @@ import sys
 
 sys.path.append(os.getcwd())
 from utils.buffer import batch_fn
-from utils.bucket import download_and_unzip
+# from utils.bucket import download_and_unzip
 from utils.model import Roberta
 
 #
