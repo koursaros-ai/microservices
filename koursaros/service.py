@@ -120,7 +120,7 @@ class Service:
     def run(self):
 
         threads = []
-        for stub in self.stubs:
+        for stub in self.stubs.values():
             print(self.stubs)
             t = threading.Thread(target=stub.consume)
             print(f'Starting thread {t.getName()}: "{stub.name}"')
