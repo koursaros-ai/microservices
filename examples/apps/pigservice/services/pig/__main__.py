@@ -13,15 +13,5 @@ def piggify(sentence, publish):
     publish(piggified)
 
 
-def main():
-    threads = service.run()
-
-    for t in threads:
-        t.start()
-
-    for t in threads:
-        t.join()
-
-
 if __name__ == "__main__":
-    main()
+    service.run()

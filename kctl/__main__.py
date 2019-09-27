@@ -165,7 +165,7 @@ def pull_app(args):
 
 def main():
     from .logger import redirect_out
-    redirect_out()
+    redirect_out('kctl')
 
     import argparse
     from .constants import DESCRIPTION

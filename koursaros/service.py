@@ -11,7 +11,6 @@ from kctl.logger import redirect_out
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
-redirect_out()
 
 
 class Service:
@@ -23,6 +22,7 @@ class Service:
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
         service = file.split('/')[-2]
+        redirect_out(service)
 
         self.stubs = dict()
 
@@ -112,6 +112,8 @@ class Service:
         for name, stub in self.stubs.items():
             t = threading.Thread(target=stub.consume)
             print(f'Starting thread {t.getName()}: "{name}"')
+            t.start()
             threads.append(t)
 
-        return threads
+        for t in threads:
+            t.join()
