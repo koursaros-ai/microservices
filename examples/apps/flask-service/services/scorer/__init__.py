@@ -62,8 +62,8 @@ def main():
     print('running main scorer')
     threads = service.run()
 
-    # from fairseq.models.roberta import RobertaModel
-    # from fairseq.data.data_utils import collate_tokens
+    from fairseq.models.roberta import RobertaModel
+    from fairseq.data.data_utils import collate_tokens
 
     for t in threads:
         print('starting thread scorer')
