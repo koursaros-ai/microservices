@@ -171,7 +171,7 @@ def piggify(claim, publish):
     fever_ids = [hit['_source']['fever_id'] for hit in hits]
 
     piggified = service.messages.Piggified(
-        sentence=claim.text,
+        sentence=claim,
         pig_latin=' '.join(fever_ids)
     )
     publish(piggified)
