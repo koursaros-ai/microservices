@@ -211,6 +211,3 @@ def main():
 
     for t in threads:
         t.join()
-
-if __name__ == '__main__':
-    main()
