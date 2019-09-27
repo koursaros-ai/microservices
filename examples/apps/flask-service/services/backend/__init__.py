@@ -1,5 +1,5 @@
 from koursaros import Service
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 from queue import Queue
 import threading
 import uuid
@@ -14,8 +14,7 @@ sentences = dict()
 
 @app.route('/')
 def serve():
-    return send_from_directory(app.static_folder, 'index.html')
-
+    return render_template('index.html')
 
 
 @app.route('/query')
