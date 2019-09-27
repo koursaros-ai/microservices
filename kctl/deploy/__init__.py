@@ -6,21 +6,9 @@ def run_service(app_path, service):
 
     sys.path.insert(0, app_path)
 
-    print(sys.path)
-
-    mod = __import__('services', fromlist=['pig'])
-
-    print(dir(mod))
+    module = __import__('services', fromlist=[service])
+    print(module)
     raise SystemExit
-
-    spec = importlib.util.spec_from_file_location(f'.', app_path)
-    print(dir(spec))
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    print(dir(module))
-    raise SystemExit
-
     main = getattr(module, 'main', None)
     if main:
         main()
