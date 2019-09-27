@@ -14,17 +14,21 @@ def run_service(app_path, service, stubs):
     threads = []
     if main:
         t = Thread(target=main)
+        print(f'Starting thread {t.getName()}: main')
         t.start()
-        threads.append(t)
+        threads.append((t, 'main'))
 
     for stub in stubs:
         stub_cls = getattr(module.service.stubs, stub, None)
+        print(f'Starting thread {t.getName()}: {stub}')
         t = Thread(target=stub_cls.consume, args=(stub_cls,))
         t.start()
-        threads.append(t)
+        threads.append((t, stub))
 
-    for t in threads:
+    for t, what in threads:
+        print(f'Joining thread {t.getName()}: "{what}"')
         t.join()
+
 
 
 def deploy_pipelines(app_path, services):

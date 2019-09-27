@@ -33,11 +33,13 @@ def receive():
 
 @service.stubs.send_sentence
 def send(sentence, publish):
+    print(sentence)
     publish(sentence)
 
 
 @service.stubs.receive
 def receive(piggified, publish):
+    print(piggified)
     global sentences
     sentences[piggified.sentence.id].put(piggified.pig_latin)
 
