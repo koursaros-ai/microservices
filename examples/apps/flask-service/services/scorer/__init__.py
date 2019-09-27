@@ -2,8 +2,8 @@ from koursaros import Service
 import os
 import sys
 sys.path.append(os.getcwd())
-from utils.bucket import batch_fn
-from utils.buffer import download_and_unzip
+from utils.buffer import batch_fn
+from utils.bucket import download_and_unzip
 from koursaros.utils.model import Roberta
 
 # CHECKPOINT_FILE = 'checkpoint_best.pt'
@@ -45,8 +45,6 @@ def rank(claim_with_lines, publish):
 
 def main():
     threads = service.run()
-
-    print('test')
 
     for t in threads:
         t.start()
