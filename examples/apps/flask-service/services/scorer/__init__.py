@@ -9,7 +9,6 @@ import time
 
 def load_model():
     print('appending to sys path')
-    sys.path.append(os.getcwd())
     print('importing fairseq / roberta')
     from fairseq.models.roberta import RobertaModel
     from fairseq.data.data_utils import collate_tokens
