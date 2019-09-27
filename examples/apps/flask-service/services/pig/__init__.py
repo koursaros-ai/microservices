@@ -11,3 +11,6 @@ def piggify(sentence, publish):
         pig_latin=' '.join(pig_latin)
     )
     publish(piggified)
+
+def main():
+    service.run()

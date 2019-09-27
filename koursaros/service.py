@@ -10,14 +10,19 @@ from kctl.utils import find_app_path
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
-
+threads = []
 
 class AbstractStub:
 
     def __init__(self, func):
+        global threads
         self.func = func
         self.rabbitmq_connect()
         self.consume()
+        t = threading.Thread(target=self.consume)
+        print(f'Starting thread {t.getName()}: {self.name}()...')
+        t.start()
+        threads.append(t)
 
     def __call__(self, proto, delivery_tag=None):
         self.func(proto, self.publish_callback)
@@ -111,7 +116,7 @@ class Service:
                     setattr(self.stubs, name, Stub)
 
 
-
+    def run(self):
 
 
 
