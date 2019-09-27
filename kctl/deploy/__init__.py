@@ -14,7 +14,7 @@ def run_service(app_path, service, stubs):
 
     for stub in stubs:
         stub_cls = getattr(module.service.stubs, stub, None)
-        t = Thread(target=stub_cls.consume, args=(stub_cls,))
+        t = Thread(target=stub_cls.consume,)
         print(f'Starting thread {t.getName()}: {stub}')
         t.start()
         threads.append((t, stub))

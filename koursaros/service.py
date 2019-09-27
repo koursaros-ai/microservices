@@ -41,12 +41,7 @@ class AbstractStub:
 
     def publish(self, proto):
         print('PROOTOOOMAMA')
-        print(proto)
-        print(self.pin_out)
-        print(EXCHANGE)
-        print(PROPS)
         body = proto.SerializeToString()
-        print(body)
         self.channel.basic_publish(
             exchange=EXCHANGE,
             routing_key=self.pin_out,
