@@ -67,11 +67,7 @@ model_dir = MODELS_DIR + f'{NAME}-output/'
 #     print('downloading model...')
 #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
 
-regression_model = Roberta(
-    MODELS_DIR + f'{NAME}-output/',
-    CHECKPOINT_FILE,
-    force_gpu=False
-)
+regression_model = None
 
 @service.stub
 def rerank(claim_with_lines, publish):
@@ -94,6 +90,14 @@ def rerank(claim_with_lines, publish):
 
 def main():
     threads = service.run()
+
+    global regression_model
+
+    regression_model= Roberta(
+        MODELS_DIR + f'{NAME}-output/',
+        CHECKPOINT_FILE,
+        force_gpu=False
+    )
 
     for t in threads:
         t.start()
