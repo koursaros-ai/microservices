@@ -7,13 +7,13 @@ class Roberta:
         self.model = RobertaModel.from_pretrained(model_dir, checkpoint_file=ckpt_file)
         self.model.eval()  # disable dropout
         self.classes = classes
-        if force_gpu:
-            self.model.cuda()
-        else:
-            try:
-                self.model.cuda()
-            except AssertionError as ae:
-                log.warning(f'{ae}\n\nNot using GPU...')
+        # if force_gpu:
+        #     self.model.cuda()
+        # else:
+        #     try:
+        #         self.model.cuda()
+        #     except AssertionError as ae:
+        #         print(f'{ae}\n\nNot using GPU...')
 
     def classify(self, *args, probs=False):
 

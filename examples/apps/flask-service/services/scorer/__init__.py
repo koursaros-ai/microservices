@@ -7,8 +7,12 @@ import threading
 # from utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
 
+regression_model = None
+
 
 def load_model():
+
+    global regression_model
 
     from utils.model import Roberta
     print('loading model')
@@ -16,10 +20,10 @@ def load_model():
     NAME = 'scorer'
     MODELS_DIR = f'./'  # where to score the model locally
 
-    MODEL = f'{NAME}-model.tar.gz'  # bucket storage
-    BATCH_SIZE = 4
-    BUCKET = 'poloma-models'
-    model_dir = MODELS_DIR + f'{NAME}-output/'
+    # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
+    # BATCH_SIZE = 4
+    # BUCKET = 'poloma-models'
+    # model_dir = MODELS_DIR + f'{NAME}-output/'
     # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
     #     print('downloading model...')
     #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
@@ -30,6 +34,7 @@ def load_model():
         CHECKPOINT_FILE,
         force_gpu=False
     )
+    print('model loaded...')
 
 
 service = Service(__file__)
