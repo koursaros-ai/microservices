@@ -21,14 +21,14 @@
                 "elastic",
                 "get_articles",
                 "Claim",
-                "ClaimWithArticles",
+                "ClaimWithLines",
                 "receive"
             ],
             [
                 "receive",
                 "backend",
                 "receive",
-                "ClaimWithArticles",
+                "ClaimWithLines",
                 null,
                 null
             ]

@@ -1,11 +1,12 @@
 from koursaros import Service
+import os
+print(os.getcwd())
 from utils.database.psql import Conn
 import requests
 import json
-import time
-import os
 
 service = Service(__file__)
+
 
 GIT_PATH = '~/Desktop/koursaros-old'
 
