@@ -40,7 +40,7 @@ def deploy_pipeline(args):
 
     # 2. Compile yamls
     from .deploy.yamls import compile_yamls
-    yamls = compile_yamls(APP_PATH, args.connection)
+    yamls = compile_yamls(APP_PATH, args.connection, args.names)
 
     # 3. Check stubs.yaml, messages.proto, and rmq
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
