@@ -29,7 +29,6 @@ def deploy_app(args):
 
 @allow_keyboard_interrupt
 def deploy_pipeline(args):
-
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
 
