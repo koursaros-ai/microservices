@@ -1,0 +1,52 @@
+{
+    "version": "3.7",
+    "connections": {
+        "dev_local": {
+            "host": "localhost",
+            "port": 5672,
+            "http_port": 15672,
+            "username": "guest",
+            "password": "guest"
+        }
+    },
+    "pipelines": {
+        "piggify": [
+            [
+                "send",
+                "backend",
+                "send_sentence",
+                "Sentence",
+                "Sentence",
+                "piggify"
+            ],
+            [
+                "piggify",
+                "pig",
+                "piggify",
+                "Sentence",
+                "Piggified",
+                "receive"
+            ],
+            [
+                "receive",
+                "backend",
+                "receive",
+                "Piggified",
+                null,
+                null
+            ]
+        ]
+    },
+    "services": {
+        "pig": {
+            "from": "python3-slim:latest",
+            "image": "example/image",
+            "replicas": 1
+        },
+        "backend": {
+            "from": "python3-slim:latest",
+            "image": "example/image",
+            "replicas": 1
+        }
+    }
+}

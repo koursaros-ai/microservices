@@ -9,7 +9,6 @@ def check_stubs(services, stubs):
     pins_in = set()
     pins_out = set()
     pins = dict()
-    not_getting_protos = set()
 
     for pin_in, service, func_name, proto_in, proto_out, pin_out in stubs:
 
@@ -19,21 +18,15 @@ def check_stubs(services, stubs):
         if proto_out and not pin_out:
             raise ValueError(f'{pin_in} is sending "{proto_out}" proto to nothing...')
 
-        if not proto_in:
-            not_getting_protos.add(pin_in)
-
         pins_in.add(pin_in)
         if pin_out:
             pins_out.add(pin_out)
         pins[pin_in] = (proto_in, proto_out, pin_out)
 
     missing_pins = pins_out - pins_in
-    not_receiving = (pins_in - pins_out) - not_getting_protos
 
     if missing_pins:
         raise ValueError(f'no receiving pins for {missing_pins}')
-    if not_receiving:
-        raise ValueError(f'no pins sending to: {not_receiving}')
 
     for pin in pins:
         pin_out = pins[pin][2]
