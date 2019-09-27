@@ -16,13 +16,15 @@ ITALICIZED = '\033[3m'
 RESET = '\033[0m'
 
 
-class KctlStdout:
+class Stdout:
     stdout = None
+    name = None
     outfile = open(APP_PATH + '/.koursaros/kctl-stdout.log', 'w') if APP_PATH else None
 
     @staticmethod
-    def __init__(stdout):
-        KctlStdout.stdout = stdout
+    def __init__(stdout, name):
+        Stdout.stdout = stdout
+        Stdout.name = name
 
     @staticmethod
     def fileno():
@@ -38,13 +40,13 @@ class KctlStdout:
             dots = '...' if len(file) == 30 else ''
 
             log = (
-                f'{timestamp} [{BOLD}kctl] {GREEN}STDOUT:'
+                f'{timestamp} [{BOLD}{Stdout.name}] {GREEN}STDOUT:'
                 f'{RESET} {dots}{file} → ️{name}(): {record}\n'
             )
 
-            KctlStdout.stdout.write(log)
-            if KctlStdout.outfile:
-                KctlStdout.outfile.write(log)
+            Stdout.stdout.write(log)
+            if Stdout.outfile:
+                Stdout.outfile.write(log)
 
 
     @staticmethod
@@ -52,13 +54,15 @@ class KctlStdout:
         pass
 
 
-class KctlStderr:
+class Stderr:
     stderr = None
+    name = None
     errfile = open(APP_PATH + '/.koursaros/kctl-stderr.log', 'w') if APP_PATH else None
 
     @staticmethod
-    def __init__(stderr):
-        KctlStderr.stderr = stderr
+    def __init__(stderr, name):
+        Stderr.stderr = stderr
+        Stderr.name = name
 
     @staticmethod
     def fileno():
@@ -68,20 +72,20 @@ class KctlStderr:
     def write(record=''):
         if record != '\n':
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-            log = f'{timestamp} [{BOLD}kctl] {RED}STDERR:{RESET} {record.rstrip()}\n'
+            log = f'{timestamp} [{BOLD}{Stderr.name}] {RED}STDERR:{RESET} {record.rstrip()}\n'
 
-            KctlStderr.stderr.write(log)
+            Stderr.stderr.write(log)
 
-            if KctlStderr.errfile:
-                KctlStderr.errfile.write(log)
+            if Stderr.errfile:
+                Stderr.errfile.write(log)
 
     @staticmethod
     def flush():
         pass
 
 
-def redirect_out():
-    sys.stdout = KctlStdout(sys.stdout)
-    sys.stderr = KctlStderr(sys.stderr)
+def redirect_out(name):
+    sys.stdout = Stdout(sys.stdout, name)
+    sys.stderr = Stderr(sys.stderr, name)
 
 

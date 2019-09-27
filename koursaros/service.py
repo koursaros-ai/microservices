@@ -11,7 +11,7 @@ from kctl.logger import redirect_out
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
-redirect_out()
+redirect_out(__name__)
 
 
 class Service:
