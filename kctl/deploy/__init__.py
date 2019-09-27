@@ -6,7 +6,7 @@ from ..logger import redirect_out
 
 
 def deploy_pipelines(app_path, services):
-    # redirect_out()
+    redirect_out()
     app_name = app_path.split('/')[-2]
     os.chdir(app_path + '..')
     popens = []
@@ -14,7 +14,7 @@ def deploy_pipelines(app_path, services):
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
             print(f'Running {cmd}...')
-            popen = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
+            popen = Popen(cmd)
             popens.append((popen, service))
 
         for popen, service in popens:
