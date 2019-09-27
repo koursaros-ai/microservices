@@ -81,6 +81,7 @@ class AbstractStub:
 
 class Service:
     __slots__ = ['messages', 'stubs']
+    names = []
     def __init__(self, file, prefetch=1):
 
         class Stubs: pass
@@ -115,6 +116,15 @@ class Service:
                     credentials = pika.credentials.PlainCredentials(service, password)
                     Stub.params = pika.ConnectionParameters(host, port, pipeline, credentials)
                     setattr(self.stubs, name, Stub)
+                    self.names.add(name)
 
+    def run(self):
 
+        threads = []
 
+        for name in self.names:
+            t = threading.Thread(target=getattr(self.stubs, name, None).consume)
+            print(f'Starting thread {t.getName()}: "{name}"')
+            threads.append(t)
+
+        return threads

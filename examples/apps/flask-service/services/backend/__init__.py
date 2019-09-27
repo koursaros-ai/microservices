@@ -1,6 +1,7 @@
 from koursaros import Service
 from flask import Flask, request, jsonify
 from queue import Queue
+import threading
 import uuid
 
 service = Service(__file__)
@@ -44,4 +45,11 @@ def receive(piggified, publish):
 
 
 def main():
-    app.run()
+    threads = service.run()
+    flask_thread = threading.Thread(target=app.run)
+
+    for t in threads + flask_thread:
+        t.start()
+
+    for t in threads + flask_thread:
+        t.join()
