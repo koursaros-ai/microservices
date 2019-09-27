@@ -11,6 +11,7 @@ EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
+
 class AbstractStub:
 
     def __init__(self, func):
@@ -70,7 +71,7 @@ class AbstractStub:
         proto.ParseFromString(body)
 
         t = threading.Thread(
-            target=self,
+            target=self.__call__,
             args=(proto,),
             kwargs={'delivery_tag': method.delivery_tag}
         )
