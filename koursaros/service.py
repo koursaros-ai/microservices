@@ -33,11 +33,19 @@ class AbstractStub:
                 time.sleep(RECONNECT_DELAY)
 
     def publish_callback(self, proto):
+        print('PROOTOOO')
+        print(proto)
         cb = functools.partial(self.publish, proto)
         self.connection.add_callback_threadsafe(cb)
 
     def publish(self, proto):
+        print('PROOTOOOMAMA')
+        print(proto)
+        print(self.pin_out)
+        print(EXCHANGE)
+        print(PROPS)
         body = proto.SerializeToString()
+        print(body)
         self.channel.basic_publish(
             exchange=EXCHANGE,
             routing_key=self.pin_out,
