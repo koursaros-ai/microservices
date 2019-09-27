@@ -2,7 +2,7 @@ import sys
 
 
 def run_service(app_path, service):
-    sys.path.insert(1, app_path)
+    sys.path.insert(0, app_path)
     from .services import pig
     raise SystemExit
 
