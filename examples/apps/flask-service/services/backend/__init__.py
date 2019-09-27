@@ -11,25 +11,19 @@ sentences = dict()
 @app.route('/')
 def receive():
     text = request.args.get('q')
-    # if not text:
-    # return jsonify({
-    #     "status": "failure",
-    #     "msg": "Please provide a sentence"
-    # })
+    if not text:
+        return jsonify({
+            "status": "failure",
+            "msg": "Please provide a sentence"
+        })
     global sentences
 
-    print('SENDING sdjfzohjfodsf')
     sentence_id = str(uuid.uuid4())
-    print('saodifhlasfgoe FUUUUUUCK')
     queue = Queue()
-    print('SENDING :)')
     sentences[sentence_id] = queue
 
-    print('SENDING FUUUUUUCK')
     sentence = service.messages.Sentence(id=sentence_id, text=text)
-    print('SENDING FUUUUUUCK')
     send(sentence)
-    print('MADE FUUUUUUCK')
     return jsonify({
         "status": "success",
         "msg": queue.get()
