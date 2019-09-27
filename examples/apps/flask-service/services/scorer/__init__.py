@@ -3,6 +3,9 @@ from koursaros import Service
 from fairseq.models.roberta import RobertaModel
 from fairseq.data.data_utils import collate_tokens
 
+service = Service(__file__)
+
+
 class Roberta:
 
     def __init__(self, model_dir, ckpt_file, classes=None, force_gpu=False):
@@ -69,10 +72,6 @@ regression_model = Roberta(
     CHECKPOINT_FILE,
     force_gpu=False
 )
-#
-
-service = Service(__file__)
-
 
 @service.stub
 def rerank(claim_with_lines, publish):
