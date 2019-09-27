@@ -8,7 +8,6 @@ def run_service(app_path, service):
 
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    raise FileNotFoundError('AAAAAAAAA')
     module.main()
 
 

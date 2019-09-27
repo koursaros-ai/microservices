@@ -43,5 +43,4 @@ def receive(piggified, publish):
 
 
 def main():
-    raise FileNotFoundError('AAAAAAAAA')
     app.run()
