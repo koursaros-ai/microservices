@@ -59,7 +59,7 @@ def deploy_pipeline(args):
     from .deploy.rabbitmq import bind_rabbitmq
     from .deploy import deploy_pipelines
 
-    services = dict()
+    services = set()
     for pipeline in args.names:
         stubs = yamls['pipelines'][pipeline]
 
@@ -69,11 +69,7 @@ def deploy_pipeline(args):
         stubs = yamls['pipelines'][pipeline]
 
         for stub in stubs:
-            service = stub[1]
-            if services.get(service, None) is None:
-                services[service] = set()
-
-            services[service].add(stub[2])
+            services.add(stub[1])
 
     deploy_pipelines(APP_PATH, services)
 
