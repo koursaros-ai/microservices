@@ -18,7 +18,7 @@ def load_model():
     print('loading model')
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'scorer'
-    MODELS_DIR = f'./{__name__}/models/'  # where to score the model locally
+    MODELS_DIR = f'./flask-service/models/'  # where to score the model locally
 
     # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
     # BATCH_SIZE = 4
