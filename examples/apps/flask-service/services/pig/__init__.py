@@ -35,7 +35,7 @@ def fetch(method, uri, headers, body):
     res = request_func(
         uri,
         headers=headers,
-        data=body,
+        data=json.dumps(body),
         stream=True
     )
     res.raise_for_status()
@@ -79,9 +79,9 @@ INDEX = 'titles'
 ES_HOST = '34.70.112.177'
 correct_fever_ids = dict()
 HEADERS = {'Content-Type': 'application/json'}
-FILTER_PATH = 'responses.hits.hits._source.fever_id,responses.hits.hits._score'
+FILTER_PATH = 'hits.hits._source.fever_id,responses.hits.hits._score'
 BASE_URI = f'http://{ES_HOST}:9200/{INDEX}'
-MSEARCH_URI = f'{BASE_URI}/_msearch?filter_path={FILTER_PATH}'
+MSEARCH_URI = f'{BASE_URI}/_search?filter_path={FILTER_PATH}'
 
 
 def apply_mapping(mapping):
@@ -99,15 +99,14 @@ def apply_mapping(mapping):
             print(res['error']['reason'])
             return False
 
-    while True:
-        close_index_args = (f'{BASE_URI}/_close',)
-        alter_index_args = (f'{BASE_URI}/_settings',)
-        alter_index_kwargs = {'headers': HEADERS, 'data': json.dumps(mapping)}
-        open_index_args = (f'{BASE_URI}/_open',)
+    close_index_args = (f'{BASE_URI}/_close',)
+    alter_index_args = (f'{BASE_URI}/_settings',)
+    alter_index_kwargs = {'headers': HEADERS, 'data': json.dumps(mapping)}
+    open_index_args = (f'{BASE_URI}/_open',)
 
-        closed = request_status('post', *close_index_args)
-        altered = request_status('put', *alter_index_args, **alter_index_kwargs)
-        opened = request_status('post', *open_index_args)
+    closed = request_status('post', *close_index_args)
+    altered = request_status('put', *alter_index_args, **alter_index_kwargs)
+    opened = request_status('post', *open_index_args)
 
 def get_mapping():
     global HYPERS
@@ -163,17 +162,16 @@ apply_mapping(get_mapping())
 @service.stub
 def piggify(claim, publish):
 
-    body = get_body(claim)
-    buffer = [(0, body)]
+    body = get_body(claim.text)
 
-    json_ids, responses = es_multi_search(MSEARCH_URI, INDEX, HEADERS, buffer)
-    response = responses[0]
+    res = fetch('post', MSEARCH_URI, HEADERS, body)
+    print(res)
 
-    hits = response['hits']['hits']
+    hits = json.loads(res)['hits']['hits']
     fever_ids = [hit['_source']['fever_id'] for hit in hits]
 
     piggified = service.messages.Piggified(
-        sentence=claim,
+        sentence=claim.text,
         pig_latin=' '.join(fever_ids)
     )
     publish(piggified)
