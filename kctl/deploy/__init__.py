@@ -28,7 +28,6 @@ def run_service(app_path, service, stubs):
         t.join()
 
 
-
 def deploy_pipelines(app_path, services):
     from multiprocessing import Process
 
