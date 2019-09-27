@@ -9,7 +9,7 @@ app = Flask(__name__)
 sentences = dict()
 
 
-@app.route('/')
+@app.route('/query')
 def receive():
     text = request.args.get('q')
     if not text:
