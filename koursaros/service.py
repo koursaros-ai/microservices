@@ -116,7 +116,4 @@ class Service:
                     setattr(self.stubs, name, Stub)
 
 
-    def run(self):
-
-
 
