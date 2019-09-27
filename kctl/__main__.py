@@ -31,9 +31,6 @@ def deploy_app(args):
 @allow_keyboard_interrupt
 def deploy_pipeline(args):
 
-    raise ValueError
-    raise SystemExit
-
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
 
@@ -148,8 +145,8 @@ def create_service(args):
     new_service_path = services_path + args.name
 
     from shutil import copytree
-    copytree(f'{__location__}/create/template/app/services/service', new_service_path)
-    print(f'Created service: {new_service_path}')
+    copytree(f'{__location__}/create/template/app/services/backend', new_service_path)
+    print(f'Created backend: {new_service_path}')
 
 
 @allow_keyboard_interrupt
@@ -187,7 +184,7 @@ def main():
 
     # kctl create
     kctl_create_parser = kctl_subparsers.add_parser(
-        'create', description='create an app, pipeline, service, or model'
+        'create', description='create an app, pipeline, backend, or model'
     )
     kctl_create_subparsers = kctl_create_parser.add_subparsers()
     # kctl create app
@@ -198,8 +195,8 @@ def main():
     kctl_create_pipeline_parser = kctl_create_subparsers.add_parser('pipeline')
     kctl_create_pipeline_parser.set_defaults(func=create_pipeline)
     kctl_create_pipeline_parser.add_argument('name')
-    # kctl create service
-    kctl_create_service_parser = kctl_create_subparsers.add_parser('service')
+    # kctl create backend
+    kctl_create_service_parser = kctl_create_subparsers.add_parser('backend')
     kctl_create_service_parser.set_defaults(func=create_service)
     kctl_create_service_parser.add_argument('name')
 

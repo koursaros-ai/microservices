@@ -18,7 +18,7 @@ def parse_stub_string(stub_string):
     nsp = r'([^\s]+)'
     full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
     full_regex = re.compile(full_regex)
-    example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
+    example = '\nExample: <backend>( [variable] ) -> <returns> | <destination>'
     groups = full_regex.match(stub_string)
 
     if not groups:
@@ -64,8 +64,8 @@ def compile_yamls(app_path):
             if 'services' not in yamls:
                 yamls['services'] = dict()
 
-            yam = yaml_safe_load(services + service, 'service.yaml')
-            yamls['services'][service] = yam['service']
+            yam = yaml_safe_load(services + service, 'backend.yaml')
+            yamls['services'][service] = yam['backend']
 
     with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
         fh.write(json.dumps(yamls, indent=4))

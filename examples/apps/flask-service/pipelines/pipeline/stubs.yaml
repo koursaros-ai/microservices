@@ -1,3 +1,4 @@
 stubs:
- send: service.send() -> Notification                    | receive
- receive: service.receive(Notification)                   ->|
+ send: backend.send_sentence(Sentence) -> Sentence          | piggify
+ piggify: pig.piggify(Sentence) -> Piggified                | receive
+ receive: backend.receive(Piggified)                      ->|
