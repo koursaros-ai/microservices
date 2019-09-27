@@ -23,8 +23,9 @@ def receive():
     sentences[sentence_id] = queue
 
     sentence = service.messages.Sentence(id=sentence_id, text=text)
+    print('SENDING FUUUUUUCK')
     send(sentence)
-
+    print('MADE FUUUUUUCK')
     return jsonify({
         "status": "success",
         "msg": queue.get()
