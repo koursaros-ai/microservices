@@ -70,12 +70,14 @@ class AbstractStub:
         proto = self.proto_in()
         proto.ParseFromString(body)
 
-        t = threading.Thread(
-            target=self.__call__,
-            args=(proto,),
-            kwargs={'delivery_tag': method.delivery_tag}
-        )
-        t.start()
+        self(proto, delivery_tag=method.delivery_tag)
+
+        # t = threading.Thread(
+        #     target=self,
+        #     args=(proto,),
+        #     kwargs={'delivery_tag': method.delivery_tag}
+        # )
+        # t.start()
 
     def ack_callback(self, delivery_tag):
         cb = functools.partial(self.channel.basic_ack, delivery_tag)
