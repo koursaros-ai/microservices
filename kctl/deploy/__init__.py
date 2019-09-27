@@ -11,7 +11,7 @@ def run_service(app_path, service, imports):
     print('HOLA')
 
     for _import in imports:
-        module.setattr(module, _import, __import__(_import))
+        setattr(module, _import, __import__(_import))
 
     print(dir(module))
     raise SystemExit
