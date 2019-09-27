@@ -97,8 +97,6 @@ class Service:
             proto = self.configs["proto_in"]()
             proto.ParseFromString(body)
 
-            # self.func(proto, self.publish_callback)
-
             t = threading.Thread(target=self.func, args=(proto,self.publish_callback))
             t.start()
             self.ack_callback(method.delivery_tag)
