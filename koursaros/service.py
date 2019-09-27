@@ -69,6 +69,8 @@ class AbstractStub:
 
     def consume_callback(self, channel, method, properties, body):
         proto = self.proto_in()
+        print(proto)
+        print(dir(proto))
         print(body)
         proto.ParseFromString(body)
 
