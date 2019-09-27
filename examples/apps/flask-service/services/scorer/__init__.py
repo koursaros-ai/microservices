@@ -92,6 +92,8 @@ def main():
     #     print('downloading model...')
     #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
 
+    print('building model')
+
     regression_model= Roberta(
         MODELS_DIR + f'{NAME}-output/',
         CHECKPOINT_FILE,
