@@ -10,8 +10,11 @@ import time
 def load_model():
     print('appending to sys path')
     sys.path.append(os.getcwd())
-    print('importing model')
-    from utils.model import Roberta
+    print('importing fairseq / roberta')
+    from fairseq.models.roberta import RobertaModel
+    from fairseq.data.data_utils import collate_tokens
+
+    # from utils.model import Roberta
     print('loading model')
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'scorer'
@@ -50,7 +53,7 @@ def rerank(claim_with_lines, publish):
     print("publishing")
     publish(service.messages.ClaimWithLines(
         claim=claim_with_lines.claim,
-        lines=["test", "test"]#[el[1] for el in results[:5]]
+        lines=["test", "test"] #[el[1] for el in results[:5]]
     ))
 
 def fake_load():
