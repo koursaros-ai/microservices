@@ -39,7 +39,11 @@ def send_sentence(sentence, publish):
 @service.stub
 def receive(evaluated, publish):
     global sentences
-    sentences[evaluated.claim.id].put([line for line in evaluated.lines])
+    response = {
+        "label" : evaluated.label,
+        "evidence" : [line for line in evaluated.evidence]
+    }
+    sentences[evaluated.claim.id].put(response)
 
 
 def main():

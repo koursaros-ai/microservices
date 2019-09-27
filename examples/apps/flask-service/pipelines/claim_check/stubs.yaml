@@ -1,5 +1,6 @@
 stubs:
- send: backend.send_sentence(Claim) -> Claim                 | retrieve
- retrieve: elastic.get_articles(Claim) -> ClaimWithLines     | rerank
- rerank: scorer.rerank(ClaimWithLines) -> ClaimWithLines     | receive
- receive: backend.receive(ClaimWithLines)                  ->|
+ send: backend.send_sentence(Claim) -> Claim                      | retrieve
+ retrieve: elastic.get_articles(Claim) -> ClaimWithLines          | rerank
+ rerank: scorer.rerank(ClaimWithLines) -> ClaimWithLines          | label
+ label: inference.inference(ClaimWithLines) -> EvaluatedClaim     | receive
+ receive: backend.receive(EvaluatedClaim)                       ->|

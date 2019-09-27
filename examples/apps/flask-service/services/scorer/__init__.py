@@ -18,7 +18,7 @@ def load_model():
     print('loading model')
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'scorer'
-    MODELS_DIR = f'./'  # where to score the model locally
+    MODELS_DIR = f'./flask-service/models/'  # where to score the model locally
 
     # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
     # BATCH_SIZE = 4
@@ -28,6 +28,7 @@ def load_model():
     #     print('downloading model...')
     #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
     print('loading model')
+    print(os.getcwd())
 
     regression_model = Roberta(
         MODELS_DIR + f'{NAME}-output/',
@@ -42,19 +43,19 @@ service = Service(__file__)
 @service.stub
 def rerank(claim_with_lines, publish):
     print('ranking')
-    # def score(lines):
-    #     claims = [claim_with_lines.claim.text] * len(lines)
-    #     return regression_model.classify(claims, lines)
-    #
-    # results = []
-    # for scores, inputs in batch_fn(BATCH_SIZE, score, claim_with_lines.lines):
-    #     for score, line in zip(scores, inputs):
-    #         results.append((score, line))
-    # results.sort(key=lambda x: x[0], reverse=True)
+    def score(lines):
+        claims = [claim_with_lines.claim.text] * len(lines)
+        return regression_model.classify(claims, lines)
+
+    results = []
+    for scores, inputs in batch_fn(BATCH_SIZE, score, claim_with_lines.lines):
+        for score, line in zip(scores, inputs):
+            results.append((score, line))
+    results.sort(key=lambda x: x[0], reverse=True)
     print("publishing")
     publish(service.messages.ClaimWithLines(
         claim=claim_with_lines.claim,
-        lines=["test", "test"] #[el[1] for el in results[:5]]
+        lines=[el[1] for el in results[:5]]
     ))
 
 
