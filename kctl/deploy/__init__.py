@@ -6,7 +6,7 @@ from ..logger import redirect_out
 
 
 def deploy_pipelines(app_path, services):
-    redirect_out()
+    # redirect_out()
     app_name = app_path.split('/')[-2]
     os.chdir(app_path + '..')
     popens = []
