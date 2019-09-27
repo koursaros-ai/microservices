@@ -15,7 +15,7 @@ def load_model():
     global model
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'fever'
-    CLASSES = ['NEI', 'REFUTES', 'SUPPORTS']
+    CLASSES = ['NOT ENOUGH INFO', 'REFUTES', 'SUPPORTS']
 
     MODELS_DIR = f'./flask-service/models/' # where to score the model locally
 
