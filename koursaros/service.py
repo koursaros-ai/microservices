@@ -129,7 +129,7 @@ class Service:
         for name in self.names:
             stub = self.stubs.__dict__[name]
             if stub.pipeline in pipelines:
-                if stub.func is None:
+                if getattr(stub, 'func', None) is None:
                     raise ValueError(f'Unassigned stubs: {stub.func_name}()')
 
                 stub.host = host
