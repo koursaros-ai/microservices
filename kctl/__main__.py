@@ -261,13 +261,14 @@ def main():
     args.func(args)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # print('importing torch')
     # import torch
     # print('done')
     # print('importing fairseq')
     # import fairseq
     # print('done')
-    print("IMPORTING FAIRSEQ")
-    import fairseq
-    main()
+    # print("IMPORTING FAIRSEQ")
+    # import fairseq
+    #
+    # main()
