@@ -93,6 +93,8 @@ def main():
 
     global regression_model
 
+    print('loading model')
+
     regression_model= Roberta(
         MODELS_DIR + f'{NAME}-output/',
         CHECKPOINT_FILE,
