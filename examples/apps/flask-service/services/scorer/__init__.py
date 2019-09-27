@@ -62,7 +62,7 @@ def main():
     threads = service.run()
 
     # load_model()
-    fake_load()
+    load_model()
 
     for t in threads:
         print('starting thread scorer')
