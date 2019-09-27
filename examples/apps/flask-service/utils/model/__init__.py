@@ -1,8 +1,6 @@
 from fairseq.models.roberta import RobertaModel
 from fairseq.data.data_utils import collate_tokens
 
-log = getLogger('model')
-
 class Roberta:
 
     def __init__(self, model_dir, ckpt_file, classes=None, force_gpu=False):

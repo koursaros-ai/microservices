@@ -22,12 +22,12 @@
                 "get_articles",
                 "Claim",
                 "ClaimWithLines",
-                "score"
+                "rerank"
             ],
             [
-                "score",
+                "rerank",
                 "scorer",
-                "rank",
+                "rerank",
                 "ClaimWithLines",
                 "ClaimWithLines",
                 "receive"
