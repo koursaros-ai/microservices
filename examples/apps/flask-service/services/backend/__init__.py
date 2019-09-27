@@ -1,11 +1,12 @@
 from koursaros import Service
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from queue import Queue
 import threading
 import uuid
+import os
 
 service = Service(__file__)
-app = Flask(__name__)
+app = Flask(__name__, static_folder='flask-service/fact-check/fever/build')
 sentences = dict()
 
 
@@ -29,6 +30,14 @@ def receive():
         "status": "success",
         "msg": queue.get()
         })
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 @service.stub
