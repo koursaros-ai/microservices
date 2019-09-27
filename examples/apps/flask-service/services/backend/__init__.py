@@ -11,6 +11,16 @@ app = Flask(__name__, static_folder='flask-service/fact-check/fever/build')
 sentences = dict()
 
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
+
+
+
 @app.route('/query')
 def receive():
     text = request.args.get('q')
@@ -31,15 +41,6 @@ def receive():
         "status": "success",
         "msg": queue.get()
         })
-
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
-
 
 @service.stub
 def send_sentence(sentence, publish):
