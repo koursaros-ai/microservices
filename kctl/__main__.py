@@ -30,6 +30,13 @@ def deploy_app(args):
 
 @allow_keyboard_interrupt
 def deploy_pipeline(args):
+
+
+    import sys
+
+    print(sys.executable)
+
+    raise SystemExit
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
 
