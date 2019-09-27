@@ -13,6 +13,7 @@ BATCH_SIZE = 8
 BUCKET = 'poloma-models'
 model_dir = MODELS_DIR + f'{NAME}-output/'
 if not os.path.isfile(model_dir + CHECKPOINT_FILE):
+    print('downloading model...')
     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
 
 regression_model = Roberta(
