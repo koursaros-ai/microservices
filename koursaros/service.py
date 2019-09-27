@@ -13,9 +13,13 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
 class AbstractStub:
+
     def __init__(self, func):
         self.func = func
-        raise FileNotFoundError(func.__name__)
+        self.rabbitmq_connect()
+        t = threading.Thread(target=self.consume)
+        print(f'Starting thread {t.getName()}: {self.name}()...')
+        t.start()
 
     def __call__(self, proto, delivery_tag=None):
         self.func(proto, self.publish_callback)
@@ -80,8 +84,9 @@ class AbstractStub:
 
 
 class Service:
-    __slots__ = ['stubs', 'messages']
+    __slots__ = ['messages']
     names = []
+    threads = []
     def __init__(self, file, prefetch=1):
 
         app_path = find_app_path(file)
@@ -91,60 +96,26 @@ class Service:
 
         yamls = json.load(open(app_path + '/.koursaros/yamls.json'))
 
-        class Stubs: pass
-        self.stubs = Stubs
         for pipeline, stubs in yamls['pipelines'].items():
             for stub_config in stubs:
                 if service == stub_config[1]:
-                    self.init_stub(pipeline, stub_config, prefetch)
+                    class Stub(AbstractStub): pass
 
-    def init_stub(self, pipeline, stub_config, prefetch):
-        class Stub(AbstractStub): pass
-
-        Stub.pipeline = pipeline
-        Stub.pin_in = stub_config[0]
-        Stub.service = stub_config[1]
-        name = stub_config[2]
-        self.names.append(name)
-        Stub.name = name
-        proto_in = stub_config[3] if stub_config[3] else ''
-        proto_out = stub_config[4] if stub_config[4] else ''
-        Stub.proto_in = getattr(self.messages, proto_in, None)
-        Stub.proto_out = getattr(self.messages, proto_out, None)
-        Stub.pin_out = stub_config[5]
-        Stub.prefetch = prefetch
-        setattr(self.stubs, Stub.name, Stub)
-        print(f'Registered {Stub.name}()')
-
-    def main(self, main_func):
-        def main_wrap(pipelines, connection_name, **connection):
-            main_func(connection_name)
-            self.run(pipelines, **connection)
-
-        return main_wrap
-
-    def run(self, pipelines, host='localhost', port=5672, password=None, **kwargs):
-
-        threads = []
-
-        for name in self.names:
-            stub = self.stubs.__dict__[name]
-            if stub.pipeline in pipelines:
-                if getattr(stub, 'func', None) is None:
-                    raise ValueError(f'Unassigned stubs: {stub.name}')
-
-                stub.host = host
-                stub.port = port
-                stub.password = password
-                stub.rabbitmq_connect()
-                t = threading.Thread(target=stub.consume)
-                print(f'Starting thread {t.getName()}: {stub.func_name}()...')
-                t.start()
-                threads.append((t, stub))
-
-        for t, stub in threads:
-            print(f'Joining thread {t.getName()}: {stub.func_name}()...')
-            t.join()
+                    Stub.pipeline = pipeline
+                    Stub.pin_in = stub_config[0]
+                    Stub.service = stub_config[1]
+                    name = stub_config[2]
+                    self.names.append(name)
+                    Stub.name = name
+                    proto_in = stub_config[3] if stub_config[3] else ''
+                    proto_out = stub_config[4] if stub_config[4] else ''
+                    Stub.proto_in = getattr(self.messages, proto_in, None)
+                    Stub.proto_out = getattr(self.messages, proto_out, None)
+                    Stub.pin_out = stub_config[5]
+                    Stub.prefetch = prefetch
+                    Stub.host = yamls['connection']['host']
+                    Stub.port = yamls['connection']['port']
+                    Stub.password = yamls['connection']['password']
 
 
 

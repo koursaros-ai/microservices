@@ -31,11 +31,11 @@ def parse_stub_string(stub_string):
     return groups
 
 
-def compile_yamls(app_path):
+def compile_yamls(app_path, connection):
     yamls = dict()
 
     yam = yaml_safe_load(app_path, 'connections.yaml')
-    yamls.update(**yam)
+    yamls['connection'] = yam['connections'][connection]
 
     pipelines = app_path + '/pipelines/'
 

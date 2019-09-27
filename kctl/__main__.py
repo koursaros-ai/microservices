@@ -40,7 +40,7 @@ def deploy_pipeline(args):
 
     # 2. Compile yamls
     from .deploy.yamls import compile_yamls
-    yamls = compile_yamls(APP_PATH)
+    yamls = compile_yamls(APP_PATH, args.connection)
 
     # 3. Check stubs.yaml, messages.proto, and rmq
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
@@ -53,7 +53,7 @@ def deploy_pipeline(args):
         check_protos(APP_PATH, stubs)
 
     # 4. Check rabbitmq connection
-    connection = yamls['connections'][args.connection]
+    connection = yamls['connection']
     check_rabbitmq(**connection)
 
     # 5. <Rebind> and deploy services
