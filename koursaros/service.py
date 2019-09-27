@@ -18,10 +18,8 @@ class AbstractStub:
         self.func = func
         self.rabbitmq_connect()
 
-    def __call__(self, proto, delivery_tag=None):
+    def __call__(self, proto):
         self.func(proto, self.publish_callback)
-        if delivery_tag:
-            self.ack_callback(delivery_tag)
 
     def rabbitmq_connect(self):
         while True:
@@ -38,8 +36,7 @@ class AbstractStub:
         print(proto)
         cb = functools.partial(self.publish, proto)
         print(self.connection)
-        # self.connection.add_callback_threadsafe(cb)
-        self.publish(proto)
+        self.connection.add_callback_threadsafe(cb)
 
     def publish(self, proto):
         print('PROOTOOOMAMA')
@@ -62,7 +59,7 @@ class AbstractStub:
         queue = f'{self.service}.{self.name}'
         self.channel.basic_consume(
             queue=queue,
-            on_message_callback=functools.partial(self.consume_callback, self)
+            on_message_callback=self.consume_callback
         )
         print(f'"{self.name}" listening on {queue}...')
         self.channel.start_consuming()
@@ -71,7 +68,8 @@ class AbstractStub:
         proto = self.proto_in()
         proto.ParseFromString(body)
 
-        self.__call__(self, proto, delivery_tag=method.delivery_tag)
+        self.func(proto, self.publish_callback)
+        self.ack_callback(method.delivery_tag)
 
         # t = threading.Thread(
         #     target=self,
