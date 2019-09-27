@@ -9,7 +9,7 @@ import time
 
 def load_model():
     print('appending to sys path')
-    sys.path.append(os.getcwd())
+    # sys.path.append(os.getcwd())
     print('importing model')
     from utils.model import Roberta
     print('loading model')
