@@ -20,7 +20,7 @@ def deploy_pipelines(app_path, services):
         for popen, service in popens:
             popen.communicate()
 
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as exc:
         print('KeyboardInterruptyyyy')
 
     finally:
