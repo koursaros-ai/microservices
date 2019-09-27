@@ -32,7 +32,7 @@ def receive():
 
 
 @service.stubs.send_sentence
-def send_sentence(sentence, publish):
+def send_sentences(sentence, publish):
     publish(sentence)
 
 

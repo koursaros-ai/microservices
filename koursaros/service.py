@@ -15,7 +15,6 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 class AbstractStub:
     def __init__(self, func):
         self.func = func
-        raise FileNotFoundError('AAAAAAAAAAAAAAAA')
 
     def __call__(self, proto, delivery_tag=None):
         self.func(proto, self.publish_callback)
