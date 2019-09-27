@@ -12,7 +12,7 @@ def deploy_pipelines(app_path, services):
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
             print(f'Running {cmd}...')
-            popen = Popen(cmd, stdout=print)
+            popen = Popen(cmd, stdout=sys.stdout,  stderr=sys.stderr)
             popens.append((popen, service))
 
         for popen, service in popens:
