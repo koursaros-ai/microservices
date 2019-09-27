@@ -1,9 +1,8 @@
 import sys
-import os
 
 
 def run_service(app_path, service):
-    os.chdir(app_path)
+    sys.path.insert(1, app_path)
     m = __import__('.services')
     print(dir(m))
     raise SystemExit
