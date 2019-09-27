@@ -10,29 +10,29 @@ import time
 def load_model():
     print('appending to sys path')
     print('importing fairseq / roberta')
-    from fairseq.models.roberta import RobertaModel
-    from fairseq.data.data_utils import collate_tokens
-
-    # from utils.model import Roberta
-    print('loading model')
-    CHECKPOINT_FILE = 'checkpoint_best.pt'
-    NAME = 'scorer'
-    MODELS_DIR = f'./'  # where to score the model locally
-
-    MODEL = f'{NAME}-model.tar.gz'  # bucket storage
-    BATCH_SIZE = 4
-    BUCKET = 'poloma-models'
-    model_dir = MODELS_DIR + f'{NAME}-output/'
-    # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
-    #     print('downloading model...')
-    #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
-    print('loading model')
-
-    regression_model = Roberta(
-        MODELS_DIR + f'{NAME}-output/',
-        CHECKPOINT_FILE,
-        force_gpu=False
-    )
+    # from fairseq.models.roberta import RobertaModel
+    # from fairseq.data.data_utils import collate_tokens
+    #
+    # # from utils.model import Roberta
+    # print('loading model')
+    # CHECKPOINT_FILE = 'checkpoint_best.pt'
+    # NAME = 'scorer'
+    # MODELS_DIR = f'./'  # where to score the model locally
+    #
+    # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
+    # BATCH_SIZE = 4
+    # BUCKET = 'poloma-models'
+    # model_dir = MODELS_DIR + f'{NAME}-output/'
+    # # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
+    # #     print('downloading model...')
+    # #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
+    # print('loading model')
+    #
+    # regression_model = Roberta(
+    #     MODELS_DIR + f'{NAME}-output/',
+    #     CHECKPOINT_FILE,
+    #     force_gpu=False
+    # )
 
 
 service = Service(__file__)
