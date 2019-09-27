@@ -17,9 +17,7 @@ class AbstractStub:
     def __init__(self, func):
         self.func = func
         self.rabbitmq_connect()
-        t = threading.Thread(target=self.consume)
-        print(f'Starting thread {t.getName()}: {self.name}()...')
-        t.start()
+        self.consume()
 
     def __call__(self, proto, delivery_tag=None):
         self.func(proto, self.publish_callback)
@@ -50,7 +48,6 @@ class AbstractStub:
         )
 
     def consume(self):
-        print('CONSUMEING' + self.name)
         self.channel.basic_qos(prefetch_count=self.prefetch)
         queue = f'{self.service}.{self.name}'
         self.channel.basic_consume(
