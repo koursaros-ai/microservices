@@ -15,6 +15,7 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 class AbstractStub:
     def __init__(self, func):
         self.func = func
+        raise FileNotFoundError('AAAAAAAAAAAAAAAA')
 
     def __call__(self, proto, delivery_tag=None):
         self.func(proto, self.publish_callback)
@@ -130,7 +131,7 @@ class Service:
             stub = self.stubs.__dict__[name]
             if stub.pipeline in pipelines:
                 if getattr(stub, 'func', None) is None:
-                    raise ValueError(f'Unassigned stubs: {stub.name}()')
+                    raise ValueError(f'Unassigned stubs: {stub.name}')
 
                 stub.host = host
                 stub.port = port
