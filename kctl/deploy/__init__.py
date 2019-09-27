@@ -11,10 +11,12 @@ def run_service(app_path, service, stubs):
     spec.loader.exec_module(module)
 
     main = getattr(module, 'main', None)
-    if main:
-        main()
-
     threads = []
+    if main:
+        t = Thread(target=main)
+        t.start()
+        threads.append(t)
+
     for stub in stubs:
         t = Thread(target=getattr(module, stub, None).consume)
         t.start()
