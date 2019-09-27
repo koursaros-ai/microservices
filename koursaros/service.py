@@ -95,7 +95,7 @@ class Service:
                 queue=queue,
                 on_message_callback=self.consume_callback
             )
-            print(f'"{self.configs["name"]}" listening on {queue}...')
+            print(f'"{self.func.__name__}" listening on {queue}...')
             self.channel.start_consuming()
 
         def consume_callback(self, channel, method, properties, body):
