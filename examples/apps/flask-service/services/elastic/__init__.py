@@ -9,14 +9,12 @@ import json
 service = Service(__file__)
 
 
-GIT_PATH = '/Users/jackpertschuk/Desktop/koursaros-old'
-
 DBNAME = 'fever'
 USER = 'postgres'
 HOST = 'localhost'
 PASSWORD = os.environ.get('PGPASS')
 SSLMODE = 'verify-ca'
-CERT_PATH = f'{GIT_PATH}/credentials/postgres.pem'
+CERT_PATH = '~/credentials/postgres.pem'
 POSTGRES_HOST = '54.196.150.193'
 
 HEADINGS = {"Content-Type": "application/json"}
