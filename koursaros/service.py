@@ -83,9 +83,6 @@ class Service:
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
         service = file.split('/')[-2]
-        print(service)
-        print(__name__)
-        raise SystemExit
 
         yamls = json.load(open(app_path + '/.koursaros/yamls.json'))
 
