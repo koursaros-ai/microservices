@@ -36,6 +36,7 @@ class AbstractStub:
         print('PROOTOOO')
         print(proto)
         cb = functools.partial(self.publish, proto)
+        print(self.connection)
         self.connection.add_callback_threadsafe(cb)
 
     def publish(self, proto):
