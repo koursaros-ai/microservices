@@ -106,3 +106,4 @@ def main():
 
     for t in threads:
         t.join()
+        print('exiting scorer')
