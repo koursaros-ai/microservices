@@ -13,7 +13,7 @@ BATCH_SIZE = 4
 
 def load_model():
     global model
-    CHECKPOINT_FILE = 'checkpoint_last.pt'
+    CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'fever'
     CLASSES = ['NEI', 'REFUTES', 'SUPPORTS']
 
