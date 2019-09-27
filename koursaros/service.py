@@ -116,7 +116,7 @@ class Service:
                     credentials = pika.credentials.PlainCredentials(service, password)
                     Stub.params = pika.ConnectionParameters(host, port, pipeline, credentials)
                     setattr(self.stubs, name, Stub)
-                    self.names.add(name)
+                    self.names.append(name)
 
     def run(self):
 
