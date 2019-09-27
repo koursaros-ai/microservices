@@ -116,9 +116,7 @@ class Service:
             cb = functools.partial(self.channel.basic_ack, delivery_tag)
             self.connection.add_callback_threadsafe(cb)
 
-
     def run(self):
-
         threads = []
         for name, stub in self.stubs.items():
             t = threading.Thread(target=stub.consume)

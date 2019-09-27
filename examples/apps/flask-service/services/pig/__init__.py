@@ -12,3 +12,13 @@ def piggify(sentence, publish):
         pig_latin=' '.join(pig_latin)
     )
     publish(piggified)
+
+
+def main():
+    threads = service.run()
+
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()
