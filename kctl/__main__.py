@@ -73,7 +73,7 @@ def deploy_pipeline(args):
             service = stub[1]
             services.add(service)
 
-    deploy_pipelines(APP_PATH, args.names, services, args.connection, **connection)
+    deploy_pipelines(APP_PATH, services)
 
 
     # else:
