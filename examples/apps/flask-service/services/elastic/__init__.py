@@ -8,7 +8,7 @@ import json
 service = Service(__file__)
 
 
-GIT_PATH = '~/Desktop/koursaros-old'
+GIT_PATH = '/Users/jackpertschuk/Desktop/koursaros-old'
 
 DBNAME = 'fever'
 USER = 'postgres'
