@@ -3,7 +3,7 @@ import sys
 import os
 import time
 import threading
-# from utils.model import Roberta
+from utils.model import Roberta
 
 from utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
