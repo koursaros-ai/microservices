@@ -69,6 +69,7 @@ class AbstractStub:
 
     def consume_callback(self, channel, method, properties, body):
         proto = self.proto_in()
+        print(body)
         proto.ParseFromString(body)
 
         t = threading.Thread(
