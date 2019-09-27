@@ -90,7 +90,7 @@ class Service:
 
         def consume(self):
             self.channel.basic_qos(prefetch_count=self.configs['prefetch'])
-            queue = f'{self.configs["service"]}.{self.configs["service"]}'
+            queue = f'{self.configs["service"]}.{self.func.__name__}'
             self.channel.basic_consume(
                 queue=queue,
                 on_message_callback=self.consume_callback
