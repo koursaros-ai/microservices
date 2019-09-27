@@ -160,7 +160,7 @@ def get_body(query):
 apply_mapping(get_mapping())
 
 @service.stub
-def piggify(claim, publish):
+def get_articles(claim, publish):
 
     body = get_body(claim.text)
 
@@ -170,11 +170,11 @@ def piggify(claim, publish):
     hits = json.loads(res)['hits']['hits']
     fever_ids = [hit['_source']['fever_id'] for hit in hits]
 
-    piggified = service.messages.Piggified(
-        sentence=claim,
-        pig_latin=' '.join(fever_ids)
+    results = service.messages.ClaimWithArticles(
+        claim=claim,
+        articles=fever_ids
     )
-    publish(piggified)
+    publish(results)
 
 
 def main():
