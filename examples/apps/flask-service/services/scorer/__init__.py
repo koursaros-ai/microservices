@@ -54,7 +54,8 @@ def main():
     print('running main scorer')
     threads = service.run()
 
-    load_model()
+    # load_model()
+    time.sleep(10)
 
     for t in threads:
         print('starting thread scorer')
