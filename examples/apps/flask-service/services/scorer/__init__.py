@@ -2,6 +2,7 @@ from koursaros import Service
 import sys
 import os
 import time
+import threading
 
 # from utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
@@ -74,9 +75,12 @@ def fake_load():
 
 def main():
     print('running main scorer')
-    load_model()
+    load_model_thread = threading.Thread(
+        target=load_model
+    )
 
     threads = service.run()
+    threads.append(load_model_thread)
 
     for t in threads:
         print('starting thread scorer')
