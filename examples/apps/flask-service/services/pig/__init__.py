@@ -12,8 +12,3 @@ def piggify(sentence, publish):
     )
     publish(sentence)
 
-
-@service.main
-def main(connection):
-    if connection == 'dev_local':
-        pass

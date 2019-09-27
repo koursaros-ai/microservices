@@ -40,9 +40,3 @@ def send(sentence, publish):
 def receive(piggified, publish):
     global sentences
     sentences[piggified.sentence.id].put(piggified.pig_latin)
-
-
-@service.main
-def main(connection):
-    if connection == 'dev_local':
-        pass
