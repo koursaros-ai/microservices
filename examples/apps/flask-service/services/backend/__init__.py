@@ -47,7 +47,7 @@ def receive(piggified, publish):
 def main():
     threads = service.run()
     threads.append(threading.Thread(target=app.run))
-    
+
     for t in threads:
         t.start()
 

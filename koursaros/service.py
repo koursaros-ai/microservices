@@ -12,119 +12,121 @@ RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
-class AbstractStub:
-
-    def __init__(self, func):
-        self.func = func
-        self.rabbitmq_connect()
-
-    def __call__(self, proto):
-        self.func(proto, self.publish_callback)
-
-    def rabbitmq_connect(self):
-        while True:
-            try:
-                self.connection = pika.BlockingConnection(parameters=self.params)
-                self.channel = self.connection.channel()
-                break
-            except Exception as exc:
-                print(f'Failed pika connection...\n{exc.args}')
-                time.sleep(RECONNECT_DELAY)
-
-    def publish_callback(self, proto):
-        print('PROOTOOO')
-        print(proto)
-        # cb = functools.partial(self.publish, proto)
-        print(self.connection)
-        # self.connection.add_callback_threadsafe(cb)
-        self.publish(proto)
-
-    def publish(self, proto):
-        print('PROOTOOOMAMA')
-        body = proto.SerializeToString()
-        self.channel.basic_publish(
-            exchange=EXCHANGE,
-            routing_key=self.pin_out,
-            body=body,
-            properties=PROPS
-        )
-
-    def consume(self):
-        self.rabbitmq_connect(self)
-        self.channel.basic_qos(prefetch_count=self.prefetch)
-        queue = f'{self.service}.{self.name}'
-        self.channel.basic_consume(
-            queue=queue,
-            on_message_callback=self.consume_callback
-        )
-        print(f'"{self.name}" listening on {queue}...')
-        self.channel.start_consuming()
-
-    def consume_callback(self, channel, method, properties, body):
-        proto = self.proto_in()
-        proto.ParseFromString(body)
-
-        self.func(proto, self.publish_callback)
-        self.ack_callback(method.delivery_tag)
-
-        # t = threading.Thread(
-        #     target=self,
-        #     args=(proto,),
-        #     kwargs={'delivery_tag': method.delivery_tag}
-        # )
-        # t.start()
-
-    def ack_callback(self, delivery_tag):
-        cb = functools.partial(self.channel.basic_ack, delivery_tag)
-        self.connection.add_callback_threadsafe(cb)
-
-
 class Service:
     __slots__ = ['messages', 'stubs']
     names = []
     def __init__(self, file, prefetch=1):
 
-        class Stubs: pass
-        self.stubs = Stubs
         app_path = find_app_path(file)
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
         service = file.split('/')[-2]
+
+        self.stubs = dict()
 
         yamls = json.load(open(app_path + '/.koursaros/yamls.json'))
 
         for pipeline, stubs in yamls['pipelines'].items():
             for stub_config in stubs:
                 if service == stub_config[1]:
-                    class Stub(AbstractStub): pass
-
-                    Stub.pipeline = pipeline
-                    Stub.pin_in = stub_config[0]
-                    Stub.service = service
                     name = stub_config[2]
-                    Stub.name = name
+                    configs = dict()
+                    configs['prefetch'] = prefetch
+                    configs['service'] = service
+                    configs['pipeline'] = pipeline
+                    configs['pin_in'] = stub_config[0]
+                    configs['pin_out'] = stub_config[5]
                     proto_in = stub_config[3] if stub_config[3] else ''
                     proto_out = stub_config[4] if stub_config[4] else ''
-                    Stub.proto_in = getattr(self.messages, proto_in, None)
-                    Stub.proto_out = getattr(self.messages, proto_out, None)
-                    Stub.pin_out = stub_config[5]
-                    Stub.prefetch = prefetch
-
+                    configs['proto_in'] = getattr(self.messages, proto_in, None)
+                    configs['proto_out'] = getattr(self.messages, proto_out, None)
                     host = yamls['connection']['host']
                     port = yamls['connection']['port']
                     password = yamls['connection']['password']
                     credentials = pika.credentials.PlainCredentials(service, password)
-                    Stub.params = pika.ConnectionParameters(host, port, pipeline, credentials)
-                    setattr(self.stubs, name, Stub)
-                    self.names.append(name)
+                    configs['params'] = pika.ConnectionParameters(host, port, pipeline, credentials)
+                    self.stubs[name] = configs
+
+
+
+    def stub(self, func):
+        self.stubs[func.__name__]['func'] = func
+        return Service.Stub(self, func)
+
+
+    class Stub:
+        def __init__(self, service, func):
+            self.func = func
+            self.configs = service.stubs[func.__name__]
+
+            while True:
+                try:
+                    params = self.configs['params']
+                    self.connection = pika.BlockingConnection(parameters=params)
+                    self.channel = self.connection.channel()
+                    break
+                except Exception as exc:
+                    print(f'Failed pika connection...\n{exc.args}')
+                    time.sleep(RECONNECT_DELAY)
+
+            service.stubs[func.__name__] = self
+
+        def __call__(self, proto):
+            self.func(proto, self.publish_callback)
+
+        def publish_callback(self, proto):
+            print('PROOTOOO')
+            print(proto)
+            # cb = functools.partial(self.publish, proto)
+            print(self.connection)
+            # self.connection.add_callback_threadsafe(cb)
+            self.publish(proto)
+
+        def publish(self, proto):
+            print('PROOTOOOMAMA')
+            body = proto.SerializeToString()
+            self.channel.basic_publish(
+                exchange=EXCHANGE,
+                routing_key=self.configs['pin_out'],
+                body=body,
+                properties=PROPS
+            )
+
+        def consume(self):
+            self.channel.basic_qos(prefetch_count=self.configs['prefetch'])
+            queue = f'{self.configs["service"]}.{self.configs["service"]}'
+            self.channel.basic_consume(
+                queue=queue,
+                on_message_callback=self.consume_callback
+            )
+            print(f'"{self.configs["name"]}" listening on {queue}...')
+            self.channel.start_consuming()
+
+        def consume_callback(self, channel, method, properties, body):
+            proto = self.configs["proto_in"]()
+            proto.ParseFromString(body)
+
+            self.func(proto, self.publish_callback)
+            self.ack_callback(method.delivery_tag)
+
+            # t = threading.Thread(
+            #     target=self,
+            #     args=(proto,),
+            #     kwargs={'delivery_tag': method.delivery_tag}
+            # )
+            # t.start()
+
+        def ack_callback(self, delivery_tag):
+            cb = functools.partial(self.channel.basic_ack, delivery_tag)
+            self.connection.add_callback_threadsafe(cb)
+
 
     def run(self):
 
         threads = []
-
-        for name in self.names:
-            t = threading.Thread(target=getattr(self.stubs, name, None).consume)
-            print(f'Starting thread {t.getName()}: "{name}"')
+        for stub in self.stubs:
+            t = threading.Thread(target=stub.consume)
+            print(f'Starting thread {t.getName()}: "{stub.name}"')
             threads.append(t)
 
         return threads
