@@ -6,7 +6,7 @@ import signal
 
 def deploy_pipelines(app_path, services):
 
-    app_name = app_path.split('/')[-1]
+    app_name = app_path.split('/')[-2]
     sys.path.append(app_path + '/..')
 
     pids = []
