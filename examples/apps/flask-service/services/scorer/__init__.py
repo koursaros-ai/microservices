@@ -5,7 +5,7 @@ import sys
 # sys.path.append(os.getcwd())
 # from utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
-# from utils.model import Roberta
+from utils.model import Roberta
 
 #
 # CHECKPOINT_FILE = 'checkpoint_best.pt'
