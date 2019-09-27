@@ -3,6 +3,7 @@ import sys
 import os
 import time
 import threading
+from utils.model import Roberta
 
 from utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
@@ -14,7 +15,6 @@ def load_model():
 
     global regression_model
 
-    from utils.model import Roberta
     print('loading model')
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'scorer'
