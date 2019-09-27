@@ -7,7 +7,7 @@ from utils.buffer import batch_fn
 from utils.bucket import download_and_unzip
 from utils.model import Roberta
 
-print('starting scorer...')
+print('starting scorer #2...')
 
 
 CHECKPOINT_FILE = 'checkpoint_best.pt'
@@ -33,16 +33,16 @@ service = Service(__file__)
 
 @service.stub
 def rank(claim_with_lines, publish):
-#     print('ranking')
-#     def score(lines):
-#         claims = [claim_with_lines.claim.text] * len(lines)
-#         return regression_model.classify(claims, lines)
-#
-#     results = []
-#     for scores, inputs in batch_fn(BATCH_SIZE, score, claim_with_lines.lines):
-#         for score, line in zip(scores, inputs):
-#             results.append((score, line))
-#     results.sort(key=lambda x: x[0], reverse=True)
+    print('ranking')
+    def score(lines):
+        claims = [claim_with_lines.claim.text] * len(lines)
+        return regression_model.classify(claims, lines)
+
+    results = []
+    for scores, inputs in batch_fn(BATCH_SIZE, score, claim_with_lines.lines):
+        for score, line in zip(scores, inputs):
+            results.append((score, line))
+    results.sort(key=lambda x: x[0], reverse=True)
     print("publishing")
     publish(service.messages.ClaimWithLines(
         claim=claim_with_lines.claim,
