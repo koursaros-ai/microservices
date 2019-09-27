@@ -2,11 +2,9 @@ import sys
 from subprocess import Popen
 import os
 import signal
-from ..logger import KctlStdout
 
 
 def deploy_pipelines(app_path, services):
-    sys.stdout = KctlStdout(sys.stdout)
     print('yoooo')
     app_name = app_path.split('/')[-2]
     os.chdir(app_path + '..')
