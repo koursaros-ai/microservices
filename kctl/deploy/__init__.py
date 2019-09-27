@@ -13,7 +13,7 @@ def run_service(app_path, service, imports):
     for _import in imports:
         setattr(module, _import, __import__(_import))
 
-    print(dir(module))
+    print(dir(module.pika))
     raise SystemExit
     main = getattr(getattr(module, service), 'main', None)
     if main:
