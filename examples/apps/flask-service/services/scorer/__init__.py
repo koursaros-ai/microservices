@@ -57,10 +57,6 @@ def rerank(claim_with_lines, publish):
         lines=["test", "test"] #[el[1] for el in results[:5]]
     ))
 
-def fake_load():
-    for i in range(0, 5):
-        time.sleep(1)
-        print('hi!!!!')
 
 def main():
     print('running main scorer')
