@@ -50,7 +50,7 @@ class AbstractStub:
         )
 
     def consume(self):
-        print('CONSUMEING',self.name)
+        print('CONSUMEING' + self.name)
         self.channel.basic_qos(prefetch_count=self.prefetch)
         queue = f'{self.service}.{self.name}'
         self.channel.basic_consume(
