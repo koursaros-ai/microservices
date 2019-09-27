@@ -106,8 +106,10 @@ class Service:
         name = stub_config[2]
         self.names.append(name)
         Stub.name = name
-        Stub.proto_in = getattr(self.messages, stub_config[3], None)
-        Stub.proto_out = getattr(self.messages, stub_config[4], None)
+        proto_in = stub_config[3] if stub_config[3] else ''
+        proto_out = stub_config[4] if stub_config[4] else ''
+        Stub.proto_in = getattr(self.messages, proto_in, None)
+        Stub.proto_out = getattr(self.messages, proto_out, None)
         Stub.pin_out = stub_config[5]
         Stub.prefetch = prefetch
         setattr(self.stubs, Stub.name, Stub)
