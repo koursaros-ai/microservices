@@ -47,12 +47,8 @@ class Service:
                     configs['params'] = pika.ConnectionParameters(host, port, pipeline, credentials)
                     self.stubs[name] = configs
 
-
-
     def stub(self, func):
-        self.stubs[func.__name__]['func'] = func
         return Service.Stub(self, func)
-
 
     class Stub:
         def __init__(self, service, func):
