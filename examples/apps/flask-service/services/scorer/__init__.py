@@ -11,7 +11,7 @@ NAME = 'scorer'
 MODELS_DIR = f'./'  # where to score the model locally
 
 MODEL = f'{NAME}-model.tar.gz'  # bucket storage
-BATCH_SIZE = 8
+BATCH_SIZE = 4
 BUCKET = 'poloma-models'
 model_dir = MODELS_DIR + f'{NAME}-output/'
 if not os.path.isfile(model_dir + CHECKPOINT_FILE):
