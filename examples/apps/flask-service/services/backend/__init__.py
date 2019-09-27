@@ -18,10 +18,14 @@ def receive():
         })
     global sentences
 
+    print('SENDING sdjfzohjfodsf')
     sentence_id = str(uuid.uuid4())
+    print('saodifhlasfgoe FUUUUUUCK')
     queue = Queue()
+    print('SENDING :)')
     sentences[sentence_id] = queue
 
+    print('SENDING FUUUUUUCK')
     sentence = service.messages.Sentence(id=sentence_id, text=text)
     print('SENDING FUUUUUUCK')
     send(sentence)
