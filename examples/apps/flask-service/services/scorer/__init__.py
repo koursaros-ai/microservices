@@ -91,8 +91,6 @@ def rerank(claim_with_lines, publish):
 def main():
     threads = service.run()
 
-    global regression_model
-
     print('loading model')
 
     # regression_model= Roberta(
