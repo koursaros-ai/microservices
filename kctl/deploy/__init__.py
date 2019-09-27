@@ -5,6 +5,9 @@ import os
 def run_service(app_path, service):
     os.chdir(app_path)
 
+    print(os.getcwd())
+    raise SystemExit
+
     module = __import__(f'.services.{service}')
     service = getattr(module.services, service)
 
