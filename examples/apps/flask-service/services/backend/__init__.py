@@ -23,7 +23,7 @@ def receive():
     sentences[sentence_id] = queue
 
     sentence = service.messages.Sentence(id=sentence_id, text=text)
-    send_sentence(sentence)
+    send(sentence)
 
     return jsonify({
         "status": "success",
@@ -31,8 +31,8 @@ def receive():
         })
 
 
-@service.stubs.send_sentences
-def send_sentences(sentence, publish):
+@service.stubs.send_sentence
+def send(sentence, publish):
     publish(sentence)
 
 
