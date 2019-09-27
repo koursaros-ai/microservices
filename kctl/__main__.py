@@ -2,8 +2,8 @@
 import os
 from .utils import find_app_path
 
-# APP_PATH = find_app_path(os.getcwd())
-APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
+APP_PATH = find_app_path(os.getcwd())
+#APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
 __location__ = os.path.dirname(__file__)
 
 
@@ -261,14 +261,7 @@ def main():
     args.func(args)
 
 
-# if __name__ == "__main__":
-    # print('importing torch')
-    # import torch
-    # print('done')
-    # print('importing fairseq')
-    # import fairseq
-    # print('done')
-    # print("IMPORTING FAIRSEQ")
-    # import fairseq
-    #
-    # main()
+if __name__ == "__main__":
+    import fairseq
+
+    main()
