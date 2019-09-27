@@ -12,10 +12,6 @@ RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
-class Stubs:
-    pass
-
-
 class AbstractStub:
     def __init__(self, func):
         self.func = func
@@ -83,8 +79,8 @@ class AbstractStub:
 
 
 class Service:
-    __slots__ = ['stubs', 'names', 'messages']
-
+    __slots__ = ['stubs', 'messages']
+    names = []
     def __init__(self, file, prefetch=1):
 
         app_path = find_app_path(file)
@@ -93,6 +89,8 @@ class Service:
         service = file.split('/')[-2]
 
         yamls = json.load(open(app_path + '/.koursaros/yamls.json'))
+
+        class Stubs: pass
         self.stubs = Stubs
         for pipeline, stubs in yamls['pipelines'].items():
             for stub_config in stubs:
@@ -100,8 +98,7 @@ class Service:
                     self.init_stub(pipeline, stub_config, prefetch)
 
     def init_stub(self, pipeline, stub_config, prefetch):
-        class Stub(AbstractStub):
-            pass
+        class Stub(AbstractStub): pass
 
         Stub.pipeline = pipeline
         Stub.pin_in = stub_config[0]
