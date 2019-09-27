@@ -6,7 +6,6 @@ import threading
 from ...utils.model import Roberta
 
 from ...utils.buffer import batch_fn
-# from utils.bucket import download_and_unzip
 
 regression_model = None
 BATCH_SIZE = 8
