@@ -72,7 +72,7 @@ class AbstractStub:
         proto.ParseFromString(body)
 
         t = threading.Thread(
-            target=self.func,
+            target=self,
             args=(proto,),
             kwargs={'delivery_tag': method.delivery_tag}
         )
