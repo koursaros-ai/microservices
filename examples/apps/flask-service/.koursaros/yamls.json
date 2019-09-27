@@ -14,7 +14,7 @@
             [
                 "send",
                 "backend",
-                "send_sentence",
+                "send_sentences",
                 "Sentence",
                 "Sentence",
                 "piggify"
