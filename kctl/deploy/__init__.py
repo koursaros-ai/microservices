@@ -27,5 +27,5 @@ def deploy_pipelines(app_path, services):
         print(f'Started process {p.pid}: {service}...')
         processes.append((p, service))
     for p, service in processes:
-        print(f'Joining process {p.pid}: {service}')
         p.join()
+        print(f'Joining process {p.pid}: {service}')
