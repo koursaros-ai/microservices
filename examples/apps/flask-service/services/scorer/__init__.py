@@ -11,31 +11,30 @@ regression_model = None
 BATCH_SIZE = 4
 
 def load_model():
-    import fairseq
 
-    # global regression_model
-    #
-    # from utils.model import Roberta
-    # print('loading model')
-    # CHECKPOINT_FILE = 'checkpoint_best.pt'
-    # NAME = 'scorer'
-    # MODELS_DIR = f'./'  # where to score the model locally
-    #
-    # # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
-    # # BATCH_SIZE = 4
-    # # BUCKET = 'poloma-models'
-    # # model_dir = MODELS_DIR + f'{NAME}-output/'
-    # # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
-    # #     print('downloading model...')
-    # #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
-    # print('loading model')
-    #
-    # regression_model = Roberta(
-    #     MODELS_DIR + f'{NAME}-output/',
-    #     CHECKPOINT_FILE,
-    #     force_gpu=False
-    # )
-    # print('model loaded...')
+    global regression_model
+
+    from utils.model import Roberta
+    print('loading model')
+    CHECKPOINT_FILE = 'checkpoint_best.pt'
+    NAME = 'scorer'
+    MODELS_DIR = f'./'  # where to score the model locally
+
+    # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
+    # BATCH_SIZE = 4
+    # BUCKET = 'poloma-models'
+    # model_dir = MODELS_DIR + f'{NAME}-output/'
+    # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
+    #     print('downloading model...')
+    #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
+    print('loading model')
+
+    regression_model = Roberta(fairseq,
+        MODELS_DIR + f'{NAME}-output/',
+        CHECKPOINT_FILE,
+        force_gpu=False
+    )
+    print('model loaded...')
 
 
 service = Service(__file__)
@@ -61,10 +60,9 @@ def rerank(claim_with_lines, publish):
 
 def main():
     print('running main scorer')
-    # import torch
 
     threads = service.run()
-    # threads.append(load_model_thread)
+    load_model()
 
     for t in threads:
         print('starting thread scorer')
