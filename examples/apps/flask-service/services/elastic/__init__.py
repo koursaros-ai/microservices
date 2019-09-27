@@ -3,6 +3,7 @@ from utils.database.psql import Conn
 import requests
 import json
 import time
+import os
 
 service = Service(__file__)
 
@@ -11,7 +12,7 @@ GIT_PATH = '~/Desktop/koursaros-old'
 DBNAME = 'fever'
 USER = 'postgres'
 HOST = 'localhost'
-PASSWORD = 'pharmasee'
+PASSWORD = os.environ.get('PGPASS')
 SSLMODE = 'verify-ca'
 CERT_PATH = f'{GIT_PATH}/credentials/postgres.pem'
 POSTGRES_HOST = '54.196.150.193'
