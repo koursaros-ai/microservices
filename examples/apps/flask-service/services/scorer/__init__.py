@@ -9,6 +9,9 @@ from utils.model import Roberta
 
 print('starting scorer...')
 
+service = Service(__file__)
+
+
 CHECKPOINT_FILE = 'checkpoint_best.pt'
 NAME = 'scorer'
 MODELS_DIR = f'./'  # where to score the model locally
@@ -26,8 +29,6 @@ regression_model = Roberta(
     CHECKPOINT_FILE,
     force_gpu=False
 )
-
-service = Service(__file__)
 
 @service.stub
 def rank(claim_with_lines, publish):
