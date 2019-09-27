@@ -33,7 +33,7 @@ class AbstractStub:
                 self.channel = self.connection.channel()
                 break
             except Exception as exc:
-                print(f'Failed pika connection on: {self.host}:{self.port}\n{exc.args}')
+                print(f'Failed pika connection...\n{exc.args}')
                 time.sleep(RECONNECT_DELAY)
 
     def publish_callback(self, proto):
