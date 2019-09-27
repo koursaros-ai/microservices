@@ -34,9 +34,10 @@ class AbstractStub:
     def publish_callback(self, proto):
         print('PROOTOOO')
         print(proto)
-        cb = functools.partial(self.publish, proto)
+        # cb = functools.partial(self.publish, proto)
         print(self.connection)
-        self.connection.add_callback_threadsafe(cb)
+        # self.connection.add_callback_threadsafe(cb)
+        self.publish(proto)
 
     def publish(self, proto):
         print('PROOTOOOMAMA')
