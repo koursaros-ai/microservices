@@ -17,10 +17,9 @@ def load_model():
     NAME = 'fever'
     CLASSES = ['NEI', 'REFUTES', 'SUPPORTS']
 
-    BATCH_SIZE = 4
-    MODELS_DIR = f'./'  # where to score the model locally
-    BUCKET = 'poloma-models'
+    MODELS_DIR = f'./flask-service/models/' # where to score the model locally
 
+    # BUCKET = 'poloma-models'
     # MODEL = f'{NAME}-model.tar.gz'  # bucket storage
     # model_dir = MODELS_DIR + f'{NAME}-output/'
     # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
