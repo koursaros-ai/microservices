@@ -6,6 +6,7 @@ import time
 
 ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
+
 def deploy_pipelines(app_path, services):
 
     app_name = app_path.split('/')[-2]
