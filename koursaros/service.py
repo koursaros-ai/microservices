@@ -71,15 +71,10 @@ class Service:
             self.func(proto, self.publish_callback)
 
         def publish_callback(self, proto):
-            print('PROOTOOO')
-            print(proto)
-            # cb = functools.partial(self.publish, proto)
-            print(self.connection)
-            # self.connection.add_callback_threadsafe(cb)
-            self.publish(proto)
+            cb = functools.partial(self.publish, proto)
+            self.connection.add_callback_threadsafe(cb)
 
         def publish(self, proto):
-            print('PROOTOOOMAMA')
             body = proto.SerializeToString()
             self.channel.basic_publish(
                 exchange=EXCHANGE,
