@@ -200,7 +200,6 @@ def get_articles(claim, publish):
         claim=claim,
         lines=lines
     )
-    print('publishing...')
     publish(results)
 
 
