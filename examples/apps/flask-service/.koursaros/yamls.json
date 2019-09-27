@@ -22,6 +22,14 @@
                 "get_articles",
                 "Claim",
                 "ClaimWithLines",
+                "score"
+            ],
+            [
+                "score",
+                "scorer",
+                "rank",
+                "ClaimWithLines",
+                "ClaimWithLines",
                 "receive"
             ],
             [
@@ -46,6 +54,11 @@
             "replicas": 1
         },
         "scorer": {
+            "from": "python3-slim:latest",
+            "image": "example/image",
+            "replicas": 1
+        },
+        "inference": {
             "from": "python3-slim:latest",
             "image": "example/image",
             "replicas": 1
