@@ -6,7 +6,7 @@ import uuid
 import os
 
 service = Service(__file__)
-app = Flask(__name__, static_folder='flask-service/fact-check/fever/build')
+app = Flask(__name__, static_folder='fact-check/fever/build')
 sentences = dict()
 
 
