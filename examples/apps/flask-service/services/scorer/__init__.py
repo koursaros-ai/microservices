@@ -55,14 +55,14 @@ class Roberta:
 
 
 
-CHECKPOINT_FILE = 'checkpoint_best.pt'
-NAME = 'scorer'
-MODELS_DIR = f'./'  # where to score the model locally
-
-MODEL = f'{NAME}-model.tar.gz'  # bucket storage
-BATCH_SIZE = 4
-BUCKET = 'poloma-models'
-model_dir = MODELS_DIR + f'{NAME}-output/'
+# CHECKPOINT_FILE = 'checkpoint_best.pt'
+# NAME = 'scorer'
+# MODELS_DIR = f'./'  # where to score the model locally
+#
+# MODEL = f'{NAME}-model.tar.gz'  # bucket storage
+# BATCH_SIZE = 4
+# BUCKET = 'poloma-models'
+# model_dir = MODELS_DIR + f'{NAME}-output/'
 # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
 #     print('downloading model...')
 #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
@@ -95,11 +95,11 @@ def main():
 
     print('loading model')
 
-    regression_model= Roberta(
-        MODELS_DIR + f'{NAME}-output/',
-        CHECKPOINT_FILE,
-        force_gpu=False
-    )
+    # regression_model= Roberta(
+    #     MODELS_DIR + f'{NAME}-output/',
+    #     CHECKPOINT_FILE,
+    #     force_gpu=False
+    # )
 
     for t in threads:
         t.start()
