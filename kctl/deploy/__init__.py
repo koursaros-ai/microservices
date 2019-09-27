@@ -10,13 +10,7 @@ def run_service(app_path, service, stubs):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    main = getattr(module, 'main', None)
     threads = []
-    if main:
-        t = Thread(target=main)
-        print(f'Starting thread {t.getName()}: main')
-        t.start()
-        threads.append((t, 'main'))
 
     for stub in stubs:
         stub_cls = getattr(module.service.stubs, stub, None)
@@ -24,6 +18,10 @@ def run_service(app_path, service, stubs):
         print(f'Starting thread {t.getName()}: {stub}')
         t.start()
         threads.append((t, stub))
+
+    main = getattr(module, 'main', None)
+    if main:
+        main()
 
     for t, what in threads:
         print(f'Joining thread {t.getName()}: "{what}"')

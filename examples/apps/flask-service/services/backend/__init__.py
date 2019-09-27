@@ -16,10 +16,6 @@ def receive():
             "status": "failure",
             "msg": "Please provide a sentence"
         })
-    return jsonify({
-        "status": "failure",
-        "msg": "Please provide a sentence"
-    })
     global sentences
 
     print('SENDING sdjfzohjfodsf')
