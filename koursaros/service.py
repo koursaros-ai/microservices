@@ -51,10 +51,12 @@ class AbstractStub:
 
     def consume(self):
         self.channel.basic_qos(prefetch_count=self.prefetch)
+        queue = f'{self.service}.{self.name}'
         self.channel.basic_consume(
-            queue=f'{self.service}.{self.name}',
+            queue=queue,
             on_message_callback=self.consume_callback
         )
+        print(f'{self.name} listening on {queue}...')
         self.channel.start_consuming()
 
     def consume_callback(self, channel, method, properties, body):
