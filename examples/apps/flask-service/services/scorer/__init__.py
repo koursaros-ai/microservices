@@ -8,7 +8,9 @@ import time
 
 
 def load_model():
+    print('appending to sys path')
     sys.path.append(os.getcwd())
+    print('importing model')
     from utils.model import Roberta
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'scorer'
@@ -21,6 +23,7 @@ def load_model():
     # if not os.path.isfile(model_dir + CHECKPOINT_FILE):
     #     print('downloading model...')
     #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
+    print('loading model')
 
     regression_model = Roberta(
         MODELS_DIR + f'{NAME}-output/',
@@ -53,7 +56,6 @@ def fake_load():
     for i in range(0, 5):
         time.sleep(1)
         print('hi!!!!')
-
 
 def main():
     print('running main scorer')
