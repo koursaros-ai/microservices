@@ -224,7 +224,7 @@ def main():
         'action': 'store_true',
         'help': 'clear and rebind the rabbitmq binds on entrance'
     }
-    i_args = ('-i', '--import')
+    i_args = ('-i', '--imports')
     i_kwargs = {
         'action': 'store',
         'nargs': '+',
