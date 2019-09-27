@@ -12,10 +12,10 @@ sentences = dict()
 def receive():
     text = request.args.get('q')
     # if not text:
-    return jsonify({
-        "status": "failure",
-        "msg": "Please provide a sentence"
-    })
+    # return jsonify({
+    #     "status": "failure",
+    #     "msg": "Please provide a sentence"
+    # })
     global sentences
 
     print('SENDING sdjfzohjfodsf')
