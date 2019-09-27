@@ -28,8 +28,6 @@ def deploy_app(args):
 
 
 def deploy_pipeline(args):
-
-
     import sys
 
     if APP_PATH is None:
@@ -117,7 +115,6 @@ def create_app(args):
     print(f'Created app: {new_app_path}')
 
 
-@allow_keyboard_interrupt
 def create_pipeline(args):
 
     if APP_PATH is None:
@@ -133,7 +130,6 @@ def create_pipeline(args):
     print(f'Created pipeline: {new_pipeline_path}')
 
 
-@allow_keyboard_interrupt
 def create_service(args):
 
     if APP_PATH is None:
@@ -149,12 +145,10 @@ def create_service(args):
     print(f'Created backend: {new_service_path}')
 
 
-@allow_keyboard_interrupt
 def train_model(args):
     raise NotImplementedError
 
 
-@allow_keyboard_interrupt
 def pull_app(args):
 
     if APP_PATH is not None:

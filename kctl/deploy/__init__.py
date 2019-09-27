@@ -18,8 +18,8 @@ def run_service(app_path, service, _imports):
 
 
 def deploy_pipelines(app_path, services, imports):
-    from multiprocessing import Process
-    from threading import Thread
+    # from multiprocessing import Process
+    # from threading import Thread
     print('importing FAIRSEQ')
     import fairseq
 
