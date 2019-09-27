@@ -49,13 +49,18 @@ def rerank(claim_with_lines, publish):
         lines=["test", "test"]#[el[1] for el in results[:5]]
     ))
 
+def fake_load():
+    for i in range(0, 5):
+        time.sleep(1)
+        print('hi!!!!')
+
 
 def main():
     print('running main scorer')
     threads = service.run()
 
     # load_model()
-    time.sleep(10)
+    fake_load()
 
     for t in threads:
         print('starting thread scorer')
