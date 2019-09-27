@@ -48,7 +48,7 @@ def receive(evaluated, publish):
 
 def main():
     threads = service.run()
-    threads.append(threading.Thread(target=app.run))
+    threads.append(threading.Thread(target=app.run, kwargs={'host':'0.0.0.0'}))
 
     for t in threads:
         t.start()
