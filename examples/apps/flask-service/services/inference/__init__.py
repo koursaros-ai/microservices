@@ -37,7 +37,7 @@ service = Service(__file__)
 @service.stub
 def inference(claim_with_lines, publish):
     claim_text = claim_with_lines.claim.text
-    evidence = claim_with_lines.lines[0].text
+    evidence = claim_with_lines.lines[0]
 
     label = model.classify(claim_text, evidence, probs=False)
 
