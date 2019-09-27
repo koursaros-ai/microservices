@@ -10,6 +10,20 @@ import time
 def load_model():
     print('appending to sys path')
     print('importing fairseq / roberta')
+    from fairseq.models.roberta import RobertaModel
+    from fairseq.data.data_utils import collate_tokens
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+    print('IMPORTED FAIRSEQ')
+
     #
     # # from utils.model import Roberta
     # print('loading model')
@@ -60,10 +74,9 @@ def fake_load():
 
 def main():
     print('running main scorer')
-    threads = service.run()
+    load_model()
 
-    from fairseq.models.roberta import RobertaModel
-    from fairseq.data.data_utils import collate_tokens
+    threads = service.run()
 
     for t in threads:
         print('starting thread scorer')
