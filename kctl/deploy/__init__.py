@@ -1,15 +1,17 @@
-import importlib.util
+import sys
+import os
 
 
 def run_service(app_path, service):
-    spec = importlib.util.spec_from_file_location(
-        service, f'{app_path}/services/{service}/__init__.py'
-    )
+    os.chdir(app_path)
 
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    print(os.getcwd())
+    raise SystemExit
 
-    main = getattr(module, 'main', None)
+    module = __import__(f'.services.{service}')
+    service = getattr(module.services, service)
+
+    main = getattr(service, 'main', None)
     if main:
         main()
 
