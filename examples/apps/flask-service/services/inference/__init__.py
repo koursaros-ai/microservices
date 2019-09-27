@@ -7,7 +7,7 @@ sys.path.append(os.getcwd())
 # from koursaros.utils.bucket import download_and_unzip
 from utils.model import Roberta
 
-CHECKPOINT_FILE = 'checkpoint_last.pt'
+CHECKPOINT_FILE = 'checkpoint_best.pt'
 NAME = 'fever'
 CLASSES = ['NEI', 'REFUTES', 'SUPPORTS']
 
