@@ -7,9 +7,7 @@ def run_service(app_path, service):
     sys.path.insert(0, app_path)
 
     module = __import__('services', fromlist=[service])
-    main = getattr(module, service, None)
-    print(dir(main))
-    raise SystemExit
+    main = getattr(getattr(module, service), 'main', None)
     if main:
         main()
 
