@@ -46,7 +46,7 @@ class AbstractStub:
         )
 
     def consume(self):
-        self.rabbitmq_connect()
+        self.rabbitmq_connect(self)
         self.channel.basic_qos(prefetch_count=self.prefetch)
         queue = f'{self.service}.{self.name}'
         self.channel.basic_consume(
