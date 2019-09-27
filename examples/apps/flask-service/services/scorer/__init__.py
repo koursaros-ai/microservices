@@ -1,6 +1,7 @@
 from koursaros import Service
 import os
 import sys
+import time
 
 # sys.path.append(os.getcwd())
 # from utils.buffer import batch_fn
@@ -52,6 +53,8 @@ def rerank(claim_with_lines, publish):
 def main():
     print('running main scorer')
     threads = service.run()
+
+    time.sleep(5)
 
     for t in threads:
         print('starting thread scorer')
