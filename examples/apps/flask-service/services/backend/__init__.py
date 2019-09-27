@@ -46,10 +46,10 @@ def receive(piggified, publish):
 
 def main():
     threads = service.run()
-    flask_thread = threading.Thread(target=app.run)
-
-    for t in threads + flask_thread:
+    threads.append(threading.Thread(target=app.run))
+    
+    for t in threads:
         t.start()
 
-    for t in threads + flask_thread:
+    for t in threads:
         t.join()
