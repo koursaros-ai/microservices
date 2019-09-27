@@ -8,7 +8,7 @@ def deploy_pipelines(app_path, services):
 
     app_name = app_path.split('/')[-2]
     sys.path.append(app_path)
-
+    print(sys.path)
     pids = []
     try:
         for service in services:
