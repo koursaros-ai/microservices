@@ -8,7 +8,7 @@ def run_service(app_path, service):
 
     print(sys.path)
 
-    mod = __import__('pig', fromlist=['.services'])
+    mod = __import__('.services', fromlist=['pig'])
     print(dir(mod))
     raise SystemExit
 
