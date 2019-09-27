@@ -7,14 +7,9 @@ def run_service(app_path, service, imports):
 
     module = __import__('services', fromlist=[service])
 
-    print(dir(module))
-    print('HOLA')
-
     for _import in imports:
         setattr(module, _import, __import__(_import))
 
-    print(dir(module.pika))
-    raise SystemExit
     main = getattr(getattr(module, service), 'main', None)
     if main:
         main()
