@@ -10,7 +10,7 @@ def run_service(app_path, service):
 
     # mod = __import__('.services', fromlist=['pig'])
 
-    from .services import pig
+    import pig
     print(dir(pig))
     raise SystemExit
 
