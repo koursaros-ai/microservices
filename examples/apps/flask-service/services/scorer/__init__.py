@@ -2,9 +2,10 @@ from koursaros import Service
 import os
 import sys
 
-sys.path.append(os.getcwd())
+# sys.path.append(os.getcwd())
 # from utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
+print(os.getcwd())
 from utils.model import Roberta
 
 #
