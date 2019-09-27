@@ -1,6 +1,7 @@
 
 import os
 from .utils import find_app_path
+import fairseq
 
 APP_PATH = find_app_path(os.getcwd())
 #APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
@@ -262,6 +263,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import fairseq
-
     main()
