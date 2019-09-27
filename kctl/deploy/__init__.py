@@ -1,5 +1,5 @@
 import sys
-from subprocess import Popen, PIPE
+from subprocess import Popen
 import os
 import signal
 
@@ -12,8 +12,7 @@ def deploy_pipelines(app_path, services):
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
             print(f'Running {cmd}...')
-            sys.stdout.write('AAAAAAAA')
-            popen = Popen(cmd, stdout=sys.stdout,  stderr=sys.stderr)
+            popen = Popen(cmd)
             popens.append((popen, service))
 
         for popen, service in popens:
@@ -21,6 +20,8 @@ def deploy_pipelines(app_path, services):
 
     except KeyboardInterrupt:
         pass
+    except Exception as exc:
+        print(exc)
 
     finally:
         for popen, service in popens:

@@ -6,10 +6,12 @@ import json
 import pika
 import pika.exceptions
 from kctl.utils import find_app_path
+from kctl.logger import redirect_out
 
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
+redirect_out()
 
 
 class Service:
