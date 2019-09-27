@@ -1,17 +1,13 @@
+import importlib.util
 import sys
-import os
 
 
 def run_service(app_path, service):
-    os.chdir(app_path)
 
-    print(os.getcwd())
-    raise SystemExit
+    sys.path.insert(0, app_path)
 
-    module = __import__(f'.services.{service}')
-    service = getattr(module.services, service)
-
-    main = getattr(service, 'main', None)
+    module = __import__('services', fromlist=[service])
+    main = getattr(getattr(module, service), 'main', None)
     if main:
         main()
 
