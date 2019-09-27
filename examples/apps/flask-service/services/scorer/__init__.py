@@ -1,7 +1,7 @@
 from koursaros import Service
 
-from fairseq.models.roberta import RobertaModel
-from fairseq.data.data_utils import collate_tokens
+# from fairseq.models.roberta import RobertaModel
+# from fairseq.data.data_utils import collate_tokens
 
 #
 # class Roberta:
