@@ -6,7 +6,7 @@ def run_service(app_path, service):
 
     sys.path.append(app_path)
 
-    spec = importlib.util.spec_from_file_location(f'.services/{service}', app_path)
+    spec = importlib.util.spec_from_file_location(f'.services', app_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
