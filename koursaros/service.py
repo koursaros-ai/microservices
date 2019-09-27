@@ -101,12 +101,12 @@ class Service:
             self.func(proto, self.publish_callback)
             self.ack_callback(method.delivery_tag)
 
-            # t = threading.Thread(
-            #     target=self,
-            #     args=(proto,),
-            #     kwargs={'delivery_tag': method.delivery_tag}
-            # )
-            # t.start()
+            t = threading.Thread(
+                target=self,
+                args=(proto,),
+                kwargs={'delivery_tag': method.delivery_tag}
+            )
+            t.start()
 
         def ack_callback(self, delivery_tag):
             cb = functools.partial(self.channel.basic_ack, delivery_tag)
