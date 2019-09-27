@@ -3,6 +3,9 @@ import sys
 
 def run_service(app_path, service):
     sys.path.insert(1, app_path)
+    from .services import pig
+    raise SystemExit
+
     module = __import__(service, fromlist=['.services'])
     service = getattr(module.services, service)
 
