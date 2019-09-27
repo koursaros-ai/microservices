@@ -61,7 +61,7 @@ def rerank(claim_with_lines, publish):
 
 def main():
     print('running main scorer')
-    import fairseq
+    # import fairseq
 
     threads = service.run()
     # threads.append(load_model_thread)
