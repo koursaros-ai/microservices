@@ -99,6 +99,7 @@ class Service:
             self.channel.start_consuming()
 
         def consume_callback(self, channel, method, properties, body):
+            print('KKKKAAAAALLLIMA')
             proto = self.configs["proto_in"]()
             proto.ParseFromString(body)
 
