@@ -31,13 +31,13 @@ def receive():
         })
 
 
-@service.stubs.send_sentence
+@service.stub
 def send(sentence, publish):
     print(sentence)
     publish(sentence)
 
 
-@service.stubs.receive
+@service.stub
 def receive(piggified, publish):
     print(piggified)
     global sentences
