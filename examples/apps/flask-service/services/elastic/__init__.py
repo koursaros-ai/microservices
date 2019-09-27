@@ -1,6 +1,7 @@
 from koursaros import Service
 import os
-print(os.getcwd())
+import sys
+sys.path.append(os.getcwd())
 from utils.database.psql import Conn
 import requests
 import json
