@@ -16,6 +16,7 @@ def receive():
             "status": "failure",
             "msg": "Please provide a sentence"
         })
+    print('SENDING sdjfzohjfodsf')
     global sentences
 
     print('SENDING sdjfzohjfodsf')
