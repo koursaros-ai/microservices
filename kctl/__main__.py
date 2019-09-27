@@ -228,7 +228,8 @@ def main():
     i_kwargs = {
         'action': 'store',
         'nargs': '+',
-        'help': 'import non-dynamic module'
+        'help': 'import non-dynamic module',
+        'default': []
     }
     # kctl deploy app
     kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
