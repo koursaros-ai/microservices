@@ -4,11 +4,12 @@ import sys
 
 def run_service(app_path, service):
 
-    sys.path.append(app_path)
+    sys.path.insert(0, app_path)
 
     print(sys.path)
 
     # mod = __import__('.services', fromlist=['pig'])
+
     from .services import pig
     print(dir(pig))
     raise SystemExit
