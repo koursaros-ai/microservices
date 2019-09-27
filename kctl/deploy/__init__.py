@@ -12,7 +12,9 @@ def deploy_pipelines(app_path, services):
     pids = []
     try:
         for service in services:
-            p = Popen([sys.executable, '-m', f'{app_name}.services.{service}'])
+            cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
+            print(cmd)
+            p = Popen(cmd)
             pids.append((p.pid, service))
 
     except Exception as exc:
