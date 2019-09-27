@@ -18,7 +18,6 @@ class AbstractStub:
         global threads
         self.func = func
         self.rabbitmq_connect()
-        self.consume()
         t = threading.Thread(target=self.consume)
         print(f'Starting thread {t.getName()}: {self.name}()...')
         t.start()
