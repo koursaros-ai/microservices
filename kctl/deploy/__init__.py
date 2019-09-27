@@ -8,8 +8,9 @@ def run_service(app_path, service):
 
     print(sys.path)
 
-    mod = __import__('.services', fromlist=['pig'])
-    print(dir(mod))
+    # mod = __import__('.services', fromlist=['pig'])
+    from .services import pig
+    print(dir(pig))
     raise SystemExit
 
     spec = importlib.util.spec_from_file_location(f'.', app_path)
