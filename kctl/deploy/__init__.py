@@ -13,7 +13,10 @@ def run_service(app_path, service, stubs):
     threads = []
 
     for stub in stubs:
+        print(module.service.stubs.__dict__)
         stub_cls = getattr(module.service.stubs, stub, None)
+        print(dir(stub_cls))
+        raise SystemExit
         t = Thread(target=stub_cls.consume,)
         print(f'Starting thread {t.getName()}: {stub}')
         t.start()
