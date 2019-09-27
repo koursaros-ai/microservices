@@ -17,11 +17,11 @@ def deploy_pipelines(app_path, services):
             popen = Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
             popens.append((popen, service))
 
-        for popen, service in popens:
-            popen.communicate()
-
-    except KeyboardInterrupt as exc:
-        print('KeyboardInterrupt')
+        try:
+            for popen, service in popens:
+                popen.communicate()
+        except KeyboardInterrupt:
+            print('KeyboardInterrupt')
 
     finally:
         for popen, service in popens:
