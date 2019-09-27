@@ -71,7 +71,7 @@ def deploy_pipeline(args):
         for stub in stubs:
             services.add(stub[1])
 
-    deploy_pipelines(APP_PATH, services, args.imports)
+    deploy_pipelines(APP_PATH, services, fairseq)
 
 
     # else:

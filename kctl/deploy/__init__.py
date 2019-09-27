@@ -17,13 +17,13 @@ def run_service(app_path, service, _imports):
         main()
 
 
-def deploy_pipelines(app_path, services, imports):
+def deploy_pipelines(app_path, services, fairseq):
     # from multiprocessing import Process
     from threading import Thread
 
-    _imports = []
-    for import_ in imports:
-        _imports.append(__import__(import_))
+    _imports = [fairseq]
+    # for import_ in imports:
+    #     _imports.append(__import__(import_))
 
     processes = []
     for service in services:
