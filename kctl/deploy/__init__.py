@@ -21,7 +21,7 @@ def deploy_pipelines(app_path, services, imports):
     # from multiprocessing import Process
     # from threading import Thread
     print('importing FAIRSEQ')
-    import fairseq
+
 
     raise ValueError(dir(fairseq))
 
