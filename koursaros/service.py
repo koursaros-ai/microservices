@@ -71,7 +71,7 @@ class AbstractStub:
         proto = self.proto_in()
         proto.ParseFromString(body)
 
-        self(proto, delivery_tag=method.delivery_tag)
+        self.__call__(proto, delivery_tag=method.delivery_tag)
 
         # t = threading.Thread(
         #     target=self,
