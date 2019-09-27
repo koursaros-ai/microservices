@@ -12,6 +12,7 @@ def load_model():
     sys.path.append(os.getcwd())
     print('importing model')
     from utils.model import Roberta
+    print('loading model')
     CHECKPOINT_FILE = 'checkpoint_best.pt'
     NAME = 'scorer'
     MODELS_DIR = f'./'  # where to score the model locally
