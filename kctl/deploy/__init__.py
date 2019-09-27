@@ -22,9 +22,6 @@ def deploy_pipelines(app_path, services, imports):
     # from threading import Thread
     print('importing FAIRSEQ')
 
-
-    raise ValueError(dir(fairseq))
-
     _imports = []
     for import_ in imports:
         _imports.append(__import__(import_))
