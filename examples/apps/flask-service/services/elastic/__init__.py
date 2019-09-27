@@ -193,8 +193,8 @@ def get_articles(claim, publish):
     )
 
     rows = conn.query(f'''
-    select text from wiki.lines l join wiki.articles a on l.article_id = a.id 
-    where a.fever id in {','.join(["'"+ fever_id + "'" for fever_id in fever_ids])}
+    select l.text from wiki.lines l join wiki.articles a on l.article_id = a.id 
+    where a.fever_id in ({','.join(["'"+ fever_id + "'" for fever_id in fever_ids])})
     ''')
     lines = [row[0] for row in rows]
     results = service.messages.ClaimWithLines(

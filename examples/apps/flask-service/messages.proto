@@ -7,7 +7,7 @@ message Claim {
 
 message ClaimWithLines {
     Claim claim = 1;
-    repeated string line = 2;
+    repeated string lines = 2;
 }
 
 message EvaluatedClaim {
