@@ -60,3 +60,4 @@ def main():
     for t in threads:
         print('waiting to join thread scorer')
         t.join()
+    print('scorer thread exited')
