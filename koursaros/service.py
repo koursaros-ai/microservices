@@ -84,7 +84,7 @@ class AbstractStub:
 
 
 class Service:
-    __slots__ = ['messages']
+    __slots__ = ['messages', 'stubs']
     names = []
     threads = []
     def __init__(self, file, prefetch=1):
@@ -116,6 +116,7 @@ class Service:
                     Stub.host = yamls['connection']['host']
                     Stub.port = yamls['connection']['port']
                     Stub.password = yamls['connection']['password']
+                    setattr(self.stubs, name, Stub)
 
 
 

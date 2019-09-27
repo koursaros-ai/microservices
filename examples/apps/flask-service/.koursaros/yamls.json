@@ -1,13 +1,10 @@
 {
-    "version": "3.7",
-    "connections": {
-        "dev_local": {
-            "host": "localhost",
-            "port": 5672,
-            "http_port": 15672,
-            "username": "guest",
-            "password": "guest"
-        }
+    "connection": {
+        "host": "localhost",
+        "port": 5672,
+        "http_port": 15672,
+        "username": "guest",
+        "password": "guest"
     },
     "pipelines": {
         "piggify": [
