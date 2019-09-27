@@ -1,15 +1,19 @@
+import importlib.util
 import sys
 
 
 def run_service(app_path, service):
-    sys.path.insert(0, app_path)
-    from .services import pig
+
+    sys.path.append(app_path)
+
+    spec = importlib.util.spec_from_file_location(f'.services/{service}', app_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    print(dir(module))
     raise SystemExit
 
-    module = __import__(service, fromlist=['.services'])
-    service = getattr(module.services, service)
-
-    main = getattr(service, 'main', None)
+    main = getattr(module, 'main', None)
     if main:
         main()
 
