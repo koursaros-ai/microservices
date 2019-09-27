@@ -1,10 +1,8 @@
 
 import os
 from .utils import find_app_path
-import fairseq
 
 APP_PATH = find_app_path(os.getcwd())
-#APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
 __location__ = os.path.dirname(__file__)
 
 
@@ -29,7 +27,6 @@ def deploy_app(args):
 
 
 def deploy_pipeline(args):
-    import sys
 
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
@@ -72,7 +69,7 @@ def deploy_pipeline(args):
         for stub in stubs:
             services.add(stub[1])
 
-    deploy_pipelines(APP_PATH, services, fairseq)
+    deploy_pipelines(APP_PATH, services)
 
 
     # else:
@@ -221,26 +218,17 @@ def main():
         'action': 'store_true',
         'help': 'clear and rebind the rabbitmq binds on entrance'
     }
-    i_args = ('-i', '--imports')
-    i_kwargs = {
-        'action': 'store',
-        'nargs': '+',
-        'help': 'import non-dynamic module',
-        'default': []
-    }
     # kctl deploy app
     kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
     kctl_deploy_app_parser.set_defaults(func=deploy_app)
     kctl_deploy_app_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
-    kctl_deploy_app_parser.add_argument(*i_args, **i_kwargs)
     # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     kctl_deploy_pipeline_parser.add_argument('names', nargs='+')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
-    kctl_deploy_pipeline_parser.add_argument(*i_args, **i_kwargs)
 
     # kctl pull
     kctl_pull_parser = kctl_subparsers.add_parser(
