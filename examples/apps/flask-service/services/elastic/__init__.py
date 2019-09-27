@@ -14,7 +14,7 @@ USER = 'postgres'
 HOST = 'localhost'
 PASSWORD = os.environ.get('PGPASS')
 SSLMODE = 'verify-ca'
-CERT_PATH = '/home/jp954/credentials/postgres.pem'
+CERT_PATH = os.environ.get('CERT_PATH')
 POSTGRES_HOST = '54.196.150.193'
 
 HEADINGS = {"Content-Type": "application/json"}
