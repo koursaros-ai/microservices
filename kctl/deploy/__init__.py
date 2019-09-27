@@ -5,7 +5,6 @@ import signal
 
 
 def deploy_pipelines(app_path, services):
-    print('yoooo')
     app_name = app_path.split('/')[-2]
     os.chdir(app_path + '..')
     popens = []
@@ -13,7 +12,7 @@ def deploy_pipelines(app_path, services):
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
             print(f'Running {cmd}...')
-            popen = Popen(cmd)
+            popen = Popen(cmd, stdout=print)
             popens.append((popen, service))
 
         for popen, service in popens:
