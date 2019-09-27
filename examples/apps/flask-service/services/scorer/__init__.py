@@ -3,9 +3,9 @@ import sys
 import os
 import time
 import threading
-from utils.model import Roberta
+from ...utils.model import Roberta
 
-from utils.buffer import batch_fn
+from ...utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
 
 regression_model = None
@@ -29,7 +29,7 @@ def load_model():
     #     download_and_unzip(BUCKET, MODEL, MODELS_DIR, archive=True)
     print('loading model')
 
-    regression_model = Roberta(fairseq,
+    regression_model = Roberta(
         MODELS_DIR + f'{NAME}-output/',
         CHECKPOINT_FILE,
         force_gpu=False
