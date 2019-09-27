@@ -11,11 +11,10 @@ regression_model = None
 BATCH_SIZE = 4
 
 def load_model():
-    import fairseq
 
     # global regression_model
     #
-    # from utils.model import Roberta
+    from utils.model import Roberta
     # print('loading model')
     # CHECKPOINT_FILE = 'checkpoint_best.pt'
     # NAME = 'scorer'
@@ -61,7 +60,6 @@ def rerank(claim_with_lines, publish):
 
 def main():
     print('running main scorer')
-    # import torch
 
     threads = service.run()
     # threads.append(load_model_thread)
