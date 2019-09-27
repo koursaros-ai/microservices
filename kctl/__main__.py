@@ -71,6 +71,9 @@ def deploy_pipeline(args):
         for stub in stubs:
             services.add(stub[1])
 
+
+    print("IMPORTING FAIRSEQ")
+    import fairseq
     deploy_pipelines(APP_PATH, services, args.imports)
 
 
