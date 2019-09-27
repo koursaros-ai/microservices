@@ -71,7 +71,7 @@ def deploy_pipeline(args):
         for stub in stubs:
             services.add(stub[1])
 
-    deploy_pipelines(APP_PATH, services)
+    deploy_pipelines(APP_PATH, services, args.imports)
 
 
     # else:
@@ -224,17 +224,25 @@ def main():
         'action': 'store_true',
         'help': 'clear and rebind the rabbitmq binds on entrance'
     }
+    i_args = ('-i', '--import')
+    i_kwargs = {
+        'action': 'store',
+        'nargs': '+',
+        'help': 'import non-dynamic module'
+    }
     # kctl deploy app
     kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
     kctl_deploy_app_parser.set_defaults(func=deploy_app)
     kctl_deploy_app_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
+    kctl_deploy_app_parser.add_argument(*i_args, **i_kwargs)
     # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     kctl_deploy_pipeline_parser.add_argument('names', nargs='+')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
+    kctl_deploy_pipeline_parser.add_argument(*i_args, **i_kwargs)
 
     # kctl pull
     kctl_pull_parser = kctl_subparsers.add_parser(
