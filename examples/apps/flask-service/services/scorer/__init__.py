@@ -2,10 +2,10 @@ from koursaros import Service
 import os
 import sys
 print('starting scorer...')
-sys.path.append(os.getcwd())
-from utils.buffer import batch_fn
-from utils.bucket import download_and_unzip
-from utils.model import Roberta
+# sys.path.append(os.getcwd())
+# from utils.buffer import batch_fn
+# from utils.bucket import download_and_unzip
+# from utils.model import Roberta
 
 print('starting scorer #2...')
 
@@ -51,6 +51,7 @@ def rank(claim_with_lines, publish):
 
 
 def main():
+    print('running main scorer')
     threads = service.run()
 
     for t in threads:
