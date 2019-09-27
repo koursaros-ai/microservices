@@ -31,15 +31,16 @@ def parse_stub_string(stub_string):
     return groups
 
 
-def compile_yamls(app_path, connection):
+def compile_yamls(app_path, connection, pipelines):
     yamls = dict()
 
     yam = yaml_safe_load(app_path, 'connections.yaml')
     yamls['connection'] = yam['connections'][connection]
 
-    pipelines = app_path + '/pipelines/'
+    pipelines_path = app_path + '/pipelines/'
+    # next(os.walk(pipelines))[1]
 
-    for pipeline in next(os.walk(pipelines))[1]:
+    for pipeline in pipelines:
         if not pipeline.startswith(INVALID_PIPELINE_PREFIXES):
             if 'pipelines' not in yamls:
                 yamls['pipelines'] = dict()
@@ -47,7 +48,7 @@ def compile_yamls(app_path, connection):
             if pipeline not in yamls['pipelines']:
                 yamls['pipelines'][pipeline] = []
 
-            stubs = yaml_safe_load(pipelines + pipeline, 'stubs.yaml')
+            stubs = yaml_safe_load(pipelines_path + pipeline, 'stubs.yaml')
 
             for pin, stub_strings in stubs['stubs'].items():
 
