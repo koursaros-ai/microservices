@@ -1,10 +1,11 @@
 from koursaros import Service
 import os
 import sys
-# sys.path.append(os.getcwd())
-# from utils.buffer import batch_fn
-# from utils.bucket import download_and_unzip
-# from utils.model import Roberta
+
+sys.path.append(os.getcwd())
+from utils.buffer import batch_fn
+from utils.bucket import download_and_unzip
+from utils.model import Roberta
 
 #
 # CHECKPOINT_FILE = 'checkpoint_best.pt'
@@ -25,6 +26,7 @@ import sys
 #     force_gpu=False
 # )
 #
+
 service = Service(__file__)
 
 
