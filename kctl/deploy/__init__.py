@@ -2,26 +2,26 @@ import sys
 from subprocess import Popen
 import os
 import signal
-import time
-
-ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
 def deploy_pipelines(app_path, services):
 
     app_name = app_path.split('/')[-2]
     os.chdir(app_path + '..')
-    pids = []
+    popens = []
     try:
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}']
-            p = Popen(cmd)
-            pids.append((p.pid, service))
-        while True:
-            time.sleep(ONE_DAY_IN_SECONDS)
+            print(f'Starting {cmd}...')
+            popen = Popen(cmd)
+            popens.append((popen, service))
+
+        for popen, service in popens:
+            popen.communicate()
+            print(f'process {popen.pid}: "{service}" ended...')
 
     except KeyboardInterrupt as exc:
         print(exc)
-        for pid, service in pids:
-            print(f'Killing pid {pid}: {service}')
-            os.kill(pid, signal.SIGTERM)
+        for popen, service in popens:
+            print(f'Killing pid {popen.pid}: {service}')
+            os.kill(popen.pid, signal.SIGTERM)
