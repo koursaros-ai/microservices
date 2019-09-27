@@ -4,7 +4,7 @@ import os
 import time
 import threading
 
-from utils.buffer import batch_fn
+from ...utils.buffer import batch_fn
 # from utils.bucket import download_and_unzip
 
 regression_model = None
