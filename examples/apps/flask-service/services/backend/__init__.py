@@ -40,3 +40,8 @@ def send(sentence, publish):
 def receive(piggified, publish):
     global sentences
     sentences[piggified.sentence.id].put(piggified.pig_latin)
+
+
+def main():
+    raise FileNotFoundError('AAAAAAAAA')
+    app.run()
