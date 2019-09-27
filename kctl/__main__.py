@@ -2,8 +2,8 @@
 import os
 from .utils import find_app_path
 
-# APP_PATH = find_app_path(os.getcwd())
-APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
+APP_PATH = find_app_path(os.getcwd())
+#APP_PATH='/home/jp954/koursaros/examples/apps/flask-service/'
 __location__ = os.path.dirname(__file__)
 
 
@@ -22,13 +22,11 @@ def allow_keyboard_interrupt(func):
     return wrapper
 
 
-@allow_keyboard_interrupt
 def deploy_app(args):
     print('hello')
     raise NotImplementedError
 
 
-@allow_keyboard_interrupt
 def deploy_pipeline(args):
 
 
@@ -270,10 +268,10 @@ def main():
 
 
 if __name__ == "__main__":
-    print('importing torch')
-    import torch
-    print('done')
-    print('importing fairseq')
-    import fairseq
-    print('done')
+    # print('importing torch')
+    # import torch
+    # print('done')
+    # print('importing fairseq')
+    # import fairseq
+    # print('done')
     main()
