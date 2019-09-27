@@ -129,8 +129,8 @@ def create_pipeline(args):
     new_pipeline_path = pipelines_path + args.name
 
     from shutil import copytree
-    copytree(f'{__location__}/create/template/app/pipelines/pipeline', new_pipeline_path)
-    print(f'Created pipeline: {new_pipeline_path}')
+    copytree(f'{__location__}/create/template/app/pipelines/piggify', new_pipeline_path)
+    print(f'Created piggify: {new_pipeline_path}')
 
 
 @allow_keyboard_interrupt
@@ -184,15 +184,15 @@ def main():
 
     # kctl create
     kctl_create_parser = kctl_subparsers.add_parser(
-        'create', description='create an app, pipeline, backend, or model'
+        'create', description='create an app, piggify, backend, or model'
     )
     kctl_create_subparsers = kctl_create_parser.add_subparsers()
     # kctl create app
     kctl_create_app_parser = kctl_create_subparsers.add_parser('app')
     kctl_create_app_parser.set_defaults(func=create_app)
     kctl_create_app_parser.add_argument('name')
-    # kctl create pipeline
-    kctl_create_pipeline_parser = kctl_create_subparsers.add_parser('pipeline')
+    # kctl create piggify
+    kctl_create_pipeline_parser = kctl_create_subparsers.add_parser('piggify')
     kctl_create_pipeline_parser.set_defaults(func=create_pipeline)
     kctl_create_pipeline_parser.add_argument('name')
     # kctl create backend
@@ -213,7 +213,7 @@ def main():
 
     # kctl deploy
     kctl_deploy_parser = kctl_subparsers.add_parser(
-        'deploy', description='deploy an app or pipeline'
+        'deploy', description='deploy an app or piggify'
     )
     kctl_deploy_subparsers = kctl_deploy_parser.add_subparsers()
     c_args = ('-c', '--connection')
@@ -231,8 +231,8 @@ def main():
     kctl_deploy_app_parser.set_defaults(func=deploy_app)
     kctl_deploy_app_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
-    # kctl deploy pipeline
-    kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
+    # kctl deploy piggify
+    kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('piggify')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     kctl_deploy_pipeline_parser.add_argument('names', nargs='+')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
