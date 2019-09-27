@@ -121,6 +121,7 @@ class Service:
 
         threads = []
         for stub in self.stubs:
+            print(self.stubs)
             t = threading.Thread(target=stub.consume)
             print(f'Starting thread {t.getName()}: "{stub.name}"')
             threads.append(t)
