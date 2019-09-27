@@ -29,17 +29,7 @@ class AbstractStub:
     def rabbitmq_connect(self):
         while True:
             try:
-                credentials = pika.credentials.PlainCredentials(
-                    self.service,
-                    self.password
-                )
-                params = pika.ConnectionParameters(
-                    self.host,
-                    self.port,
-                    self.pipeline,
-                    credentials
-                )
-                self.connection = pika.BlockingConnection(parameters=params)
+                self.connection = pika.BlockingConnection(parameters=self.params)
                 self.channel = self.connection.channel()
                 break
             except Exception as exc:
@@ -85,8 +75,6 @@ class AbstractStub:
 
 class Service:
     __slots__ = ['messages', 'stubs']
-    names = []
-    threads = []
     def __init__(self, file, prefetch=1):
 
         class Stubs: pass
@@ -95,6 +83,9 @@ class Service:
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
         service = file.split('/')[-2]
+        print(service)
+        print(__name__)
+        raise SystemExit
 
         yamls = json.load(open(app_path + '/.koursaros/yamls.json'))
 
@@ -105,9 +96,8 @@ class Service:
 
                     Stub.pipeline = pipeline
                     Stub.pin_in = stub_config[0]
-                    Stub.service = stub_config[1]
+                    Stub.service = service
                     name = stub_config[2]
-                    self.names.append(name)
                     Stub.name = name
                     proto_in = stub_config[3] if stub_config[3] else ''
                     proto_out = stub_config[4] if stub_config[4] else ''
@@ -115,9 +105,12 @@ class Service:
                     Stub.proto_out = getattr(self.messages, proto_out, None)
                     Stub.pin_out = stub_config[5]
                     Stub.prefetch = prefetch
-                    Stub.host = yamls['connection']['host']
-                    Stub.port = yamls['connection']['port']
-                    Stub.password = yamls['connection']['password']
+
+                    host = yamls['connection']['host']
+                    port = yamls['connection']['port']
+                    password = yamls['connection']['password']
+                    credentials = pika.credentials.PlainCredentials(service, password)
+                    Stub.params = pika.ConnectionParameters(host, port, pipeline, credentials)
                     setattr(self.stubs, name, Stub)
 
 
