@@ -84,8 +84,13 @@ class Stub:
         self.service = configs[0]
         if configs[1]:
             self.proto_in = getattr(messages, configs[1], None)
+        else:
+            self.proto_in = None
         if configs[2]:
             self.proto_out = getattr(messages, configs[2], None)
+        else:
+            self.proto_out = None
+
         self.stub_out = configs[3]
 
     def configure(self, pipeline, connection, prefetch):
