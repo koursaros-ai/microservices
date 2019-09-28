@@ -38,6 +38,9 @@ class App:
     def __init__(self, app_path):
         self.path = app_path
 
+        sys.path.append(f'{app_path}/.koursaros/')
+        self.messages = __import__('messages_pb2')
+
         # connections.yaml
         self.connections = dict()
         conn_path = app_path + '/connections.yaml'
@@ -64,10 +67,13 @@ class App:
 
     def set_pipelines(self, pipelines_path):
         for pipeline_name in next(os.walk(pipelines_path))[1]:
+            self.pipelines[pipeline_name].stubs = dict()
             if not pipeline_name.startswith(INVALID_PREFIXES):
-                pipeline = App.Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
-                self.pipelines[pipeline_name] = pipeline
-                self.pipelines['aisodfjsof'] = pipeline
+                stubs_path = pipelines_path + pipeline_name + '/stubs.yaml'
+                stubs_yaml = yaml.safe_load(open(stubs_path))
+                for stub_name, stub_string in stubs_yaml.items():
+                    stub = App.Stub(self.messages, stub_name, stub_string)
+                    self.pipelines[pipeline_name].stubs[stub_name] = stub
 
     def set_services(self, services_path):
         for service_name in next(os.walk(services_path))[1]:
@@ -95,96 +101,80 @@ class App:
             for key, value in conn_yaml['service'].items():
                 setattr(self, key, value)
 
-    class Pipeline:
-        stubs = dict()
+    class Stub:
+        def __init__(self, messages, name, stub_string):
+            self.name = name
 
-        def __init__(self, stubs_path):
-            stubs_yaml = yaml.safe_load(open(stubs_path))
-            for stub_name, stub_strings in stubs_yaml['stubs'].items():
+            parsed = parse_stub_string(stub_string)
+            self.service = parsed[0]
+            if parsed[1]:
+                self.proto_in = getattr(messages, parsed[1], None)
+            else:
+                self.proto_in = None
+            if parsed[2]:
+                self.proto_out = getattr(messages, parsed[2], None)
+            else:
+                self.proto_out = None
 
-                if isinstance(stub_strings, str):
-                    stub_strings = [stub_strings]
+            self.stub_out = parsed[3]
 
-                for stub_string in stub_strings:
-                    stub = App.Pipeline.Stub(stub_name, parse_stub_string(stub_string))
-                    self.stubs[stub_name] = stub
+        def configure(self, pipeline, connection, prefetch):
+            self.prefetch = prefetch
 
-        class Stub:
-            def __init__(self, name, configs):
-                messages = __import__('messages_pb2')
+            credentials = pika.credentials.PlainCredentials(
+                self.service, connection.password)
+            params = pika.ConnectionParameters(
+                connection.host, connection.port, pipeline, credentials)
 
-                self.name = name
-                self.service = configs[0]
-                if configs[1]:
-                    self.proto_in = getattr(messages, configs[1], None)
-                else:
-                    self.proto_in = None
-                if configs[2]:
-                    self.proto_out = getattr(messages, configs[2], None)
-                else:
-                    self.proto_out = None
+            while True:
+                try:
+                    self.connection = pika.BlockingConnection(parameters=params)
+                    self.channel = self.connection.channel()
+                    break
+                except Exception as exc:
+                    print(f'Failed pika connection...\n{exc.args}')
+                    time.sleep(RECONNECT_DELAY)
 
-                self.stub_out = configs[3]
+        def __call__(self, proto):
+            self.func(proto, self.publish_callback)
 
-            def configure(self, pipeline, connection, prefetch):
-                self.prefetch = prefetch
+        def publish_callback(self, proto):
+            cb = functools.partial(self.publish, proto)
+            self.connection.add_callback_threadsafe(cb)
 
-                credentials = pika.credentials.PlainCredentials(
-                    self.service, connection.password)
-                params = pika.ConnectionParameters(
-                    connection.host, connection.port, pipeline, credentials)
+        def publish(self, proto):
+            body = proto.SerializeToString()
+            self.channel.basic_publish(
+                exchange=EXCHANGE,
+                routing_key=self.stub_out,
+                body=body,
+                properties=PROPS
+            )
 
-                while True:
-                    try:
-                        self.connection = pika.BlockingConnection(parameters=params)
-                        self.channel = self.connection.channel()
-                        break
-                    except Exception as exc:
-                        print(f'Failed pika connection...\n{exc.args}')
-                        time.sleep(RECONNECT_DELAY)
+        def consume(self):
+            self.channel.basic_qos(prefetch_count=self.prefetch)
+            queue = self.service + '.' + self.name
+            self.channel.basic_consume(
+                queue=queue,
+                on_message_callback=self.consume_callback
+            )
+            print(f'Listening on {queue}...')
+            self.channel.start_consuming()
 
-            def __call__(self, proto):
-                self.func(proto, self.publish_callback)
+        def consume_callback(self, channel, method, properties, body):
+            proto = self.proto_in()
+            proto.ParseFromString(body)
 
-            def publish_callback(self, proto):
-                cb = functools.partial(self.publish, proto)
-                self.connection.add_callback_threadsafe(cb)
+            t = Thread(target=self.func, args=(proto, self.publish_callback))
+            t.start()
+            self.ack_callback(method.delivery_tag)
 
-            def publish(self, proto):
-                body = proto.SerializeToString()
-                self.channel.basic_publish(
-                    exchange=EXCHANGE,
-                    routing_key=self.stub_out,
-                    body=body,
-                    properties=PROPS
-                )
-
-            def consume(self):
-                self.channel.basic_qos(prefetch_count=self.prefetch)
-                queue = self.service + '.' + self.name
-                self.channel.basic_consume(
-                    queue=queue,
-                    on_message_callback=self.consume_callback
-                )
-                print(f'Listening on {queue}...')
-                self.channel.start_consuming()
-
-            def consume_callback(self, channel, method, properties, body):
-                proto = self.proto_in()
-                proto.ParseFromString(body)
-
-                t = Thread(target=self.func, args=(proto, self.publish_callback))
-                t.start()
-                self.ack_callback(method.delivery_tag)
-
-            def ack_callback(self, delivery_tag):
-                cb = functools.partial(self.channel.basic_ack, delivery_tag)
-                self.connection.add_callback_threadsafe(cb)
+        def ack_callback(self, delivery_tag):
+            cb = functools.partial(self.channel.basic_ack, delivery_tag)
+            self.connection.add_callback_threadsafe(cb)
 
 
 def compile_app(app_path):
-
-    sys.path.append(f'{app_path}/.koursaros/')
     app = App(app_path)
 
     import pdb;
