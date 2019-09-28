@@ -35,7 +35,7 @@ def parse_stub_string(stub_string):
 
 
 class App:
-    def __init__(self, app_path, pipelines, services, connections, prefetch):
+    def __init__(self, app_path, pipelines, services, connections):
         self.path = app_path
         self.pipelines = pipelines
         self.services = services
@@ -147,7 +147,6 @@ class Stub:
 
 class DictToObject:
     def __init__(self, dict_):
-        print(dict_)
         for key, value in dict_.items():
             setattr(self, key, value)
 
