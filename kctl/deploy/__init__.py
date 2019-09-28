@@ -13,7 +13,7 @@ def deploy_pipelines(app, args):
     # get only the services having to do with pipelines
     services = set()
     for pipeline in args.pipelines:
-        print(dir(app.pipelines[pipeline]))
+        print(dir(app.pipelines[pipeline].stubs))
         services |= {stub.service for stub in app.pipelines[pipeline].stubs.values()}
 
     raise SystemExit
