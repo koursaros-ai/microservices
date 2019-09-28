@@ -49,7 +49,7 @@ class App:
         for pipeline_name in next(os.walk(pipelines_path))[1]:
             if not pipeline_name.startswith(INVALID_PREFIXES):
                 pipeline_path = pipelines_path + pipeline_name
-                self.pipelines[pipeline_name] = self.Pipeline(pipeline_path)
+                self.pipelines[pipeline_name] = self.Pipeline(self.messages, pipeline_path)
 
     def set_services(self, services_path):
         for service_name in next(os.walk(services_path))[1]:
