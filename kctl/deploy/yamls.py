@@ -40,9 +40,8 @@ class App:
         self.pipelines = pipelines
         self.services = services
         self.connections = connections
-        self.connection = None
 
-    def configure(self, pipelines, service, connection):
+    def configure(self, pipelines, service):
         for pipeline in list(self.pipelines):
             if pipeline not in pipelines:
                 del self.pipelines[pipeline]
@@ -50,8 +49,6 @@ class App:
         for service_name in list(self.services):
             if service_name != service:
                 del self.services[service_name]
-
-        self.connection = self.connections[connection]
 
 
 class Pipeline:

@@ -7,11 +7,13 @@ def bind_rabbitmq(app, args):
     import requests
     import pika
 
-    host = app.connection.host
-    http_port = app.connection.http_port
-    port = app.connection.port
-    username = app.connection.username
-    password = app.connection.password
+    connection = app.connections[args.connection]
+
+    host = connection.host
+    http_port = connection.http_port
+    port = connection.port
+    username = connection.username
+    password = connection.password
 
     url = f'http://{host}:{http_port}'
     ip = f'{host}:{port}'

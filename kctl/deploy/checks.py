@@ -31,10 +31,12 @@ def check_rabbitmq(app, args):
     import pika
     from ..utils import BOLD
 
-    host = app.connection.host
-    port = app.connection.port
-    username = app.connection.username
-    password = app.connection.password
+    connection = app.connections[args.connection]
+
+    host = connection.host
+    port = connection.port
+    username = connection.username
+    password = connection.password
 
     bold_ip = BOLD.format(f'{host}:{port}')
 
