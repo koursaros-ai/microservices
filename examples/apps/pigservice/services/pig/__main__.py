@@ -14,7 +14,5 @@ def piggify(sentence, publish):
     )
     publish(piggified)
 
-print('hello')
-
 if __name__ == "__main__":
     service.run()
