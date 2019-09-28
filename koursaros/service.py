@@ -24,17 +24,17 @@ class Service:
 
         app_path = find_app_path(file)
         sys.path.append(f'{app_path}/.koursaros/')
-
         service = file.split('/')[-2]
-        print(service)
-        print('aaaaaaaaa')
         args = get_args()
-        print(args)
 
         with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
             app = pickle.load(fh)
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
+        for stub in self.stubs:
+            print(stub.proto_in)
+            print(stub.proto_out)
+        raise SystemExit
         self.messages = Messages(self.stubs)
 
     def stub(self, name):
