@@ -42,11 +42,13 @@ class App:
         self.connections = connections
 
     def configure(self, pipelines, service, connection, prefetch):
+        stubs = []
         for pipeline in pipelines:
             for stub in self.pipelines[pipeline].stubs.values():
                 if service == stub.service:
                     stub.configure(pipeline, self.connections[connection], prefetch)
-                    yield stub
+                    stubs.append(stub)
+        return stubs
 
 
 class Pipeline:

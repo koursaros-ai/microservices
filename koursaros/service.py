@@ -39,7 +39,9 @@ class Service:
 
     def stub(self, name):
         def decorator(func):
-            self.stubs[name].func = func
+            for stub in self.stubs:
+                if stub.name == name:
+                    stub.func = func
             return func
         return decorator
 
