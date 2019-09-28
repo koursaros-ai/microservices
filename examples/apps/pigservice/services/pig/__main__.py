@@ -14,4 +14,5 @@ def piggify(sentence, publish):
 
 
 if __name__ == "__main__":
+    print('aaaAAAAAAA')
     service.run()
