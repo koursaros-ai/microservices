@@ -41,6 +41,8 @@ class App:
         self.services = services
         self.connections = connections
 
+    import pdb; pdb.set_trace()
+
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
         for pipeline in pipelines:
@@ -189,7 +191,6 @@ def compile_app(app_path):
 
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
-    import pdb; pdb.set_trace()
 
     return app
 
