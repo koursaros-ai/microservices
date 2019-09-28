@@ -57,12 +57,11 @@ class Stub:
     def __init__(self, configs):
         messages = __import__('messages_pb2')
 
-        print(messages)
-        print(dir(messages))
-        print(configs)
         self.service = configs[0]
-        self.proto_in = getattr(messages, configs[1], None)
-        self.proto_in = getattr(messages, configs[2], None)
+        if configs[1]:
+            self.proto_in = getattr(messages, configs[1], None)
+        if configs[2]:
+            self.proto_in = getattr(messages, configs[2], None)
         self.stub_out = configs[3]
 
 
