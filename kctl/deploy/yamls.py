@@ -162,6 +162,7 @@ class Connections(dict):
 
 
 def compile_app(app_path):
+    global pipelines, services, connections
 
     sys.path.append(f'{app_path}/.koursaros/')
 
