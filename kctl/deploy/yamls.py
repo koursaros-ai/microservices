@@ -36,9 +36,6 @@ class App:
         services_path = app_path + '/services/'
         self.set_services(services_path)
 
-        with open(self.path + '/.koursaros/app.pickle', 'wb') as fh:
-            pickle.dump(self, fh, protocol=pickle.HIGHEST_PROTOCOL)
-
     def set_connections(self, conn_path):
         conn_yaml = yaml.safe_load(open(conn_path))
         for conn_name, configs in conn_yaml['connections'].items():
@@ -187,6 +184,8 @@ class App:
 
 def compile_app(app_path):
     app = App(app_path)
+    with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
+        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
     import pdb;
     pdb.set_trace()
     return app
