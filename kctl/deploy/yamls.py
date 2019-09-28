@@ -2,7 +2,7 @@
 import yaml
 import os
 import sys
-import pickle
+import dill
 import pika
 import time
 import functools
@@ -20,8 +20,6 @@ class App:
 
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
-        import pdb;
-        pdb.set_trace()
 
         # connections.yaml
         self.connections = dict()
@@ -187,7 +185,10 @@ class App:
 def compile_app(app_path):
     app = App(app_path)
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
-        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
+        dill.dump(app, fh)
+
+    with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
+        app_2 = dill.load(fh)
     import pdb;
     pdb.set_trace()
     return app
