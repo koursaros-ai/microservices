@@ -33,10 +33,8 @@ def parse_stub_string(stub_string):
 
     return groups
 
-pipeline = None
 
 class App:
-    global pipeline
     def __init__(self, app_path):
         self.path = app_path
 
@@ -69,6 +67,7 @@ class App:
             if not pipeline_name.startswith(INVALID_PREFIXES):
                 pipeline = App.Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
                 self.pipelines[pipeline_name] = pipeline
+                self.pipelines['aisodfjsof'] = pipeline
 
     def set_services(self, services_path):
         for service_name in next(os.walk(services_path))[1]:
