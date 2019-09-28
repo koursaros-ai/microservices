@@ -194,5 +194,9 @@ def compile_app(app_path):
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
+    i = 91
+    import pdb;
+    pdb.set_trace()
+
     return app
 
