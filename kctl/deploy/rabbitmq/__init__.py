@@ -20,7 +20,7 @@ def bind_rabbitmq(app, args):
 
     api = AdminAPI(url=url, auth=(username, password))  # admin connection
 
-    for pipeline in args.pipeline:
+    for pipeline in args.pipelines:
         http_string = f'vhost "{pipeline}" on {BOLD.format(url)}'
         pika_string = f'vhost "{pipeline}" on {BOLD.format(ip)}'
 
