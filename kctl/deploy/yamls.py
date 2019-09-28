@@ -67,13 +67,14 @@ class App:
 
     def set_pipelines(self, pipelines_path):
         for pipeline_name in next(os.walk(pipelines_path))[1]:
-            self.pipelines[pipeline_name].stubs = dict()
+            stubs = dict()
             if not pipeline_name.startswith(INVALID_PREFIXES):
                 stubs_path = pipelines_path + pipeline_name + '/stubs.yaml'
                 stubs_yaml = yaml.safe_load(open(stubs_path))
                 for stub_name, stub_string in stubs_yaml.items():
                     stub = App.Stub(self.messages, stub_name, stub_string)
-                    self.pipelines[pipeline_name].stubs[stub_name] = stub
+                    stubs[stub_name] = stub
+            self.pipelines[pipeline_name].stubs = stubs
 
     def set_services(self, services_path):
         for service_name in next(os.walk(services_path))[1]:
