@@ -16,7 +16,8 @@ def deploy_app(args):
 
 
 def deploy_pipeline(args):
-
+    import sys
+    print(sys.argv)
     print(args)
     raise SystemExit
     if APP_PATH is None:
