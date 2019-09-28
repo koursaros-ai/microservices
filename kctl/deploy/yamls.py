@@ -48,6 +48,7 @@ class App:
                 if service == stub.service:
                     stub.configure(pipeline, self.connections[connection], prefetch)
                     stubs.append(stub)
+        import pdb; pdb.set_trace()
         return stubs
 
 
