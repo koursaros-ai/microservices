@@ -40,7 +40,6 @@ class App:
         self.pipelines = pipelines
         self.services = services
         self.connections = connections
-        self.prefetch = prefetch
         self.connection = None
 
     def configure(self, pipelines, service, connection):
