@@ -75,7 +75,7 @@ class App:
                 setattr(self, key, value)
 
     class Pipeline:
-        def __init__(self, path, messages):
+        def __init__(self, messages, path):
             self.path = path
             self.stubs = dict()
 
