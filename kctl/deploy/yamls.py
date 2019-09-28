@@ -41,6 +41,8 @@ class App:
         self.services = services
         self.connections = connections
         self.x = x
+        print('AAAAAAAA')
+        self.y = 17
 
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
