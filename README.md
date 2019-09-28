@@ -1,4 +1,4 @@
-<img src=".github/logo.svg" alt="Koursaros, logo made by Cole Thienes">
+<img src=".github/kours.jpg" alt="Koursaros">
 
 <hr/>
 
