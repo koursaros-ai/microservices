@@ -163,7 +163,7 @@ class Connections(dict):
 
 
 def compile_app(app_path):
-    global pipeline
+    global pipeline, service
 
     sys.path.append(f'{app_path}/.koursaros/')
 
@@ -176,15 +176,16 @@ def compile_app(app_path):
     pipelines_path = app_path + '/pipelines/'
     for pipeline_name in next(os.walk(pipelines_path))[1]:
         if not pipeline_name.startswith(INVALID_PREFIXES):
-            pipelines[pipeline_name] = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
-            pipelines['hello'] = 192
+            pipeline = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
+            pipelines[pipeline_name] = pipeline
 
     # service.yaml
     services = dict()
     services_path = app_path + '/services/'
     for service_name in next(os.walk(services_path))[1]:
         if not service_name.startswith(INVALID_PREFIXES):
-            services[service_name] = AbstractService(services_path + service_name + '/service.yaml')
+            service = AbstractService(services_path + service_name + '/service.yaml')
+            services[service_name] = service
 
     x = 1
 
