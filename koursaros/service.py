@@ -36,9 +36,6 @@ class Service:
         # import pdb;
         # pdb.set_trace()
 
-    def register_messagse(self):
-
-
     def stub(self, name):
         def decorator(func):
             for stub in self.stubs:
