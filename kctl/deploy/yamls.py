@@ -35,11 +35,12 @@ def parse_stub_string(stub_string):
 
 
 class App:
-    def __init__(self, app_path, pipelines, services, connections):
+    def __init__(self, app_path, pipelines, services, connections, x):
         self.path = app_path
         self.pipelines = pipelines
         self.services = services
         self.connections = connections
+        self.x = x
 
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
@@ -186,7 +187,9 @@ def compile_app(app_path):
             service = AbstractService(services_path + service_name + '/service.yaml')
             services[service_name] = service
 
-    app = App(app_path, pipelines, services, connections)
+    x = 1
+
+    app = App(app_path, pipelines, services, connections, x)
 
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
