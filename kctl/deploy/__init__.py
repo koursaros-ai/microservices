@@ -15,10 +15,6 @@ def deploy_pipelines(app, args):
     for pipeline in args.pipelines:
         services |= {stub.service for stub in app.pipelines[pipeline].stubs.values()}
 
-    print(services)
-    raise SystemExit
-    services = {service for service in app.pipelines}
-
     try:
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]
