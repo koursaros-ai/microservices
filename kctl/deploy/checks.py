@@ -5,7 +5,7 @@ CHECK_TIMEOUT = 10
 def check_stubs(app, args):
 
     for pipeline in args.pipelines:
-        stubs = app.pipelines[pipeline].stubs.items()
+        stubs = app.pipelines[pipeline].stubs.values()
         for stub in stubs:
 
             if stub.service not in app.services:
