@@ -62,11 +62,9 @@ class Pipeline:
             if isinstance(stub_strings, str):
                 stub_strings = [stub_strings]
 
-            self.stubs['hello'] = 100
             for stub_string in stub_strings:
                 stub = Stub(stub_name, parse_stub_string(stub_string))
                 self.stubs[stub_name] = stub
-
 
 
 class AbstractService:
@@ -165,7 +163,7 @@ class Connections(dict):
 
 
 def compile_app(app_path):
-    global pipelines, services, connections
+    global pipeline
 
     sys.path.append(f'{app_path}/.koursaros/')
 
@@ -178,16 +176,15 @@ def compile_app(app_path):
     pipelines_path = app_path + '/pipelines/'
     for pipeline_name in next(os.walk(pipelines_path))[1]:
         if not pipeline_name.startswith(INVALID_PREFIXES):
-            pipeline = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
-            pipelines[pipeline_name] = pipeline
+            pipelines[pipeline_name] = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
+            pipelines['hello'] = 192
 
     # service.yaml
     services = dict()
     services_path = app_path + '/services/'
     for service_name in next(os.walk(services_path))[1]:
         if not service_name.startswith(INVALID_PREFIXES):
-            service = AbstractService(services_path + service_name + '/service.yaml')
-            services[service_name] = service
+            services[service_name] = AbstractService(services_path + service_name + '/service.yaml')
 
     x = 1
 
