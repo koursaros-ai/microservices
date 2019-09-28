@@ -14,7 +14,7 @@ class Messages:
 
     def register_proto(self, proto):
         if proto is not None:
-            getattr(self, proto.__name__, proto)
+            setattr(self, proto.__name__, proto)
 
 
 class Service:
@@ -32,8 +32,12 @@ class Service:
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         self.messages = Messages(self.stubs)
-        import pdb;
-        pdb.set_trace()
+
+        # import pdb;
+        # pdb.set_trace()
+
+    def register_messagse(self):
+
 
     def stub(self, name):
         def decorator(func):
