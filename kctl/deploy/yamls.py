@@ -99,9 +99,9 @@ def compile_app(app_path):
     print('connections')
     print(dir(app.connections))
     print('pipelines')
-    print(dir(app.pipelines))
+    print(app.pipelines)
     print('services')
-    print(dir(app.services))
+    print(app.services)
 
 
     # with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
