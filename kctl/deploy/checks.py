@@ -16,6 +16,7 @@ def check_stubs(app, args):
 
             receiving_stub = False
             for stub_2 in stubs:
+                print(stub_2.name + '\ttttt\t'  + stub.stub_out)
                 if stub_2.name == stub.stub_out:
                     receiving_stub = True
                     if stub_2.proto_in != stub.proto_out:
