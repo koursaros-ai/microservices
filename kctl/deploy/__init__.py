@@ -7,9 +7,7 @@ import signal
 def deploy_pipelines(app, args):
     app_name = app.path.split('/')[-2]
     os.chdir(app.path + '..')
-    print(app.path)
-    print(sys.path)
-    raise SystemExit
+
     popens = []
 
     # get only the services having to do with pipelines
