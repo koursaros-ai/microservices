@@ -59,6 +59,7 @@ class Stub:
 
         print(messages)
         print(dir(messages))
+        print(configs)
         self.service = configs[0]
         self.proto_in = getattr(messages, configs[1], None)
         self.proto_in = getattr(messages, configs[2], None)
