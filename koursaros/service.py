@@ -11,6 +11,8 @@ class Service:
 
     def __init__(self, file, prefetch=1):
 
+
+        print('Service init')
         app_path = find_app_path(file)
         sys.path.append(f'{app_path}/.koursaros/')
 

@@ -1,3 +1,5 @@
+
+
 from koursaros import Service
 
 service = Service(__file__)
@@ -12,7 +14,7 @@ def piggify(sentence, publish):
     )
     publish(piggified)
 
+print('hello')
 
 if __name__ == "__main__":
-    print('aaaAAAAAAA')
     service.run()
