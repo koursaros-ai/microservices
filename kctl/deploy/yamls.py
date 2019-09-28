@@ -147,6 +147,7 @@ class Stub:
 
 class DictToObject:
     def __init__(self, dict_):
+        print(dict_)
         for key, value in dict_:
             setattr(self, key, value)
 
