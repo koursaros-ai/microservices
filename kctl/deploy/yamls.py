@@ -20,6 +20,8 @@ class App:
 
         sys.path.append(f'{app_path}/.koursaros/')
         self.messages = __import__('messages_pb2')
+        import pdb;
+        pdb.set_trace()
 
         # connections.yaml
         self.connections = dict()
