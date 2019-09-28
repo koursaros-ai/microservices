@@ -14,9 +14,8 @@ def check_stubs(app, args):
             if stub.proto_out and not stub.stub_out:
                 raise ValueError(f'{stub.name} is sending "{stub.proto_out}" proto to nothing...')
 
-            receiving_stub = False
+            receiving_stub = False if stub.stub_out else True
             for stub_2 in stubs:
-                print(f'{stub_2.name}\ttttt\t{stub.stub_out}')
                 if stub_2.name == stub.stub_out:
                     receiving_stub = True
                     if stub_2.proto_in != stub.proto_out:
@@ -25,7 +24,7 @@ def check_stubs(app, args):
                             f'but {stub_2.name} is receiving "{stub_2.proto_in}" proto')
 
             if not receiving_stub:
-                raise ValueError(f'no receiving stub for {stub.name}')
+                raise ValueError(f'no receiving stub for "{stub.name}"')
 
 
 def check_rabbitmq(app, args):
