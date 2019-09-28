@@ -51,7 +51,7 @@ class App:
             if not pipeline_name.startswith(INVALID_PREFIXES):
                 stubs_path = pipelines_path + pipeline_name + '/stubs.yaml'
                 stubs_yaml = yaml.safe_load(open(stubs_path))
-                for stub_name, stub_string in stubs_yaml.items()['stubs']:
+                for stub_name, stub_string in stubs_yaml['stubs'].items():
                     stub = App.Stub(self.messages, stub_name, stub_string)
                     stubs[stub_name] = stub
             self.pipelines[pipeline_name].stubs = stubs
