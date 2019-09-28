@@ -62,8 +62,8 @@ class Stub:
 class Connection:
     def __init__(self, conn_path):
         conn_yaml = yaml.safe_load(open(conn_path))
-        for key, value in conn_yaml['connections'].items():
-            setattr(self, key, conn_yaml[key])
+        for conn_name, configs in conn_yaml['connections'].items():
+            setattr(self, conn_name, configs)
 
 
 def compile_app(app_path):
