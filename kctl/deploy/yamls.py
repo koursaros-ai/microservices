@@ -1,10 +1,10 @@
 
 import yaml
 import os
+import sys
 import json
 
 INVALID_PREFIXES = ('_', '.')
-STUB_PLACES = ['service', 'proto_in', 'proto_out', 'stub_out']
 
 
 def parse_stub_string(stub_string):
@@ -55,8 +55,14 @@ class Service:
 
 class Stub:
     def __init__(self, configs):
-        for i, place in enumerate(STUB_PLACES):
-            setattr(self, place, configs[i])
+        messages = __import__('messages_pb2')
+
+        print(messages)
+        print(dir(messages))
+        self.service = configs[0]
+        self.proto_in = getattr(messages, configs[1], None)
+        self.proto_in = getattr(messages, configs[2], None)
+        self.stub_out = configs[3]
 
 
 class Connection:
@@ -67,6 +73,8 @@ class Connection:
 
 
 def compile_app(app_path):
+
+    sys.path.append(f'{app_path}/.koursaros/')
 
     conn_path = app_path + '/connections.yaml'
     connection = Connection(conn_path)
