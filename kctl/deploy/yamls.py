@@ -79,7 +79,6 @@ class Stub:
 
         print(name)
         print(configs)
-        raise SystemExit
         self.name = name
         self.service = configs[0]
         if configs[1]:
