@@ -156,7 +156,7 @@ class Connections(dict):
         super().__init__(self)
         conn_yaml = yaml.safe_load(open(conn_path))
         for conn_name, configs in conn_yaml['connections'].items():
-            self.update({conn_name: DictToObject(*configs)})
+            self.update({conn_name: DictToObject(configs)})
             setattr(self, conn_name, configs)
 
 
