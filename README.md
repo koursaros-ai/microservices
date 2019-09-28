@@ -1,4 +1,4 @@
-<img src=".github/kours.jpg" alt="Koursaros">
+<img src=".github/koursaros.jpg" alt="Koursaros">
 
 <hr/>
 
