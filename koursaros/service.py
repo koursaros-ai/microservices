@@ -27,10 +27,10 @@ class Service:
         service = file.split('/')[-2]
         args = get_args()
 
-
-
         with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
             app = pickle.load(fh)
+
+        import pdb; pdb.set_trace()
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         self.messages = Messages(self.stubs)

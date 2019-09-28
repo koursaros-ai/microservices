@@ -187,8 +187,6 @@ def compile_app(app_path):
 
     app = App(app_path, pipelines, services, connections)
 
-    import pdb; pdb.set_trace()
-
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
