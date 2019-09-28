@@ -44,9 +44,9 @@ class App:
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
         for pipeline in pipelines:
-            print(pipelines)
+            print(self.pipelines[pipeline].stubs.values())
             for stub in self.pipelines[pipeline].stubs.values():
-                print(stub)
+
                 if service == stub.service:
                     stub.configure(pipeline, self.connections[connection], prefetch)
                     stubs.append(stub)
