@@ -42,6 +42,9 @@ class App:
         self.connections = connections
         self.x = x
 
+    def set_rand(self, e):
+        self.e = e
+
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
         for pipeline in pipelines:
@@ -189,8 +192,9 @@ def compile_app(app_path):
 
     x = 1
 
-    app = App(app_path, pipelines, services, connections, x)
 
+    app = App(app_path, pipelines, services, connections, x)
+    app.set_rand(3452)
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
