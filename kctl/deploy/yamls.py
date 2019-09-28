@@ -2,7 +2,7 @@
 import yaml
 import os
 import sys
-import dill
+import pickle
 import pika
 import time
 import functools
@@ -18,9 +18,6 @@ class App:
     def __init__(self, app_path):
         self.path = app_path
 
-        sys.path.append(f'{app_path}/.koursaros/')
-        self.messages = __import__('messages_pb2')
-
         # connections.yaml
         self.connections = dict()
         conn_path = app_path + '/connections.yaml'
@@ -29,7 +26,8 @@ class App:
         # stubs.yaml
         self.pipelines = dict()
         pipelines_path = app_path + '/pipelines/'
-        self.set_pipelines(pipelines_path)
+        sys.path.append(f'{app_path}/.koursaros/')
+        self.set_pipelines(pipelines_path, __import__('messages_pb2'))
 
         # service.yaml
         self.services = dict()
@@ -42,11 +40,11 @@ class App:
             connection = self.Connection(configs)
             self.connections[conn_name] = connection
 
-    def set_pipelines(self, pipelines_path):
+    def set_pipelines(self, pipelines_path, messages):
         for pipeline_name in next(os.walk(pipelines_path))[1]:
             if not pipeline_name.startswith(INVALID_PREFIXES):
                 pipeline_path = pipelines_path + pipeline_name
-                self.pipelines[pipeline_name] = self.Pipeline(self.messages, pipeline_path)
+                self.pipelines[pipeline_name] = self.Pipeline(messages, pipeline_path)
 
     def set_services(self, services_path):
         for service_name in next(os.walk(services_path))[1]:
@@ -77,7 +75,7 @@ class App:
                 setattr(self, key, value)
 
     class Pipeline:
-        def __init__(self, messages, path):
+        def __init__(self, path, messages):
             self.path = path
             self.stubs = dict()
 
@@ -185,10 +183,7 @@ class App:
 def compile_app(app_path):
     app = App(app_path)
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
-        dill.dump(app, fh)
-
-    with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
-        app_2 = dill.load(fh)
+        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
     import pdb;
     pdb.set_trace()
     return app
