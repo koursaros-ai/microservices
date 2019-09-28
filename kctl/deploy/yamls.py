@@ -62,10 +62,11 @@ class Pipeline:
             if isinstance(stub_strings, str):
                 stub_strings = [stub_strings]
 
+            self.stubs['hello'] = 100
             for stub_string in stub_strings:
                 stub = Stub(stub_name, parse_stub_string(stub_string))
                 self.stubs[stub_name] = stub
-                self.stubs['hello'] = 100
+
 
 
 class AbstractService:
