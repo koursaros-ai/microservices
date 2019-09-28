@@ -1,4 +1,4 @@
 stubs:
- send: backend.send_sentence(Sentence) -> Sentence          | piggify
- piggify: pig.piggify(Sentence) -> Piggified                | receive
- receive: backend.receive(Piggified)                      ->|
+ send: backend(Sentence) -> Sentence                | piggify
+ piggify: pig(Sentence) -> Piggified                | receive
+ receive: backend(Piggified)                      ->|

@@ -3,12 +3,8 @@ import yaml
 import os
 import json
 
-INVALID_PIPELINE_PREFIXES = ('_', '.')
-
-
-def yaml_safe_load(root, file):
-    with open(root + '/' + file) as fh:
-        return yaml.safe_load(fh)
+INVALID_PREFIXES = ('_', '.')
+STUB_PLACES = ['service', 'proto_in', 'proto_out', 'stub_out']
 
 
 def parse_stub_string(stub_string):
@@ -31,45 +27,85 @@ def parse_stub_string(stub_string):
     return groups
 
 
-def compile_yamls(app_path, connection, pipelines):
-    yamls = dict()
+class App:
+    pass
 
-    yam = yaml_safe_load(app_path, 'connections.yaml')
-    yamls['connection'] = yam['connections'][connection]
 
+class Pipeline:
+    stubs = dict()
+
+    def __init__(self, stubs_path):
+        stubs_yaml = yaml.safe_load(open(stubs_path))
+        for stub_name, stub_strings in stubs_yaml['stubs'].items():
+
+            if isinstance(stub_strings, str):
+                stub_strings = [stub_strings]
+
+            for stub_string in stub_strings:
+                stub = Stub(parse_stub_string(stub_string))
+                self.stubs[stub_name] = stub
+
+
+class Service:
+    def __init__(self, service_path):
+        conn_yaml = yaml.safe_load(open(service_path))
+        for key, value in conn_yaml['service'].items():
+            setattr(self, key, conn_yaml[key])
+
+
+class Stub:
+    def __init__(self, configs):
+        for i, place in enumerate(STUB_PLACES):
+            setattr(self, place, configs[i])
+
+
+class Connection:
+    def __init__(self, conn_path):
+        conn_yaml = yaml.safe_load(open(conn_path))
+        for key, value in conn_yaml['connections'].items():
+            setattr(self, key, conn_yaml[key])
+
+
+def compile_app(app_path):
+
+    conn_path = app_path + '/connections.yaml'
+    connection = Connection(conn_path)
+
+    # stubs.yaml
+    pipelines = dict()
     pipelines_path = app_path + '/pipelines/'
-    # next(os.walk(pipelines))[1]
 
-    for pipeline in pipelines:
-        if not pipeline.startswith(INVALID_PIPELINE_PREFIXES):
-            if 'pipelines' not in yamls:
-                yamls['pipelines'] = dict()
+    for pipeline_name in next(os.walk(pipelines_path))[1]:
+        if not pipeline_name.startswith(INVALID_PREFIXES):
+            pipeline = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
+            pipelines[pipeline_name] = pipeline
 
-            if pipeline not in yamls['pipelines']:
-                yamls['pipelines'][pipeline] = []
+    # service.yaml
+    services = dict()
+    services_path = app_path + '/services/'
+    for service_name in next(os.walk(services_path))[1]:
+        if not service_name.startswith(INVALID_PREFIXES):
+            service = Service(services_path + service_name + '/service.yaml')
+            services[service_name] = service
 
-            stubs = yaml_safe_load(pipelines_path + pipeline, 'stubs.yaml')
+    app = App()
+    app.path = app_path
+    app.connections = connection
+    app.pipelines = pipelines
+    app.services = services
 
-            for pin, stub_strings in stubs['stubs'].items():
+    print('app')
+    print(dir(app))
+    print('connections')
+    print(dir(app.connections))
+    print('pipelines')
+    print(dir(app.pipelines))
+    print('services')
+    print(dir(app.services))
 
-                if isinstance(stub_strings, str):
-                    stub_strings = [stub_strings]
 
-                for stub_string in stub_strings:
-                    stub = (pin, *parse_stub_string(stub_string))
-                    yamls['pipelines'][pipeline].append(stub)
-
-    services = app_path + '/services/'
-    for service in next(os.walk(services))[1]:
-        if not service.startswith(INVALID_PIPELINE_PREFIXES):
-            if 'services' not in yamls:
-                yamls['services'] = dict()
-
-            yam = yaml_safe_load(services + service, 'service.yaml')
-            yamls['services'][service] = yam['service']
-
-    with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
-        fh.write(json.dumps(yamls, indent=4))
-
-    return yamls
+    # with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
+    #     fh.write(json.dumps(yamls, indent=4))
+    #
+    # return yamls
 
