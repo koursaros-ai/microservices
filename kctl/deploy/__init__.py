@@ -13,11 +13,12 @@ def deploy_pipelines(app, args):
     # get only the services having to do with pipelines
     services = set()
     for pipeline in args.pipelines:
+        print(dir(app.pipelines[pipeline]))
         services |= {stub.service for stub in app.pipelines[pipeline].stubs.values()}
 
-    services = {service for service in app.pipelines}
-    print(services)
     raise SystemExit
+    services = {service for service in app.pipelines}
+
     try:
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]
