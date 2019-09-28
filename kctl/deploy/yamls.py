@@ -45,7 +45,6 @@ class App:
         stubs = []
         for pipeline in pipelines:
             for stub in self.pipelines[pipeline].stubs.values():
-
                 if service == stub.service:
                     stub.configure(pipeline, self.connections[connection], prefetch)
                     stubs.append(stub)
@@ -64,9 +63,6 @@ class Pipeline:
 
             for stub_string in stub_strings:
                 stub = Stub(stub_name, parse_stub_string(stub_string))
-                print('aoijweojw9999999')
-                print(stub)
-                print(dir(stub))
                 self.stubs[stub_name] = stub
 
 
@@ -176,7 +172,6 @@ def compile_app(app_path):
     # stubs.yaml
     pipelines = dict()
     pipelines_path = app_path + '/pipelines/'
-
     for pipeline_name in next(os.walk(pipelines_path))[1]:
         if not pipeline_name.startswith(INVALID_PREFIXES):
             pipeline = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
@@ -189,6 +184,9 @@ def compile_app(app_path):
         if not service_name.startswith(INVALID_PREFIXES):
             service = AbstractService(services_path + service_name + '/service.yaml')
             services[service_name] = service
+
+    print(pipelines['piggify'].stubs.items())
+    raise SystemExit
 
     app = App(app_path, pipelines, services, connections)
 
