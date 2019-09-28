@@ -33,8 +33,10 @@ def parse_stub_string(stub_string):
 
     return groups
 
+pipeline = None
 
 class App:
+    global pipeline
     def __init__(self, app_path):
         self.path = app_path
 
