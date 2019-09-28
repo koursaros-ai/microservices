@@ -6,8 +6,19 @@ import pickle
 from kctl.cli import get_args
 
 
+class Messages:
+    def __init__(self, stubs):
+        for stub in stubs:
+            self.register_proto(stub.proto_in)
+            self.register_proto(stub.proto_out)
+
+    def register_proto(self, proto):
+        if proto is not None:
+            getattr(self, proto.__name__, proto)
+
+
 class Service:
-    __slots__ = ['stubs']
+    __slots__ = ['stubs', 'messages']
 
     def __init__(self, file, prefetch=1):
 
@@ -24,8 +35,7 @@ class Service:
             app = pickle.load(fh)
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
-
-
+        self.messages = Messages(self.stubs)
 
     def stub(self, name):
         def decorator(func):

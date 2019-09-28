@@ -41,14 +41,12 @@ class App:
         self.services = services
         self.connections = connections
 
-    def configure(self, pipelines, service):
-        for pipeline in list(self.pipelines):
-            if pipeline not in pipelines:
-                del self.pipelines[pipeline]
-
-        for service_name in list(self.services):
-            if service_name != service:
-                del self.services[service_name]
+    def configure(self, pipelines, service, connection, prefetch):
+        for pipeline in pipelines:
+            for stub in self.pipelines[pipeline].stubs.values():
+                if service == stub.service:
+                    stub.configure(pipeline, self.connections[connection], prefetch)
+                    yield stub
 
 
 class Pipeline:
