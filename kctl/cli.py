@@ -28,6 +28,14 @@ def deploy_pipeline(args):
     from .deploy.yamls import compile_app
     app = compile_app(APP_PATH)
 
+    import pickle
+
+    with open(APP_PATH + '/.koursaros/app.pickle', 'wb') as fh:
+        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+    import pdb;
+    pdb.set_trace()
+
     # 3. Check stubs.yaml, messages.proto, and rmq
     from .deploy.checks import check_stubs, check_rabbitmq
 
