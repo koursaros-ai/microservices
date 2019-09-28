@@ -14,14 +14,9 @@ class Service:
         app_path = find_app_path(file)
         sys.path.append(f'{app_path}/.koursaros/')
 
-
-
         service = file.split('/')[-2]
-        # redirect_out(service)
-        print('Service init args')
         args = get_args()
-        print('Service init end')
-
+        print(args)
 
         with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
             app = pickle.load(fh)
