@@ -41,8 +41,6 @@ class App:
         self.services = services
         self.connections = connections
         self.x = x
-        print('AAAAAAAA')
-        self.y = 17
 
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
@@ -164,10 +162,8 @@ class Connections(dict):
             setattr(self, conn_name, configs)
 
 
-x = 1
-
 def compile_app(app_path):
-    global pipelines, services, connections, x
+    global pipelines, services, connections
 
     sys.path.append(f'{app_path}/.koursaros/')
 
@@ -190,6 +186,8 @@ def compile_app(app_path):
         if not service_name.startswith(INVALID_PREFIXES):
             service = AbstractService(services_path + service_name + '/service.yaml')
             services[service_name] = service
+
+    x = 1
 
     app = App(app_path, pipelines, services, connections, x)
 
