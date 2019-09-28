@@ -62,6 +62,8 @@ class Pipeline:
             if isinstance(stub_strings, str):
                 stub_strings = [stub_strings]
 
+            self.ideas = 100
+
             for stub_string in stub_strings:
                 stub = Stub(stub_name, parse_stub_string(stub_string))
                 self.stubs[stub_name] = stub
@@ -147,7 +149,7 @@ class Stub:
         self.connection.add_callback_threadsafe(cb)
 
 
-class DictToObject:
+class Connection:
     def __init__(self, dict_):
         for key, value in dict_.items():
             setattr(self, key, value)
@@ -158,7 +160,7 @@ class Connections(dict):
         super().__init__(self)
         conn_yaml = yaml.safe_load(open(conn_path))
         for conn_name, configs in conn_yaml['connections'].items():
-            self.update({conn_name: DictToObject(configs)})
+            self.update({conn_name: Connection(configs)})
             setattr(self, conn_name, configs)
 
 
