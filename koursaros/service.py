@@ -18,12 +18,14 @@ class Service:
         redirect_out(service)
         args = get_args()
 
+        print('Service init end')
+
         with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
             app = pickle.load(fh)
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
 
-        print('Service init end')
+
 
     def stub(self, name):
         def decorator(func):
