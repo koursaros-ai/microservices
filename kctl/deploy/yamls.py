@@ -44,8 +44,6 @@ class App:
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
         for pipeline in pipelines:
-            print('ajisjfojaosjfo')
-            print(dir(self.pipelines[pipeline].stubs.keys()))
             for stub in self.pipelines[pipeline].stubs.values():
 
                 if service == stub.service:
@@ -66,6 +64,9 @@ class Pipeline:
 
             for stub_string in stub_strings:
                 stub = Stub(stub_name, parse_stub_string(stub_string))
+                print('aoijweojw9999999')
+                print(stub)
+                print(dir(stub))
                 self.stubs[stub_name] = stub
 
 
