@@ -50,7 +50,7 @@ class Service:
     def __init__(self, service_path):
         conn_yaml = yaml.safe_load(open(service_path))
         for key, value in conn_yaml['service'].items():
-            setattr(self, key, conn_yaml[key])
+            setattr(self, key, value)
 
 
 class Stub:
