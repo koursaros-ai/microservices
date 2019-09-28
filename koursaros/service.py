@@ -17,7 +17,7 @@ class Service:
         print('Service init end')
 
         service = file.split('/')[-2]
-        redirect_out(service)
+        # redirect_out(service)
         args = get_args()
 
 
