@@ -17,6 +17,8 @@ def deploy_app(args):
 
 def deploy_pipeline(args):
 
+    print(args)
+    raise SystemExit
     if APP_PATH is None:
         raise KctlError('Current working directory is not an app')
 
@@ -27,38 +29,23 @@ def deploy_pipeline(args):
     # 2. Compile yamls
     from .deploy.yamls import compile_app
     app = compile_app(APP_PATH)
-    print(app)
-    print(dir(app))
-    raise SystemExit
+
     # 3. Check stubs.yaml, messages.proto, and rmq
     from .deploy.checks import check_stubs, check_protos, check_rabbitmq
 
-    for pipeline in args.names:
-
-        stubs = yamls['pipelines'][pipeline]
-        services = yamls['services']
-        check_stubs(services, stubs)
-        check_protos(APP_PATH, stubs)
+    check_stubs(app, args)
+    check_protos(app, args)
+    check_rabbitmq(app, args)
 
     # 4. Check rabbitmq connection
-    connection = yamls['connection']
-    check_rabbitmq(**connection)
+    check_rabbitmq(app, args)
 
-    # 5. <Rebind> and deploy services
+    # 5. (Rebind) and deploy services
     from .deploy.rabbitmq import bind_rabbitmq
     from .deploy import deploy_pipelines
 
-    services = set()
-    for pipeline in args.names:
-        stubs = yamls['pipelines'][pipeline]
-
-        if args.rebind:
-            bind_rabbitmq(pipeline, stubs, **connection)
-
-        stubs = yamls['pipelines'][pipeline]
-
-        for stub in stubs:
-            services.add(stub[1])
+    if args.rebind:
+        bind_rabbitmq(app, args)
 
     deploy_pipelines(APP_PATH, services)
 
