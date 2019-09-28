@@ -40,8 +40,10 @@ class App:
         self.pipelines = pipelines
         self.services = services
         self.connections = connections
+        import pdb;
+        pdb.set_trace()
 
-    import pdb; pdb.set_trace()
+
 
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
