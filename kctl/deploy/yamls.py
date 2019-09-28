@@ -3,8 +3,15 @@ import yaml
 import os
 import sys
 import pickle
+import pika
+import time
+import functools
+from threading import Thread
 
 INVALID_PREFIXES = ('_', '.')
+EXCHANGE = 'nyse'
+RECONNECT_DELAY = 5000  # 5 sec
+PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
 def parse_stub_string(stub_string):
@@ -28,7 +35,24 @@ def parse_stub_string(stub_string):
 
 
 class App:
-    pass
+    def __init__(self, app_path, pipelines, services, connections, prefetch):
+        self.path = app_path
+        self.pipelines = pipelines
+        self.services = services
+        self.connections = connections
+        self.prefetch = prefetch
+        self.connection = None
+
+    def configure(self, pipelines, service, connection):
+        for pipeline in list(self.pipelines):
+            if pipeline not in pipelines:
+                del self.pipelines[pipeline]
+
+        for service_name in list(self.services):
+            if service_name != service:
+                del self.services[service_name]
+
+        self.connection = self.connections[connection]
 
 
 class Pipeline:
@@ -42,11 +66,11 @@ class Pipeline:
                 stub_strings = [stub_strings]
 
             for stub_string in stub_strings:
-                stub = Stub(parse_stub_string(stub_string))
+                stub = Stub(stub_name, parse_stub_string(stub_string))
                 self.stubs[stub_name] = stub
 
 
-class Service:
+class AbstractService:
     def __init__(self, service_path):
         conn_yaml = yaml.safe_load(open(service_path))
         for key, value in conn_yaml['service'].items():
@@ -54,9 +78,10 @@ class Service:
 
 
 class Stub:
-    def __init__(self, configs):
+    def __init__(self, name, configs):
         messages = __import__('messages_pb2')
 
+        self.name = name
         self.service = configs[0]
         if configs[1]:
             self.proto_in = getattr(messages, configs[1], None)
@@ -64,11 +89,74 @@ class Stub:
             self.proto_in = getattr(messages, configs[2], None)
         self.stub_out = configs[3]
 
+    def configure(self, pipeline, connection, prefetch):
+        self.prefetch = prefetch
 
-class Connection:
+        credentials = pika.credentials.PlainCredentials(
+            self.service, connection.password)
+        params = pika.ConnectionParameters(
+            connection.host, connection.port, pipeline, credentials)
+
+        while True:
+            try:
+                self.connection = pika.BlockingConnection(parameters=params)
+                self.channel = self.connection.channel()
+                break
+            except Exception as exc:
+                print(f'Failed pika connection...\n{exc.args}')
+                time.sleep(RECONNECT_DELAY)
+
+    def __call__(self, proto):
+        self.func(proto, self.publish_callback)
+
+    def publish_callback(self, proto):
+        cb = functools.partial(self.publish, proto)
+        self.connection.add_callback_threadsafe(cb)
+
+    def publish(self, proto):
+        body = proto.SerializeToString()
+        self.channel.basic_publish(
+            exchange=EXCHANGE,
+            routing_key=self.stub_out,
+            body=body,
+            properties=PROPS
+        )
+
+    def consume(self):
+        self.channel.basic_qos(prefetch_count=self.prefetch)
+        queue = self.service + '.' + self.name
+        self.channel.basic_consume(
+            queue=queue,
+            on_message_callback=self.consume_callback
+        )
+        print(f'Listening on {queue}...')
+        self.channel.start_consuming()
+
+    def consume_callback(self, channel, method, properties, body):
+        proto = self.proto_in()
+        proto.ParseFromString(body)
+
+        t = Thread(target=self.func, args=(proto, self.publish_callback))
+        t.start()
+        self.ack_callback(method.delivery_tag)
+
+    def ack_callback(self, delivery_tag):
+        cb = functools.partial(self.channel.basic_ack, delivery_tag)
+        self.connection.add_callback_threadsafe(cb)
+
+
+class DictToObject:
+    def __init__(self, dict_):
+        for key, value in dict_:
+            setattr(self, key, value)
+
+
+class Connections(dict):
     def __init__(self, conn_path):
+        super().__init__(self)
         conn_yaml = yaml.safe_load(open(conn_path))
         for conn_name, configs in conn_yaml['connections'].items():
+            self.update({conn_name: DictToObject(*configs)})
             setattr(self, conn_name, configs)
 
 
@@ -76,8 +164,9 @@ def compile_app(app_path):
 
     sys.path.append(f'{app_path}/.koursaros/')
 
+    # connections.yaml
     conn_path = app_path + '/connections.yaml'
-    connection = Connection(conn_path)
+    connections = Connections(conn_path)
 
     # stubs.yaml
     pipelines = dict()
@@ -93,28 +182,13 @@ def compile_app(app_path):
     services_path = app_path + '/services/'
     for service_name in next(os.walk(services_path))[1]:
         if not service_name.startswith(INVALID_PREFIXES):
-            service = Service(services_path + service_name + '/service.yaml')
+            service = AbstractService(services_path + service_name + '/service.yaml')
             services[service_name] = service
 
-    app = App()
-    app.path = app_path
-    app.connections = connection
-    app.pipelines = pipelines
-    app.services = services
+    app = App(app_path, pipelines, services, connections)
 
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
-        b = pickle.load(fh)
-
-    print(app == b)
-    print(b)
-    print(dir(b))
-
-
-    # with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
-    #     fh.write(json.dumps(yamls, indent=4))
-    #
-    # return app
+    return app
 
