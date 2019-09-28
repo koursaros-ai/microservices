@@ -185,9 +185,6 @@ def compile_app(app_path):
             service = AbstractService(services_path + service_name + '/service.yaml')
             services[service_name] = service
 
-    print(pipelines['piggify'].stubs.items())
-    raise SystemExit
-
     app = App(app_path, pipelines, services, connections)
 
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:

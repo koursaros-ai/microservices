@@ -31,13 +31,6 @@ class Service:
             app = pickle.load(fh)
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
-        print('BBBBBBB')
-        print(self.stubs)
-        for stub in self.stubs:
-            print('AAAAAAAAAA')
-            print(stub.proto_in)
-            print(stub.proto_out)
-        raise SystemExit
         self.messages = Messages(self.stubs)
 
     def stub(self, name):
