@@ -1,12 +1,20 @@
 from koursaros import Service
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from queue import Queue
 import threading
 import uuid
+import os
 
 service = Service(__file__)
-app = Flask(__name__)
+print(os.getcwd())
+app = Flask(__name__, static_folder='/home/jp954/koursaros/examples/apps/flask-service/fact-check/fever/build/static',
+            template_folder="/home/jp954/koursaros/examples/apps/flask-service/fact-check/fever/build")
 sentences = dict()
+
+
+@app.route('/')
+def serve():
+    return render_template('index.html')
 
 
 @app.route('/query')
@@ -29,7 +37,6 @@ def receive():
         "status": "success",
         "msg": queue.get()
         })
-
 
 @service.stub
 def send_sentence(sentence, publish):
