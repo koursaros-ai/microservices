@@ -47,12 +47,12 @@ class Service:
 
     def run(self):
         threads = []
-        for name, stub in self.stubs.items():
+        for stub in self.stubs:
             t = Thread(target=stub.consume)
-            print(f'Starting thread {t.getName()}: "{name}"')
+            print(f'Starting thread {t.getName()}: "{stub.name}"')
             t.start()
-            threads.append(t)
+            threads.append((t, stub.name))
 
-        for t in threads:
+        for t, name in threads:
             print(f'Waiting to finish {t.getName()}: "{name}"')
             t.join()
