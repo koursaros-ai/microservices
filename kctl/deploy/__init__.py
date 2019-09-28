@@ -4,10 +4,17 @@ import os
 import signal
 
 
-def deploy_pipelines(app_path, services):
-    app_name = app_path.split('/')[-2]
-    os.chdir(app_path + '..')
+def deploy_pipelines(app, args):
+    app_name = app.path.split('/')[-2]
+    os.chdir(app.path + '..')
     popens = []
+
+    # get only the services having to do with pipelines
+    services = set()
+    for pipeline in args.pipelines:
+        services |= {stub.service for stub in app.pipelines[pipeline].stubs.values()}
+
+    services = {service for service in app.pipelines}
     try:
         for service in services:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]

@@ -44,7 +44,7 @@ def deploy_pipeline(args):
     if args.rebind:
         bind_rabbitmq(app, args)
 
-    deploy_pipelines(APP_PATH, services)
+    deploy_pipelines(app, args)
 
 
     # else:
