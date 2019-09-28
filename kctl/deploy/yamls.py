@@ -35,15 +35,44 @@ def parse_stub_string(stub_string):
 
 
 class App:
-    def __init__(self, app_path, pipelines, services, connections, x):
+    def __init__(self, app_path):
         self.path = app_path
-        self.pipelines = pipelines
-        self.services = services
-        self.connections = connections
-        self.x = x
 
-    def set_rand(self, e):
-        self.e = e
+        # connections.yaml
+        self.connections = dict()
+        conn_path = app_path + '/connections.yaml'
+        self.set_connections(conn_path)
+
+        # stubs.yaml
+        self.pipelines = dict()
+        pipelines_path = app_path + '/pipelines/'
+        self.set_pipelines(pipelines_path)
+
+        # service.yaml
+        self.services = dict()
+        services_path = app_path + '/services/'
+        self.set_services(services_path)
+
+        with open(self.path + '/.koursaros/app.pickle', 'wb') as fh:
+            pickle.dump(self, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def set_connections(self, conn_path):
+        conn_yaml = yaml.safe_load(open(conn_path))
+        for conn_name, configs in conn_yaml['connections'].items():
+            connection = App.Connection(configs)
+            self.connections[conn_name] = connection
+
+    def set_pipelines(self, pipelines_path):
+        for pipeline_name in next(os.walk(pipelines_path))[1]:
+            if not pipeline_name.startswith(INVALID_PREFIXES):
+                pipeline = App.Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
+                self.pipelines[pipeline_name] = pipeline
+
+    def set_services(self, services_path):
+        for service_name in next(os.walk(services_path))[1]:
+            if not service_name.startswith(INVALID_PREFIXES):
+                service = App.AbstractService(services_path + service_name + '/service.yaml')
+                self.services[service_name] = service
 
     def configure(self, pipelines, service, connection, prefetch):
         stubs = []
@@ -54,151 +83,109 @@ class App:
                     stubs.append(stub)
         return stubs
 
+    class Connection:
+        def __init__(self, dict_):
+            for key, value in dict_.items():
+                setattr(self, key, value)
 
-class Pipeline:
-    stubs = dict()
+    class AbstractService:
+        def __init__(self, service_path):
+            conn_yaml = yaml.safe_load(open(service_path))
+            for key, value in conn_yaml['service'].items():
+                setattr(self, key, value)
 
-    def __init__(self, stubs_path):
-        stubs_yaml = yaml.safe_load(open(stubs_path))
-        for stub_name, stub_strings in stubs_yaml['stubs'].items():
+    class Pipeline:
+        stubs = dict()
 
-            if isinstance(stub_strings, str):
-                stub_strings = [stub_strings]
+        def __init__(self, stubs_path):
+            stubs_yaml = yaml.safe_load(open(stubs_path))
+            for stub_name, stub_strings in stubs_yaml['stubs'].items():
 
-            for stub_string in stub_strings:
-                stub = Stub(stub_name, parse_stub_string(stub_string))
-                self.stubs[stub_name] = stub
+                if isinstance(stub_strings, str):
+                    stub_strings = [stub_strings]
 
+                for stub_string in stub_strings:
+                    stub = App.Pipeline.Stub(stub_name, parse_stub_string(stub_string))
+                    self.stubs[stub_name] = stub
 
-class AbstractService:
-    def __init__(self, service_path):
-        conn_yaml = yaml.safe_load(open(service_path))
-        for key, value in conn_yaml['service'].items():
-            setattr(self, key, value)
+        class Stub:
+            def __init__(self, name, configs):
+                messages = __import__('messages_pb2')
 
+                self.name = name
+                self.service = configs[0]
+                if configs[1]:
+                    self.proto_in = getattr(messages, configs[1], None)
+                else:
+                    self.proto_in = None
+                if configs[2]:
+                    self.proto_out = getattr(messages, configs[2], None)
+                else:
+                    self.proto_out = None
 
-class Stub:
-    def __init__(self, name, configs):
-        messages = __import__('messages_pb2')
+                self.stub_out = configs[3]
 
-        self.name = name
-        self.service = configs[0]
-        if configs[1]:
-            self.proto_in = getattr(messages, configs[1], None)
-        else:
-            self.proto_in = None
-        if configs[2]:
-            self.proto_out = getattr(messages, configs[2], None)
-        else:
-            self.proto_out = None
+            def configure(self, pipeline, connection, prefetch):
+                self.prefetch = prefetch
 
-        self.stub_out = configs[3]
+                credentials = pika.credentials.PlainCredentials(
+                    self.service, connection.password)
+                params = pika.ConnectionParameters(
+                    connection.host, connection.port, pipeline, credentials)
 
-    def configure(self, pipeline, connection, prefetch):
-        self.prefetch = prefetch
+                while True:
+                    try:
+                        self.connection = pika.BlockingConnection(parameters=params)
+                        self.channel = self.connection.channel()
+                        break
+                    except Exception as exc:
+                        print(f'Failed pika connection...\n{exc.args}')
+                        time.sleep(RECONNECT_DELAY)
 
-        credentials = pika.credentials.PlainCredentials(
-            self.service, connection.password)
-        params = pika.ConnectionParameters(
-            connection.host, connection.port, pipeline, credentials)
+            def __call__(self, proto):
+                self.func(proto, self.publish_callback)
 
-        while True:
-            try:
-                self.connection = pika.BlockingConnection(parameters=params)
-                self.channel = self.connection.channel()
-                break
-            except Exception as exc:
-                print(f'Failed pika connection...\n{exc.args}')
-                time.sleep(RECONNECT_DELAY)
+            def publish_callback(self, proto):
+                cb = functools.partial(self.publish, proto)
+                self.connection.add_callback_threadsafe(cb)
 
-    def __call__(self, proto):
-        self.func(proto, self.publish_callback)
+            def publish(self, proto):
+                body = proto.SerializeToString()
+                self.channel.basic_publish(
+                    exchange=EXCHANGE,
+                    routing_key=self.stub_out,
+                    body=body,
+                    properties=PROPS
+                )
 
-    def publish_callback(self, proto):
-        cb = functools.partial(self.publish, proto)
-        self.connection.add_callback_threadsafe(cb)
+            def consume(self):
+                self.channel.basic_qos(prefetch_count=self.prefetch)
+                queue = self.service + '.' + self.name
+                self.channel.basic_consume(
+                    queue=queue,
+                    on_message_callback=self.consume_callback
+                )
+                print(f'Listening on {queue}...')
+                self.channel.start_consuming()
 
-    def publish(self, proto):
-        body = proto.SerializeToString()
-        self.channel.basic_publish(
-            exchange=EXCHANGE,
-            routing_key=self.stub_out,
-            body=body,
-            properties=PROPS
-        )
+            def consume_callback(self, channel, method, properties, body):
+                proto = self.proto_in()
+                proto.ParseFromString(body)
 
-    def consume(self):
-        self.channel.basic_qos(prefetch_count=self.prefetch)
-        queue = self.service + '.' + self.name
-        self.channel.basic_consume(
-            queue=queue,
-            on_message_callback=self.consume_callback
-        )
-        print(f'Listening on {queue}...')
-        self.channel.start_consuming()
+                t = Thread(target=self.func, args=(proto, self.publish_callback))
+                t.start()
+                self.ack_callback(method.delivery_tag)
 
-    def consume_callback(self, channel, method, properties, body):
-        proto = self.proto_in()
-        proto.ParseFromString(body)
-
-        t = Thread(target=self.func, args=(proto, self.publish_callback))
-        t.start()
-        self.ack_callback(method.delivery_tag)
-
-    def ack_callback(self, delivery_tag):
-        cb = functools.partial(self.channel.basic_ack, delivery_tag)
-        self.connection.add_callback_threadsafe(cb)
-
-
-class Connection:
-    def __init__(self, dict_):
-        for key, value in dict_.items():
-            setattr(self, key, value)
-
-
-class Connections(dict):
-    def __init__(self, conn_path):
-        super().__init__(self)
-        conn_yaml = yaml.safe_load(open(conn_path))
-        for conn_name, configs in conn_yaml['connections'].items():
-            self.update({conn_name: Connection(configs)})
-            setattr(self, conn_name, configs)
+            def ack_callback(self, delivery_tag):
+                cb = functools.partial(self.channel.basic_ack, delivery_tag)
+                self.connection.add_callback_threadsafe(cb)
 
 
 def compile_app(app_path):
-    global pipeline, service
 
     sys.path.append(f'{app_path}/.koursaros/')
+    app = App(app_path)
 
-    # connections.yaml
-    conn_path = app_path + '/connections.yaml'
-    connections = Connections(conn_path)
-
-    # stubs.yaml
-    pipelines = dict()
-    pipelines_path = app_path + '/pipelines/'
-    for pipeline_name in next(os.walk(pipelines_path))[1]:
-        if not pipeline_name.startswith(INVALID_PREFIXES):
-            pipeline = Pipeline(pipelines_path + pipeline_name + '/stubs.yaml')
-            pipelines[pipeline_name] = pipeline
-
-    # service.yaml
-    services = dict()
-    services_path = app_path + '/services/'
-    for service_name in next(os.walk(services_path))[1]:
-        if not service_name.startswith(INVALID_PREFIXES):
-            service = AbstractService(services_path + service_name + '/service.yaml')
-            services[service_name] = service
-
-    x = 1
-
-
-    app = App(app_path, pipelines, services, connections, x)
-    app.set_rand(3452)
-    with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
-        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
-
-    i = 91
     import pdb;
     pdb.set_trace()
 
