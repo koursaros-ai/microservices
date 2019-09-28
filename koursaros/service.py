@@ -15,6 +15,8 @@ class Service:
         sys.path.append(f'{app_path}/.koursaros/')
 
         service = file.split('/')[-2]
+        print(service)
+        print('aaaaaaaaa')
         args = get_args()
         print(args)
 
