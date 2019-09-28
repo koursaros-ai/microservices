@@ -48,7 +48,6 @@ class App:
                 if service == stub.service:
                     stub.configure(pipeline, self.connections[connection], prefetch)
                     stubs.append(stub)
-        import pdb; pdb.set_trace()
         return stubs
 
 
@@ -190,6 +189,7 @@ def compile_app(app_path):
 
     with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
         pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    import pdb; pdb.set_trace()
 
     return app
 
