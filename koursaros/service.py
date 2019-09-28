@@ -32,6 +32,8 @@ class Service:
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         self.messages = Messages(self.stubs)
+        import pdb;
+        pdb.set_trace()
 
     def stub(self, name):
         def decorator(func):
