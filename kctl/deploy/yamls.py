@@ -2,7 +2,7 @@
 import yaml
 import os
 import sys
-import json
+import pickle
 
 INVALID_PREFIXES = ('_', '.')
 
@@ -102,18 +102,19 @@ def compile_app(app_path):
     app.pipelines = pipelines
     app.services = services
 
-    print('app')
-    print(dir(app))
-    print('connections')
-    print(dir(app.connections))
-    print('pipelines')
-    print(app.pipelines)
-    print('services')
-    print(app.services)
+    with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
+        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
+        b = pickle.load(fh)
+
+    print(app == b)
+    print(b)
+    print(dir(b))
 
 
     # with open(app_path + '/.koursaros/yamls.json', 'w') as fh:
     #     fh.write(json.dumps(yamls, indent=4))
     #
-    # return yamls
+    # return app
 
