@@ -14,26 +14,6 @@ RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
-def parse_stub_string(stub_string):
-    import re
-    s = r'\s*'
-    ns = r'([^\s]*)'
-    nsp = r'([^\s]+)'
-    full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
-    full_regex = re.compile(full_regex)
-    example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
-    groups = full_regex.match(stub_string)
-
-    if not groups:
-        raise ValueError(f'\n"{stub_string}" does not match stub string regex{example}')
-
-    groups = groups.groups()
-    groups = groups[0].split('.') + list(groups[1:])
-    groups = tuple(group if group else None for group in groups)
-
-    return groups
-
-
 class App:
     def __init__(self, app_path):
         self.path = app_path
@@ -106,7 +86,7 @@ class App:
         def __init__(self, messages, name, stub_string):
             self.name = name
 
-            parsed = parse_stub_string(stub_string)
+            parsed = self.parse_stub_string(stub_string)
             self.service = parsed[0]
             if parsed[1]:
                 self.proto_in = getattr(messages, parsed[1], None)
@@ -118,6 +98,31 @@ class App:
                 self.proto_out = None
 
             self.stub_out = parsed[3]
+
+        def __call__(self, proto):
+            self.func(proto, self.publish_callback)
+
+        @staticmethod
+        def parse_stub_string(stub_string):
+            import pdb;
+            pdb.set_trace()
+            import re
+            s = r'\s*'
+            ns = r'([^\s]*)'
+            nsp = r'([^\s]+)'
+            full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
+            full_regex = re.compile(full_regex)
+            example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
+            groups = full_regex.match(stub_string)
+
+            if not groups:
+                raise ValueError(f'\n"{stub_string}" does not match stub string regex{example}')
+
+            groups = groups.groups()
+            groups = groups[0].split('.') + list(groups[1:])
+            groups = tuple(group if group else None for group in groups)
+
+            return groups
 
         def configure(self, pipeline, connection, prefetch):
             self.prefetch = prefetch
@@ -135,9 +140,6 @@ class App:
                 except Exception as exc:
                     print(f'Failed pika connection...\n{exc.args}')
                     time.sleep(RECONNECT_DELAY)
-
-        def __call__(self, proto):
-            self.func(proto, self.publish_callback)
 
         def publish_callback(self, proto):
             cb = functools.partial(self.publish, proto)
@@ -177,9 +179,6 @@ class App:
 
 def compile_app(app_path):
     app = App(app_path)
-
-    import pdb;
-    pdb.set_trace()
 
     return app
 
