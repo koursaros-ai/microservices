@@ -30,7 +30,6 @@ class Service:
         with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
             app = pickle.load(fh)
 
-
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         self.messages = Messages(self.stubs)
 
