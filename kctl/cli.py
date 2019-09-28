@@ -29,10 +29,9 @@ def deploy_pipeline(args):
     app = compile_app(APP_PATH)
 
     # 3. Check stubs.yaml, messages.proto, and rmq
-    from .deploy.checks import check_stubs, check_protos, check_rabbitmq
+    from .deploy.checks import check_stubs, check_rabbitmq
 
     check_stubs(app, args)
-    check_protos(app, args)
     check_rabbitmq(app, args)
 
     # 4. Check rabbitmq connection
@@ -201,7 +200,7 @@ def get_args():
     # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
-    kctl_deploy_pipeline_parser.add_argument('names', nargs='+')
+    kctl_deploy_pipeline_parser.add_argument('pipelines', nargs='+')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
 

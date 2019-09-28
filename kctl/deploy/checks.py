@@ -1,67 +1,40 @@
 
-import json
-
 CHECK_TIMEOUT = 10
 
 
-def check_stubs(services, stubs):
+def check_stubs(app, args):
 
-    pins_in = set()
-    pins_out = set()
-    pins = dict()
+    for pipeline in args.pipelines:
+        stubs = app.pipelines[pipeline].stubs.items()
+        for stub in stubs:
 
-    for pin_in, service, func_name, proto_in, proto_out, pin_out in stubs:
+            if stub.service not in app.services:
+                raise ValueError(f'{stub.service} service not found.')
 
-        if service not in services.keys():
-            raise ValueError(f'{service} service not found.')
+            if stub.proto_out and not stub.stub_out:
+                raise ValueError(f'{stub.name} is sending "{stub.proto_out}" proto to nothing...')
 
-        if proto_out and not pin_out:
-            raise ValueError(f'{pin_in} is sending "{proto_out}" proto to nothing...')
+            receiving_stub = False
+            for stub_2 in stubs:
+                if stub_2.name == stub.stub_out:
+                    receiving_stub = True
+                    if stub_2.proto_in != stub.proto_out:
+                        raise ValueError(
+                            f'{stub.name} is sending "{stub.proto_out}" proto,'
+                            f'but {stub_2.name} is receiving "{stub_2.proto_in}" proto')
 
-        pins_in.add(pin_in)
-        if pin_out:
-            pins_out.add(pin_out)
-        pins[pin_in] = (proto_in, proto_out, pin_out)
-
-    missing_pins = pins_out - pins_in
-
-    if missing_pins:
-        raise ValueError(f'no receiving pins for {missing_pins}')
-
-    for pin in pins:
-        pin_out = pins[pin][2]
-        sending_proto = pins[pin][1]
-        if pin_out:
-            receiving_proto = pins[pin_out][0]
-            if not receiving_proto == sending_proto:
-                raise ValueError(
-                    f'{pin} is sending "{sending_proto}" proto,'
-                    f'but {pin_out} is receiving "{receiving_proto}" proto'
-                )
+            if not receiving_stub:
+                raise ValueError(f'no receiving stub for {stub.name}')
 
 
-def check_protos(app_path, stubs):
-    import sys
-    sys.path.append(app_path + '/.koursaros')
-    protos = set()
-    module = __import__('messages_pb2')
-
-    for stub in stubs:
-        proto_in = stub[3]
-        proto_out = stub[4]
-        if proto_in:
-            protos.add(proto_in)
-        if proto_out:
-            protos.add(proto_out)
-
-    for proto in protos:
-        if not getattr(module, proto, None):
-            raise ModuleNotFoundError(f'"{proto}" proto not found in {module.__name__}')
-
-
-def check_rabbitmq(host='localhost', port=5672, username='root', password=None, **kwargs):
+def check_rabbitmq(app, args):
     import pika
     from ..utils import BOLD
+
+    host = app.connection.host
+    port = app.connection.port
+    username = app.connection.username
+    password = app.connection.password
 
     bold_ip = BOLD.format(f'{host}:{port}')
 
