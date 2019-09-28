@@ -15,6 +15,7 @@ def deploy_pipelines(app, args):
     for pipeline in args.pipelines:
         services |= {stub.service for stub in app.pipelines[pipeline].stubs.values()}
 
+    print(services)
     raise SystemExit
     services = {service for service in app.pipelines}
 
