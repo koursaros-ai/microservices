@@ -77,8 +77,6 @@ class Stub:
     def __init__(self, name, configs):
         messages = __import__('messages_pb2')
 
-        print(name)
-        print(configs)
         self.name = name
         self.service = configs[0]
         if configs[1]:

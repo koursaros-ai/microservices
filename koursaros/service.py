@@ -32,6 +32,7 @@ class Service:
 
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         for stub in self.stubs:
+            print('AAAAAAAAAA')
             print(stub.proto_in)
             print(stub.proto_out)
         raise SystemExit
