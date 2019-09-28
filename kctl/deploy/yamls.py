@@ -104,8 +104,6 @@ class App:
 
         @staticmethod
         def parse_stub_string(stub_string):
-            import pdb;
-            pdb.set_trace()
             import re
             s = r'\s*'
             ns = r'([^\s]*)'
@@ -179,6 +177,7 @@ class App:
 
 def compile_app(app_path):
     app = App(app_path)
-
+    import pdb;
+    pdb.set_trace()
     return app
 
