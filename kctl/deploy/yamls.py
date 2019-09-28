@@ -45,7 +45,7 @@ class App:
         stubs = []
         for pipeline in pipelines:
             print('ajisjfojaosjfo')
-            print(dir(self.pipelines[pipeline]))
+            print(dir(self.pipelines[pipeline].stubs))
             for stub in self.pipelines[pipeline].stubs.values():
 
                 if service == stub.service:
