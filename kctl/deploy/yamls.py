@@ -23,6 +23,7 @@ class Pipeline:
     @staticmethod
     def construct(pipe_path):
         Pipeline.path = pipe_path
+        Pipeline.name = pipe_path.split('/')[-2]
 
         # connections
         conn_path = pipe_path + '/connections.yaml'
@@ -67,8 +68,21 @@ class Pipeline:
                 service_yaml = yaml.safe_load(open(service_path + '/service.yaml'))
 
                 class Service:
+                    class Messages:
+                        def register_proto(self, proto):
+                            if proto is not None:
+                                setattr(self, proto.__name__, proto)
+
+                    def stub(self, name):
+                        def decorator(func):
+                            self.stubs[name] = func
+                            return func
+
+                        return decorator
+
                     name = service_name
                     path = service_path
+                    messages = Messages()
                     stubs = dict()
 
                     for key, value in service_yaml['service'].items():
@@ -76,7 +90,11 @@ class Pipeline:
 
                     for stub_name in list(Pipeline.stubs):
                         if name == Pipeline.stubs[stub_name].service:
-                            stubs[stub_name] = Pipeline.stubs.pop(stub_name)
+                            stub = Pipeline.stubs.pop(stub_name)
+                            stubs[stub_name] = stub
+
+                            messages.register_proto(stub.proto_in)
+                            messages.register_proto(stub.proto_out)
 
                 Pipeline.services[service_name] = Service
 
@@ -136,13 +154,14 @@ class Pipeline:
 
             return groups
 
-        def configure(self, pipeline, connection, prefetch):
+        def configure(self, conn_name, prefetch):
             self.prefetch = prefetch
+            connection = Pipeline.connections[conn_name]
 
             credentials = pika.credentials.PlainCredentials(
                 self.service, connection.password)
             params = pika.ConnectionParameters(
-                connection.host, connection.port, pipeline, credentials)
+                connection.host, connection.port, Pipeline.name, credentials)
 
             while True:
                 try:
@@ -197,5 +216,5 @@ def compile_app(pipe_path):
     import pdb;
     pdb.set_trace()
 
-    return pipeline
+    return Pipeline
 

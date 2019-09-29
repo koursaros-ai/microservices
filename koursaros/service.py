@@ -6,42 +6,25 @@ import pickle
 from kctl.cli import get_args
 
 
-class Messages:
-    def __init__(self, stubs):
-        for stub in stubs:
-            self.register_proto(stub.proto_in)
-            self.register_proto(stub.proto_out)
+def Service(path, prefetch=1):
 
-    def register_proto(self, proto):
-        if proto is not None:
-            setattr(self, proto.__name__, proto)
+    pipe_path = find_app_path(path)
+    sys.path.append(f'{pipe_path}/.koursaros/')
+    name = path.split('/')[-2]
+    args = get_args()
+
+    with open(pipe_path + '/.koursaros/pipeline.pickle', 'rb') as fh:
+        Pipeline = pickle.load(fh)
+
+    service = Pipeline.services[name]
+    for stub in service.stubs:
+        stub.configure(args.connection, prefetch)
+
+    return service
 
 
-class Service:
-    __slots__ = ['stubs', 'messages', 'path', 'name']
-
-    def __init__(self, path, prefetch=1):
-
-        self.path = path
-        pipe_path = find_app_path(path)
-        sys.path.append(f'{pipe_path}/.koursaros/')
-        self.name = path.split('/')[-2]
-        args = get_args()
-
-        with open(pipe_path + '/.koursaros/pipeline.pickle', 'rb') as fh:
-            pipeline = pickle.load(fh)
-
-        self.stubs = pipeline.services[self.name]
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         self.messages = Messages(self.stubs)
-
-
-
-    def stub(self, name):
-        def decorator(func):
-            self.stubs[name] = func
-            return func
-        return decorator
 
     def run(self):
         threads = []
