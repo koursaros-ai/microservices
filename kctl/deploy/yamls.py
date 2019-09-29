@@ -190,12 +190,12 @@ class Pipeline:
 
 
 def compile_app(pipe_path):
-    pipeline = Pipeline(pipe_path)
-    with open(pipe_path + '/.koursaros/app.pickle', 'wb') as fh:
-        pickle.dump(pipeline, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    Pipeline.construct(pipe_path)
+    # with open(pipe_path + '/.koursaros/app.pickle', 'wb') as fh:
+    #     pickle.dump(Pipeline, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
     import pdb;
     pdb.set_trace()
-    
+
     return pipeline
 
