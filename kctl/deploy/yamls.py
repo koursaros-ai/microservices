@@ -14,176 +14,188 @@ RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
-class App:
-    def __init__(self, app_path):
-        self.path = app_path
+class PipelineException(Exception):
+    pass
 
-        # connections.yaml
-        self.connections = dict()
-        conn_path = app_path + '/connections.yaml'
-        self.set_connections(conn_path)
 
-        # stubs.yaml
-        self.pipelines = dict()
-        pipelines_path = app_path + '/pipelines/'
-        sys.path.append(f'{app_path}/.koursaros/')
-        self.set_pipelines(pipelines_path, __import__('messages_pb2'))
+class Pipeline:
 
-        # service.yaml
-        self.services = dict()
-        services_path = app_path + '/services/'
-        self.set_services(services_path)
+    @staticmethod
+    def construct(pipe_path):
+        Pipeline.path = pipe_path
 
-    def set_connections(self, conn_path):
+        # connections
+        conn_path = pipe_path + '/connections.yaml'
+        Pipeline.set_connections(conn_path)
+
+        # stubs
+        stubs_path = pipe_path + '/stubs.yaml'
+        sys.path.append(f'{pipe_path}/.koursaros/')
+        messages = __import__('messages_pb2')
+        Pipeline.set_stubs(stubs_path, messages)
+
+        # services
+        Pipeline.services = dict()
+        services_path = pipe_path + '/services/'
+        Pipeline.set_services(services_path)
+
+        Pipeline.check_unallocated()
+
+    @staticmethod
+    def set_connections(conn_path):
+        Pipeline.connections = dict()
         conn_yaml = yaml.safe_load(open(conn_path))
         for conn_name, configs in conn_yaml['connections'].items():
-            connection = self.Connection(configs)
-            self.connections[conn_name] = connection
+            connection = Pipeline.Connection(conn_path, configs)
+            Pipeline.connections[conn_name] = connection
 
-    def set_pipelines(self, pipelines_path, messages):
-        for pipeline_name in next(os.walk(pipelines_path))[1]:
-            if not pipeline_name.startswith(INVALID_PREFIXES):
-                pipeline_path = pipelines_path + pipeline_name
-                self.pipelines[pipeline_name] = self.Pipeline(messages, pipeline_path)
+    @staticmethod
+    def set_stubs(stubs_path, messages):
+        Pipeline.stubs = dict()
+        stubs_yaml = yaml.safe_load(open(stubs_path))
+        for stub_name, stub_string in stubs_yaml['stubs'].items():
+            stub = Pipeline.Stub(stubs_path, stub_name, stub_string, messages)
+            Pipeline.stubs[stub_name] = stub
 
-    def set_services(self, services_path):
-        for service_name in next(os.walk(services_path))[1]:
+    @staticmethod
+    def set_services(services_path):
+        Pipeline.services = dict()
+        service_names = next(os.walk(services_path))[1]
+        for service_name in service_names:
             if not service_name.startswith(INVALID_PREFIXES):
                 service_path = services_path + service_name
-                service = self.Service(service_path)
-                self.services[service_name] = service
+                service_yaml = yaml.safe_load(open(service_path + '/service.yaml'))
 
-    def configure(self, pipelines, service, connection, prefetch):
-        stubs = []
-        for pipeline in pipelines:
-            for stub in self.pipelines[pipeline].stubs.values():
-                if service == stub.service:
-                    stub.configure(pipeline, self.connections[connection], prefetch)
-                    stubs.append(stub)
-        return stubs
+                class Service:
+                    name = service_name
+                    path = service_path
+                    stubs = dict()
+
+                    for key, value in service_yaml['service'].items():
+                        vars()[key] = value
+
+                    for stub_name in list(Pipeline.stubs):
+                        if name == Pipeline.stubs[stub_name].service:
+                            stubs[stub_name] = Pipeline.stubs.pop(stub_name)
+
+                Pipeline.services[service_name] = Service
+
+    @staticmethod
+    def check_unallocated():
+        unallocated = [f'{stub.service}.{stub.name}' for stub in Pipeline.stubs.values()]
+        if unallocated:
+            raise PipelineException(f'Unallocated stubs: {unallocated}')
 
     class Connection:
-        def __init__(self, dict_):
-            for key, value in dict_.items():
+        def __init__(self, conn_path, configs):
+            self.path = conn_path
+            for key, value in configs.items():
                 setattr(self, key, value)
 
-    class Service:
-        def __init__(self, service_path):
-            self.path = service_path
-            conn_yaml = yaml.safe_load(open(service_path + '/service.yaml'))
-            for key, value in conn_yaml['service'].items():
-                setattr(self, key, value)
-
-    class Pipeline:
-        def __init__(self, messages, path):
+    class Stub:
+        def __init__(self, path, name, stub_string, messages):
             self.path = path
-            self.stubs = dict()
+            self.name = name
+            self.stub_string = stub_string
+            self.parse_stub_string(stub_string)
 
-            stubs_yaml = yaml.safe_load(open(path + '/stubs.yaml'))
-            for stub_name, stub_string in stubs_yaml['stubs'].items():
-                stub = self.Stub(messages, stub_name, stub_string)
-                self.stubs[stub_name] = stub
+            parsed = self.parse_stub_string(stub_string)
 
-        class Stub:
-            def __init__(self, messages, name, stub_string):
-                self.name = name
-                self.stub_string = stub_string
-                self.parse_stub_string(stub_string)
+            self.service = parsed[0]
+            if parsed[1]:
+                self.proto_in = getattr(messages, parsed[1], None)
+            else:
+                self.proto_in = None
+            if parsed[2]:
+                self.proto_out = getattr(messages, parsed[2], None)
+            else:
+                self.proto_out = None
 
-                parsed = self.parse_stub_string(stub_string)
+            self.stub_out = parsed[3]
 
-                self.service = parsed[0]
-                if parsed[1]:
-                    self.proto_in = getattr(messages, parsed[1], None)
-                else:
-                    self.proto_in = None
-                if parsed[2]:
-                    self.proto_out = getattr(messages, parsed[2], None)
-                else:
-                    self.proto_out = None
+        def __call__(self, proto):
+            self.func(proto, self.publish_callback)
 
-                self.stub_out = parsed[3]
+        @staticmethod
+        def parse_stub_string(stub_string):
+            import re
+            s = r'\s*'
+            ns = r'([^\s]*)'
+            nsp = r'([^\s]+)'
+            full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
+            full_regex = re.compile(full_regex)
+            example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
+            groups = full_regex.match(stub_string)
 
-            def __call__(self, proto):
-                self.func(proto, self.publish_callback)
+            if not groups:
+                raise ValueError(f'\n"{stub_string}" does not match stub string regex{example}')
 
-            @staticmethod
-            def parse_stub_string(stub_string):
-                import re
-                s = r'\s*'
-                ns = r'([^\s]*)'
-                nsp = r'([^\s]+)'
-                full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
-                full_regex = re.compile(full_regex)
-                example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
-                groups = full_regex.match(stub_string)
+            groups = groups.groups()
+            groups = groups[0].split('.') + list(groups[1:])
+            groups = tuple(group if group else None for group in groups)
 
-                if not groups:
-                    raise ValueError(f'\n"{stub_string}" does not match stub string regex{example}')
+            return groups
 
-                groups = groups.groups()
-                groups = groups[0].split('.') + list(groups[1:])
-                groups = tuple(group if group else None for group in groups)
+        def configure(self, pipeline, connection, prefetch):
+            self.prefetch = prefetch
 
-                return groups
+            credentials = pika.credentials.PlainCredentials(
+                self.service, connection.password)
+            params = pika.ConnectionParameters(
+                connection.host, connection.port, pipeline, credentials)
 
-            def configure(self, pipeline, connection, prefetch):
-                self.prefetch = prefetch
+            while True:
+                try:
+                    self.connection = pika.BlockingConnection(parameters=params)
+                    self.channel = self.connection.channel()
+                    break
+                except Exception as exc:
+                    print(f'Failed pika connection...\n{exc.args}')
+                    time.sleep(RECONNECT_DELAY)
 
-                credentials = pika.credentials.PlainCredentials(
-                    self.service, connection.password)
-                params = pika.ConnectionParameters(
-                    connection.host, connection.port, pipeline, credentials)
+        def publish_callback(self, proto):
+            cb = functools.partial(self.publish, proto)
+            self.connection.add_callback_threadsafe(cb)
 
-                while True:
-                    try:
-                        self.connection = pika.BlockingConnection(parameters=params)
-                        self.channel = self.connection.channel()
-                        break
-                    except Exception as exc:
-                        print(f'Failed pika connection...\n{exc.args}')
-                        time.sleep(RECONNECT_DELAY)
+        def publish(self, proto):
+            body = proto.SerializeToString()
+            self.channel.basic_publish(
+                exchange=EXCHANGE,
+                routing_key=self.stub_out,
+                body=body,
+                properties=PROPS
+            )
 
-            def publish_callback(self, proto):
-                cb = functools.partial(self.publish, proto)
-                self.connection.add_callback_threadsafe(cb)
+        def consume(self):
+            self.channel.basic_qos(prefetch_count=self.prefetch)
+            queue = self.service + '.' + self.name
+            self.channel.basic_consume(
+                queue=queue,
+                on_message_callback=self.consume_callback
+            )
+            print(f'Listening on {queue}...')
+            self.channel.start_consuming()
 
-            def publish(self, proto):
-                body = proto.SerializeToString()
-                self.channel.basic_publish(
-                    exchange=EXCHANGE,
-                    routing_key=self.stub_out,
-                    body=body,
-                    properties=PROPS
-                )
+        def consume_callback(self, channel, method, properties, body):
+            proto = self.proto_in()
+            proto.ParseFromString(body)
 
-            def consume(self):
-                self.channel.basic_qos(prefetch_count=self.prefetch)
-                queue = self.service + '.' + self.name
-                self.channel.basic_consume(
-                    queue=queue,
-                    on_message_callback=self.consume_callback
-                )
-                print(f'Listening on {queue}...')
-                self.channel.start_consuming()
+            t = Thread(target=self.func, args=(proto, self.publish_callback))
+            t.start()
+            self.ack_callback(method.delivery_tag)
 
-            def consume_callback(self, channel, method, properties, body):
-                proto = self.proto_in()
-                proto.ParseFromString(body)
-
-                t = Thread(target=self.func, args=(proto, self.publish_callback))
-                t.start()
-                self.ack_callback(method.delivery_tag)
-
-            def ack_callback(self, delivery_tag):
-                cb = functools.partial(self.channel.basic_ack, delivery_tag)
-                self.connection.add_callback_threadsafe(cb)
+        def ack_callback(self, delivery_tag):
+            cb = functools.partial(self.channel.basic_ack, delivery_tag)
+            self.connection.add_callback_threadsafe(cb)
 
 
-def compile_app(app_path):
-    app = App(app_path)
-    with open(app_path + '/.koursaros/app.pickle', 'wb') as fh:
-        pickle.dump(app, fh, protocol=pickle.HIGHEST_PROTOCOL)
+def compile_app(pipe_path):
+    pipeline = Pipeline(pipe_path)
+    with open(pipe_path + '/.koursaros/app.pickle', 'wb') as fh:
+        pickle.dump(pipeline, fh, protocol=pickle.HIGHEST_PROTOCOL)
 
-    return app
+    import pdb;
+    pdb.set_trace()
+    
+    return pipeline
 

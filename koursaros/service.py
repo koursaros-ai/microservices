@@ -18,29 +18,28 @@ class Messages:
 
 
 class Service:
-    __slots__ = ['stubs', 'messages']
+    __slots__ = ['stubs', 'messages', 'path', 'name']
 
-    def __init__(self, file, prefetch=1):
+    def __init__(self, path, prefetch=1):
 
-        app_path = find_app_path(file)
-        sys.path.append(f'{app_path}/.koursaros/')
-        service = file.split('/')[-2]
+        self.path = path
+        pipe_path = find_app_path(path)
+        sys.path.append(f'{pipe_path}/.koursaros/')
+        self.name = path.split('/')[-2]
         args = get_args()
 
-        with open(app_path + '/.koursaros/app.pickle', 'rb') as fh:
-            app = pickle.load(fh)
+        with open(pipe_path + '/.koursaros/pipeline.pickle', 'rb') as fh:
+            pipeline = pickle.load(fh)
 
+        self.stubs = pipeline.services[self.name]
         self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
         self.messages = Messages(self.stubs)
 
-        # import pdb;
-        # pdb.set_trace()
+
 
     def stub(self, name):
         def decorator(func):
-            for stub in self.stubs:
-                if stub.name == name:
-                    stub.func = func
+            self.stubs[name] = func
             return func
         return decorator
 
