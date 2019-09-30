@@ -63,9 +63,10 @@ class Piggify(Pipeline):
 '''
 
 
-def compile_pipeline(path):
+def compile_pipeline(path, out_path):
     # sys.path.append(f'{self.path}/.koursaros/')
     # self.messages = __import__('messages_pb2')
+    print(out_path)
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
     name = path.split('/')[-2]

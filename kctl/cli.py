@@ -22,8 +22,9 @@ def deploy_pipeline(args):
 
     # 1. Compile pipeline
     from koursaros.compile import compile_pipeline
-    pipeline = compile_pipeline(PIPE_PATH)
-    print(pipeline)
+    out_path = os.getcwd()
+    pipeline = compile_pipeline(PIPE_PATH, out_path)
+    # print(pipeline)
     raise SystemExit
 
     # 3. Check stubs.yaml, messages.proto, and rmq
