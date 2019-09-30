@@ -17,16 +17,18 @@ def check_stubs(args):
                 raise ValueError(f'"{stub.name}" is sending "{stub.proto_out}" proto to nothing...')
 
             receiving_stub = False if stub.stub_out else True
-            import pdb; pdb.set_trace()
-            for stub2_name in service.stubs.names:
-                stub2 = getattr(service.stubs, stub2_name)
+            for service2_name in pipeline.services.names:
+                service = getattr(pipeline.services, service2_name)
 
-                if stub2.name == stub.stub_out:
-                    receiving_stub = True
-                    if stub2.proto_in != stub.proto_out:
-                        raise ValueError(
-                            f'{stub.name} is sending "{stub.proto_out}" proto,'
-                            f'but {stub2.name} is receiving "{stub2.proto_in}" proto')
+                for stub2_name in service.stubs.names:
+                    stub2 = getattr(service.stubs, stub2_name)
+
+                    if stub2.name == stub.stub_out:
+                        receiving_stub = True
+                        if stub2.proto_in != stub.proto_out:
+                            raise ValueError(
+                                f'{stub.name} is sending "{stub.proto_out}" proto,'
+                                f'but {stub2.name} is receiving "{stub2.proto_in}" proto')
 
             if not receiving_stub:
                 raise ValueError(f'no receiving stub for "{stub.name}"')
