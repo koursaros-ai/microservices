@@ -29,9 +29,9 @@ def deploy_pipeline(args):
     # 1. Compile pipeline
     save_pipeline(args)
 
-    import site
     import importlib
-    importlib.reload(site)
+    import koursaros
+    importlib.reload(koursaros)
 
     # 2. Check stubs.yaml, messages.proto, and rmq
     from kctl.deploy.checks import check_stubs, check_rabbitmq
