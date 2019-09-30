@@ -34,7 +34,7 @@ class CompiledClass:
         parent = f'({parent})' if parent else ''
         lines = []
 
-        for k, v in vars_:
+        for k, v in vars_.items():
 
             if isinstance(v, str):
                 lines.append(f'{k} = "{v}"')
