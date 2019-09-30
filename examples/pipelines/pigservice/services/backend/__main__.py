@@ -39,7 +39,9 @@ piggify_stub = pipeline.services.pig.stubs.piggify
 
 @backend_stubs.send
 def send_sentence(sentence):
+    print('SENDING')
     piggify_stub(sentence)
+    print('SENT')
 
 
 @backend_stubs.receive
