@@ -4,19 +4,16 @@ from koursaros.pipelines import pigservice
 
 pipeline = pigservice(__file__)
 
-piggfy_stub = pipeline.services.pig.stubs.piggify
-receive_stub = pipeline.services.backend.stubs.receive
 
-
-@piggfy_stub
+@pipeline.services.pig.stubs.piggify
 def piggify(sentence):
     print(sentence)
     pig_latin = [word[1:] + word[0] + "ay" for word in sentence.text.split()]
-    piggified = receive_stub.Piggified(
+    piggified = pipeline.services.backend.stubs.receive.Piggified(
         sentence=sentence,
         pig_latin=' '.join(pig_latin)
     )
-    receive_stub(piggified)
+    pipeline.services.backend.stubs.receive(piggified)
 
 
 if __name__ == "__main__":

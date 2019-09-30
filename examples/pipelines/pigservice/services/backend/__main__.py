@@ -9,9 +9,6 @@ app = Flask(__name__)
 sentences = dict()
 
 
-backend_stubs = pipeline.services.backend.stubs
-
-
 @app.route('/')
 def receive():
     text = request.args.get('q')
@@ -26,7 +23,7 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
 
-    sentence = backend_stubs.send.Sentence(id=sentence_id, text=text)
+    sentence = pipeline.services.backend.stubs.send.Sentence(id=sentence_id, text=text)
     send_sentence(sentence)
     return jsonify({
         "status": "success",
@@ -34,18 +31,15 @@ def receive():
         })
 
 
-piggify_stub = pipeline.services.pig.stubs.piggify
-
-
-@backend_stubs.send
+@pipeline.services.backend.stubs.send
 def send_sentence(sentence):
     print('SENDING')
     import pdb; pdb.set_trace()
-    piggify_stub(sentence)
+    pipeline.services.pig.stubs.piggify(sentence)
     print('SENT')
 
 
-@backend_stubs.receive
+@pipeline.services.backend.stubs.receive
 def receive(piggified):
     global sentences
     sentences[piggified.sentence.id].put(piggified.pig_latin)
