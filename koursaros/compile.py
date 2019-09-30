@@ -116,7 +116,7 @@ def compile_connections(path):
 
 
 def compile_connection(name, configs):
-    for key, value in configs:
+    for key, value in configs.items():
         vars()[key] = value
 
     return CompiledClass(name, vars(), parent='Pipeline.Connection')
