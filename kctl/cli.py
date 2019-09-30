@@ -16,14 +16,19 @@ def deploy_app(args):
     raise NotImplementedError
 
 
+def save_pipeline(args):
+    # 1. Compile pipeline
+    from koursaros.compile import compile_pipeline
+    compile_pipeline(PIPE_PATH, PIPELINES)
+
+
 def deploy_pipeline(args):
 
     if PIPE_PATH is None:
         raise KctlError('Current working directory is not an app')
 
     # 1. Compile pipeline
-    from koursaros.compile import compile_pipeline
-    compile_pipeline(PIPE_PATH, PIPELINES)
+    save_pipeline(args)
 
     # 2. Check stubs.yaml, messages.proto, and rmq
     from kctl.deploy.checks import check_stubs, check_rabbitmq
@@ -140,6 +145,15 @@ def get_args():
     # kctl
     kctl_parser = argparse.ArgumentParser(description=DESCRIPTION, prog='kctl')
     kctl_subparsers = kctl_parser.add_subparsers()
+
+    # kctl save
+    kctl_save_parser = kctl_subparsers.add_parser(
+        'save', description='compile and save to koursaros path'
+    )
+    kctl_save_subparsers = kctl_save_parser.add_subparsers()
+    # kctl save pipeline
+    kctl_save_pipeline_parser = kctl_save_subparsers.add_parser('pipeline')
+    kctl_save_pipeline_parser.set_defaults(func=save_pipeline)
 
     # kctl create
     kctl_create_parser = kctl_subparsers.add_parser(
