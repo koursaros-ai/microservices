@@ -10,7 +10,6 @@ sentences = dict()
 
 
 backend_stubs = pipeline.services.backend.stubs
-send_stub = backend_stubs.send_sentence
 
 
 @app.route('/')
@@ -27,7 +26,7 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
 
-    sentence = send_stub.Sentence(id=sentence_id, text=text)
+    sentence = backend_stubs.send.Sentence(id=sentence_id, text=text)
     send_sentence(sentence)
     return jsonify({
         "status": "success",
@@ -38,7 +37,7 @@ def receive():
 piggify_stub = pipeline.services.pig.stubs.piggify
 
 
-@send_stub
+@backend_stubs.send
 def send_sentence(sentence):
     piggify_stub(sentence)
 
