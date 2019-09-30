@@ -128,17 +128,20 @@ def compile_services(path, pipeline):
     unserviced_stubs = dict()
 
     for name, string in stubs_yaml['stubs'].items():
-        unserviced_stubs[name] = compile_stub(name, string, pipeline)
+        service, stub = compile_stub(name, string, pipeline)
+        if unserviced_stubs.get(service, None) is None:
+            unserviced_stubs[service] = dict()
+        unserviced_stubs[service][name] = stub
 
     path = find_pipe_path(path) + '/services/'
     for name in next(os.walk(path))[1]:
         if not name.startswith(INVALID_PREFIXES):
-            vars()[name] = compile_service(path + name, name)
+            vars()[name] = compile_service(path + name, name, unserviced_stubs.pop(name))
 
     return CompiledClass('services', vars())
 
 
-def compile_service(service_path, name):
+def compile_service(service_path, name, stubs):
     path = service_path
     yaml = pyyaml.safe_load(open(path + '/service.yaml'))
 
@@ -154,4 +157,4 @@ def compile_stub(name, string, pipeline):
     proto_in = 'messages_pb2.' + proto_in if proto_in else None
     proto_out = 'messages_pb2.' + proto_out if proto_out else None
 
-    return CompiledClass(name, vars(), parent='Pipeline.Service.Stub')
+    return service, CompiledClass(name, vars(), parent='Pipeline.Service.Stub')
