@@ -1,12 +1,12 @@
-import yaml as pyyaml
-import os
-import re
+from koursaros.utils import find_pipe_path, parse_stub_string
 from inspect import getsource
 from grpc_tools import protoc
-from koursaros.utils import find_pipe_path, parse_stub_string
+import yaml as pyyaml
+import os
+
 
 INVALID_PREFIXES = ('_', '.')
-IMPORTS = ['import messages_pb2', 'from koursaros import Pipeline']
+IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import Pipeline']
 PROTECTED = ['from']
 
 
@@ -52,7 +52,6 @@ class CompiledClass:
 
 
 def compile_pipeline(path, out_path):
-    compile_messages(path, out_path)
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
     name = path.split('/')[-2]
@@ -63,7 +62,10 @@ def compile_pipeline(path, out_path):
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
 
-    out_file = f'{out_path}/{name}.py'
+    out_dir = f'{out_path}/{name}'
+    os.makedirs(out_dir, exist_ok=True)
+    compile_messages(path, out_dir)
+    out_file = f'{out_dir}/__init__.py'
     print(f'Writing to {out_file}...')
     with open(out_file, 'w') as fh:
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
