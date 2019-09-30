@@ -141,7 +141,7 @@ def compile_services(path):
 
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
-            
+
     return CompiledClass('services', services)
 
 
