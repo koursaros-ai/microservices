@@ -57,7 +57,8 @@ class Pipeline:
                 setattr(self.service.stubs, self.name, self)
 
             def __call__(self, proto):
-                # import pdb; pdb.set_trace()
+                import pdb;
+                pdb.set_trace()
                 if self.service.name == self.pipeline.active_service:
                     self.func(proto)
                 else:
