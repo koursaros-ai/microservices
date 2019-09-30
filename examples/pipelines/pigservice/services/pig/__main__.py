@@ -2,17 +2,21 @@
 
 from koursaros.pipelines import pigservice
 
-service = Service(__file__)
+pipeline = pigservice(__name__)
+
+piggfy_stub = pipeline.services.pig.stubs.piggify
+receive_stub = pipeline.services.backend.receive
 
 
-@service.stub('piggify')
-def piggify(sentence, publish):
+@piggfy_stub
+def piggify(sentence):
     pig_latin = [word[1:] + word[0] + "ay" for word in sentence.text.split()]
-    piggified = service.messages.Piggified(
+    piggified = receive_stub.Piggified(
         sentence=sentence,
         pig_latin=' '.join(pig_latin)
     )
-    publish(piggified)
+    receive_stub(piggified)
+
 
 if __name__ == "__main__":
-    service.run()
+    pipeline.services.pig.run()

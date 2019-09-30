@@ -1,12 +1,16 @@
-from koursaros import Service
+from koursaros.pipelines import piggify
 from flask import Flask, request, jsonify
 from queue import Queue
 from threading import Thread
 import uuid
 
-service = Service(__file__)
+pipeline = piggify(__name__)
 app = Flask(__name__)
 sentences = dict()
+
+
+backend_stubs = pipeline.services.backend.stubs
+send_stub = backend_stubs.send_sentence
 
 
 @app.route('/')
@@ -23,7 +27,7 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
 
-    sentence = service.messages.Sentence(id=sentence_id, text=text)
+    sentence = send_stub.Sentence(id=sentence_id, text=text)
     send_sentence(sentence)
     return jsonify({
         "status": "success",
@@ -31,19 +35,22 @@ def receive():
         })
 
 
-@service.stub('send')
-def send_sentence(sentence, publish):
-    publish(sentence)
+piggify_stub = pipeline.services.pig.stubs.piggify
 
 
-@service.stub('receive')
-def receive(piggified, publish):
+@send_stub
+def send_sentence(sentence):
+    piggify_stub(sentence)
+
+
+@backend_stubs.receive
+def receive(piggified):
     global sentences
     sentences[piggified.sentence.id].put(piggified.pig_latin)
 
 
 if __name__ == "__main__":
-    s = Thread(target=service.run)
+    s = Thread(target=pipeline.services.backend.run)
     a = Thread(target=app.run)
 
     s.start()
