@@ -3,28 +3,10 @@ import os
 import re
 from inspect import getsource
 from grpc_tools import protoc
-from koursaros.utils import find_pipe_path
+from koursaros.utils import find_pipe_path, parse_stub_string
 
 INVALID_PREFIXES = ('_', '.')
-
-
-def parse_stub_string(stub_string):
-    s = r'\s*'
-    ns = r'([^\s]*)'
-    nsp = r'([^\s]+)'
-    full_regex = rf'{s}{nsp}\({s}{ns}{s}\){s}->{s}{ns}{s}\|{s}{ns}{s}'
-    full_regex = re.compile(full_regex)
-    example = '\nExample: <service>( [variable] ) -> <returns> | <destination>'
-    groups = full_regex.match(stub_string)
-
-    if not groups:
-        raise ValueError(f'\n"{stub_string}" does not match stub string regex{example}')
-
-    groups = groups.groups()
-    groups = groups[0].split('.') + list(groups[1:])
-    groups = tuple(group if group else None for group in groups)
-
-    return groups
+IMPORTS = ['import messages_pb2', 'from koursaros import Pipeline']
 
 
 class CompiledClass:
@@ -92,7 +74,7 @@ def compile_pipeline(path):
     pipeline['services'] = compile_services(path)
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
-    return 'import messages_pb2\n\n' + pipeline.join()
+    return '\n\n'.join(IMPORTS) + pipeline.join()
 
 
 # def compile_messages(app_path):
