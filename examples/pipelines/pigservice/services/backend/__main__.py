@@ -34,11 +34,14 @@ def receive():
         })
 
 
+piggify_stub = pipeline.services.pig.stubs.piggify
+
 
 @backend_stubs.send
 def send_sentence(sentence):
     print('SENDING')
-    pipeline.services.pig.stubs.piggify(sentence)
+    import pdb; pdb.set_trace()
+    piggify_stub(sentence)
     print('SENT')
 
 
