@@ -40,7 +40,8 @@ class Pipeline:
 
         def run(self):
             threads = []
-            for stub in self.stubs.names:
+            for name in self.stubs.names:
+                stub = getattr(self.stubs, name)
                 t = Thread(target=stub.consume)
                 print(f'Starting stub "{stub.name}" ({t.getName()})')
                 t.start()
