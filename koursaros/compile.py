@@ -52,7 +52,7 @@ class CompiledClass:
             else:
                 raise NotImplementedError(f'var "{k}" of type {type(v)} not implemented')
 
-        self.lines = [f'class {name}{parent}:'] + self.lines
+        self.lines = [f'class {name}{parent}:'] + lines
         self.indent()
 
     def indent(self):
