@@ -1,14 +1,12 @@
 
 
-
 CHECK_TIMEOUT = 10
 
 def check_stubs(args):
 
-    pipeline = __import__('koursaros.pipelines.pigservice')
-    import sys
+    koursaros = __import__(f'koursaros.pipelines.{args.pipeline}')
+    pipeline = getattr(getattr(koursaros.pipelines, args.pipeline), args.pipeline)
 
-    print(sys.path)
     import pdb
     pdb.set_trace()
 
