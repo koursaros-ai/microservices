@@ -68,8 +68,9 @@ class Pipeline:
                 type_in = stub_out.proto_in.__class__.__name__
                 type_out = proto.__class__.__name__
 
+                import pdb; pdb.set_trace()
                 if type_in != type_out:
-                    raise StubError(f'Attemping to send "{type_out}" to "{stub_out}"'
+                    raise StubError(f'Attemped to send "{type_out}" to "{stub_out.name}"'
                                     f'... which expects "{type_in}" message')
                 body = proto.SerializeToString()
                 self.channel.basic_publish(
