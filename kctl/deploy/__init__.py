@@ -10,7 +10,8 @@ def deploy_pipeline(pipe_path, args):
     os.chdir(pipe_path + '..')
 
     processes = []
-    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
+    import koursaros.pipelines
+    pipeline = getattr(koursaros.pipelines, args.pipeline)
 
     try:
         for service in pipeline.services.names:
