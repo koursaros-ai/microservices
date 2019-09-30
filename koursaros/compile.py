@@ -141,8 +141,7 @@ def compile_services(path):
 
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
-        import pdb
-        pdb.set_trace()
+            
     return CompiledClass('services', services)
 
 
