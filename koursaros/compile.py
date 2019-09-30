@@ -130,8 +130,6 @@ def compile_services(path):
             unserviced_stubs[service] = dict()
         unserviced_stubs[service][name] = stub
 
-    print(unserviced_stubs)
-    raise SystemExit
     path = find_pipe_path(path) + 'services/'
     services['path'] = path
 
@@ -140,6 +138,7 @@ def compile_services(path):
         if not name.startswith(INVALID_PREFIXES):
             services['names'].append(name)
             stubs = unserviced_stubs.pop(name)
+            print(name)
             services[name] = compile_service(path + name, name, stubs)
 
     return CompiledClass('services', services)
