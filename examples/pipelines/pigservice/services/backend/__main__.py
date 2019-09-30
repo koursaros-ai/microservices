@@ -8,6 +8,9 @@ pipeline = pigservice(__file__)
 app = Flask(__name__)
 sentences = dict()
 
+backend = pipeline.services.backend
+pig = pipeline.services.pig
+
 
 @app.route('/')
 def receive():
@@ -23,7 +26,7 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
 
-    sentence = pipeline.services.backend.stubs.send.Sentence(id=sentence_id, text=text)
+    sentence = backend.stubs.send.Sentence(id=sentence_id, text=text)
     send_sentence(sentence)
     return jsonify({
         "status": "success",
@@ -31,24 +34,21 @@ def receive():
         })
 
 
-backend_stubs = pipeline.services.backend.stubs
-
-
-@backend_stubs.send
+@backend.stubs.send
 def send_sentence(sentence):
     print('SENDING')
     pipeline.services.pig.stubs.piggify(sentence)
     print('SENT')
 
 
-@pipeline.services.backend.stubs.receive
+@backend.stubs.receive
 def receive(piggified):
     global sentences
     sentences[piggified.sentence.id].put(piggified.pig_latin)
 
 
 if __name__ == "__main__":
-    s = Thread(target=pipeline.services.backend.run)
+    s = Thread(target=backend.run)
     a = Thread(target=app.run)
 
     s.start()

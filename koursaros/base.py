@@ -66,11 +66,6 @@ class Pipeline:
                     self.__call__(item)
 
             def __call__(self, proto):
-                print('AAAAAAA')
-                print(self.name)
-                print(proto)
-                print(self.service)
-                print()
                 if self.func is None:
                     active = self.pipeline.active_service
                     stubs = getattr(self.pipeline.services, active).stubs
