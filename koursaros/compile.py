@@ -84,7 +84,7 @@ def compile_pipeline(path):
     path = find_pipe_path(path)
     name = path.split('/')[-2]
     connections = compile_connections(path)
-    services = compile_services(path, name)
+    services = compile_services(path)
 
     pipeline = CompiledClass(name, vars(), parent='Pipeline')
     return pipeline.join()
@@ -112,6 +112,9 @@ def compile_connections(path):
     for name, configs in yaml['connections'].items():
         vars()[name] = compile_connection(name, configs)
 
+        del name
+        del configs
+
     return CompiledClass('connections', vars())
 
 
@@ -119,24 +122,33 @@ def compile_connection(name, configs):
     for key, value in configs.items():
         vars()[key] = value
 
+        del key
+        del value
+
     return CompiledClass(name, vars(), parent='Pipeline.Connection')
 
 
-def compile_services(path, pipeline):
+def compile_services(path):
     stubs_path = find_pipe_path(path) + '/stubs.yaml'
     stubs_yaml = pyyaml.safe_load(open(stubs_path))
     unserviced_stubs = dict()
 
     for name, string in stubs_yaml['stubs'].items():
-        service, stub = compile_stub(name, string, pipeline)
+        service, stub = compile_stub(name, string)
         if unserviced_stubs.get(service, None) is None:
             unserviced_stubs[service] = dict()
         unserviced_stubs[service][name] = stub
+
+        del name
+        del string
+        del stub
 
     path = find_pipe_path(path) + '/services/'
     for name in next(os.walk(path))[1]:
         if not name.startswith(INVALID_PREFIXES):
             vars()[name] = compile_service(path + name, name, unserviced_stubs.pop(name))
+
+        del name
 
     return CompiledClass('services', vars())
 
@@ -151,10 +163,13 @@ def compile_service(service_path, name, stubs):
     for key, value in yaml['service'].items():
         vars()[key] = value
 
+        del key
+        del value
+
     return CompiledClass(name, vars(), parent='Pipeline.Service')
 
 
-def compile_stub(name, string, pipeline):
+def compile_stub(name, string):
     service, proto_in, proto_out, stub_out = parse_stub_string(string)
 
     proto_in = 'messages_pb2.' + proto_in if proto_in else None
