@@ -144,7 +144,7 @@ def compile_services(path):
             unserviced_stubs[service] = dict()
         unserviced_stubs[service][name] = stub
 
-    path = find_pipe_path(path) + '/services/'
+    path = find_pipe_path(path) + 'services/'
     services['path'] = path
 
     for name in next(os.walk(path))[1]:
