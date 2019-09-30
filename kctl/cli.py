@@ -118,9 +118,9 @@ def train_model(args):
     raise NotImplementedError
 
 
-def pull_app(args):
+def pull_pipeline(args):
 
-    if APP_PATH is not None:
+    if PIPE_PATH is not None:
         raise KctlError('Current working directory is already an app')
 
     from subprocess import call
@@ -215,15 +215,15 @@ def get_args():
         'pull', description='pull an app'
     )
     kctl_pull_subparsers = kctl_pull_parser.add_subparsers()
-    # kctl pull app
-    kctl_pull_app_parser = kctl_pull_subparsers.add_parser('app')
-    kctl_pull_app_parser.set_defaults(func=pull_app)
-    kctl_pull_app_parser.add_argument('name')
-    kctl_pull_app_parser.add_argument(
-        '-g', '--git', action='store', help='pull an app from a git directory'
+    # kctl pull pipeline
+    kctl_pull_pipeline_parser = kctl_pull_subparsers.add_parser('pipeline')
+    kctl_pull_pipeline_parser.set_defaults(func=pull_pipeline)
+    kctl_pull_pipeline_parser.add_argument('name')
+    kctl_pull_pipeline_parser.add_argument(
+        '-g', '--git', action='store', help='pull a pipeline from a git directory'
     )
-    kctl_pull_app_parser.add_argument(
-        '-d', '--dir', action='store', help='which directory the app is in'
+    kctl_pull_pipeline_parser.add_argument(
+        '-d', '--dir', action='store', help='which directory the pipeline is in'
     )
 
     return kctl_parser.parse_args()
