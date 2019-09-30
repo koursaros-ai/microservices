@@ -4,7 +4,7 @@ from queue import Queue
 from threading import Thread
 import uuid
 
-pipeline = pigservice(__name__)
+pipeline = pigservice(__file__)
 app = Flask(__name__)
 sentences = dict()
 

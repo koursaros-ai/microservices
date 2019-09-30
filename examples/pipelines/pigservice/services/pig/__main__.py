@@ -2,7 +2,7 @@
 
 from koursaros.pipelines import pigservice
 
-pipeline = pigservice(__name__)
+pipeline = pigservice(__file__)
 
 piggfy_stub = pipeline.services.pig.stubs.piggify
 receive_stub = pipeline.services.backend.stubs.receive
