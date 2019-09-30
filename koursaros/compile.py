@@ -36,11 +36,11 @@ class CompiledClass:
 
         for k, v in vars_.items():
 
-            if isinstance(v, str):
-                lines.append(f'{k} = "{v}"')
-
-            elif isinstance(v, (list, dict, int, self.PlainString)) or v is None:
+            if isinstance(v, (list, dict, int, self.PlainString)) or v is None:
                 lines.append(f'{k} = {v}')
+
+            elif isinstance(v, str):
+                lines.append(f'{k} = "{v}"')
 
             elif callable(v):
                 lines += getsource(v).split('\n')
