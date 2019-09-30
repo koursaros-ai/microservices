@@ -53,10 +53,16 @@ class Pipeline:
 
         class Stub:
             def __init__(self, func):
+
                 self.func = func
                 setattr(self.service.stubs, self.name, self)
 
             def __call__(self, proto):
+                print('AAAAAAA')
+                print(self.name)
+                print(self.proto)
+                print(self.service)
+                print()
                 if self.service.name == self.pipeline.active_service:
                     self.func(proto)
                 else:
