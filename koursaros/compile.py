@@ -145,11 +145,6 @@ def compile_services(path):
 
 def compile_service(service_path, name, stubs):
     service = dict()
-    service['names'] = []
-
-    for stub_name in stubs.keys():
-        service['names'].append(stub_name)
-
     service['stubs'] = compile_stubs(stubs)
 
     path = service_path
@@ -162,6 +157,9 @@ def compile_service(service_path, name, stubs):
 
 
 def compile_stubs(stubs):
+    stubs['names'] = []
+    for stub_name in stubs.keys():
+        stubs['names'].append(stub_name)
     return CompiledClass('stubs', stubs, parent='Pipeline.Service')
 
 
