@@ -135,10 +135,11 @@ def compile_services(path):
 
     services['names'] = []
     for name in next(os.walk(path))[1]:
+        print(next(os.walk(path))[1])
+        raise SystemExit
         if not name.startswith(INVALID_PREFIXES):
             services['names'].append(name)
             stubs = unserviced_stubs.pop(name)
-            print(name)
             services[name] = compile_service(path + name, name, stubs)
 
     return CompiledClass('services', services)
