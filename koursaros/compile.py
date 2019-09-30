@@ -81,12 +81,14 @@ class Piggify(Pipeline):
 def compile_pipeline(path):
     # sys.path.append(f'{self.path}/.koursaros/')
     # self.messages = __import__('messages_pb2')
-    path = find_pipe_path(path)
+    pipeline = dict()
+    pipeline['path'] = find_pipe_path(path)
     name = path.split('/')[-2]
-    connections = compile_connections(path)
-    services = compile_services(path)
+    pipeline['name'] = name
+    pipeline['connections'] = compile_connections(path)
+    pipeline['services'] = compile_services(path)
 
-    pipeline = CompiledClass(name, vars(), parent='Pipeline')
+    pipeline = CompiledClass(name, pipeline, parent='Pipeline')
     return pipeline.join()
 
 
@@ -106,29 +108,28 @@ def compile_pipeline(path):
 
 
 def compile_connections(path):
-    path = find_pipe_path(path) + '/connections.yaml'
+    connections = dict()
+    connections['path'] = find_pipe_path(path) + '/connections.yaml'
     yaml = pyyaml.safe_load(open(path))
+    connections['yaml'] = yaml
 
     for name, configs in yaml['connections'].items():
-        vars()[name] = compile_connection(name, configs)
+        connections[name] = compile_connection(name, configs)
 
-        del name
-        del configs
-
-    return CompiledClass('connections', vars())
+    return CompiledClass('connections', connections)
 
 
 def compile_connection(name, configs):
+    connection = dict()
     for key, value in configs.items():
-        vars()[key] = value
+        connection[key] = value
 
-        del key
-        del value
-
-    return CompiledClass(name, vars(), parent='Pipeline.Connection')
+    return CompiledClass(name, connection, parent='Pipeline.Connection')
 
 
 def compile_services(path):
+    services = dict()
+
     stubs_path = find_pipe_path(path) + '/stubs.yaml'
     stubs_yaml = pyyaml.safe_load(open(stubs_path))
     unserviced_stubs = dict()
@@ -139,35 +140,33 @@ def compile_services(path):
             unserviced_stubs[service] = dict()
         unserviced_stubs[service][name] = stub
 
-        del name
-        del string
-        del stub
-
     path = find_pipe_path(path) + '/services/'
+    services['path'] = path
+
     for name in next(os.walk(path))[1]:
         if not name.startswith(INVALID_PREFIXES):
-            vars()[name] = compile_service(path + name, name, unserviced_stubs.pop(name))
+            stubs = unserviced_stubs.pop(name)
+            services[name] = compile_service(path + name, name, stubs)
 
-        del name
-
-    return CompiledClass('services', vars())
+    return CompiledClass('services', services)
 
 
 def compile_service(service_path, name, stubs):
-    for stub_name, stub in stubs.items():
-        vars()[stub_name] = stub
+    service = dict()
+
+    service['stubs'] = compile_stubs(stubs)
 
     path = service_path
     yaml = pyyaml.safe_load(open(path + '/service.yaml'))
 
     for key, value in yaml['service'].items():
-        vars()[key] = value
+        service[key] = value
 
-        del key
-        del value
-    del stubs
+    return CompiledClass(name, service, parent='Pipeline.Service')
 
-    return CompiledClass(name, vars(), parent='Pipeline.Service')
+
+def compile_stubs(stubs):
+    return CompiledClass('stubs', stubs, parent='Pipeline.Service')
 
 
 def compile_stub(name, string):
