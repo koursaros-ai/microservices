@@ -31,7 +31,10 @@ def receive():
         })
 
 
-@pipeline.services.backend.stubs.send
+backend_stubs = pipeline.services.backend.stubs
+
+
+@backend_stubs.send
 def send_sentence(sentence):
     print('SENDING')
     pipeline.services.pig.stubs.piggify(sentence)
