@@ -38,8 +38,8 @@ def check_rabbitmq(args):
     import pika
     from ..utils import BOLD
 
-    koursaros = __import__(f'koursaros.pipelines.{args.pipeline}')
-    pipeline = getattr(getattr(koursaros.pipelines, args.pipeline), args.pipeline)
+    import koursaros.pipelines
+    pipeline = getattr(koursaros.pipelines, args.pipeline)
     connection = getattr(pipeline.connections, args.connection)
 
     host = connection.host
