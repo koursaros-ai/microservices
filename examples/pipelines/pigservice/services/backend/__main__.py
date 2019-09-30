@@ -1,4 +1,4 @@
-from koursaros.pipelines import piggify
+from koursaros.pipelines import pigservice
 from flask import Flask, request, jsonify
 from queue import Queue
 from threading import Thread
