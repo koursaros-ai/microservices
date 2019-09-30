@@ -76,12 +76,16 @@ def compile_pipeline(path):
     os.makedirs(out_path, exist_ok=True)
     compile_messages(path)
     out_file = f'{out_path}/__init__.py'
+
+
+
     print(f'Writing to {out_file}...')
     with open(out_file, 'w') as fh:
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
 
     set_imports(out_path)
-
+    import pdb
+    pdb.set_trace()
 
 def compile_messages(pipe_path):
     print(f'Compiling messages for {pipe_path}')
