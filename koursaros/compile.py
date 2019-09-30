@@ -83,7 +83,7 @@ def compile_pipeline(path):
     with open(out_file, 'w') as fh:
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
 
-    set_imports(out_path)
+    set_imports(PIPELINES_PATH)
     import pdb
     pdb.set_trace()
 
