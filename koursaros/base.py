@@ -59,7 +59,7 @@ class Pipeline:
                 if self.service == self.pipeline.active_service:
                     self.func(proto)
                 else:
-                    stubs = getattr(self.service.stubs, self.pipeline.active_service)
+                    stubs = getattr(self.service, self.pipeline.active_service).stubs
                     random_choice = randint(0, len(stubs.names) - 1)
                     stub = getattr(stubs, stubs.names[random_choice])
                     stub.publish_callback(proto, self)
