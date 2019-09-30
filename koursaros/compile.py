@@ -56,7 +56,7 @@ def set_imports(out_path):
     imports = ''
     for pipeline in next(os.walk(out_path))[1]:
         if not pipeline.startswith(INVALID_PREFIXES):
-            imports += f'from .{pipeline} import {pipeline}'
+            imports += f'from .{pipeline} import {pipeline}\n'
 
     with open(f'{out_path}/__init__.py', 'w') as fh:
         fh.write(imports)
