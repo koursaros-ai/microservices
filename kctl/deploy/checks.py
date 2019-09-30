@@ -5,9 +5,9 @@ CHECK_TIMEOUT = 10
 
 def check_stubs(args):
 
-
-    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
-    print(dir(pipeline))
+    import koursaros.pipelines
+    # pipeline = __import__(args.pipeline)
+    print(dir(koursaros.pipelines.pigservice))
     # pipeline = getattr(getattr(koursaros.pipelines, args.pipeline), args.pipeline)
 
     for service_name in pipeline.services.names:
