@@ -1,10 +1,10 @@
 
 import time
 import sys
-from .utils import find_app_path
+from koursaros.utils import find_pipe_path
 import os
 
-APP_PATH = find_app_path(os.getcwd())
+PIPE_PATH = find_pipe_path(os.getcwd())
 
 BOLD = '\033[1m'
 GREEN = '\033[32m'
@@ -19,7 +19,7 @@ RESET = '\033[0m'
 class Stdout:
     stdout = None
     name = None
-    outfile = open(APP_PATH + '/.koursaros/kctl-stdout.log', 'w') if APP_PATH else None
+    outfile = open(PIPE_PATH + '/.koursaros/kctl-stdout.log', 'w') if PIPE_PATH else None
 
     @staticmethod
     def __init__(stdout, name):
@@ -57,7 +57,7 @@ class Stdout:
 class Stderr:
     stderr = None
     name = None
-    errfile = open(APP_PATH + '/.koursaros/kctl-stderr.log', 'w') if APP_PATH else None
+    errfile = open(PIPE_PATH + '/.koursaros/kctl-stderr.log', 'w') if PIPE_PATH else None
 
     @staticmethod
     def __init__(stderr, name):
