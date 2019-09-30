@@ -135,7 +135,6 @@ def compile_services(path):
 
     services['names'] = []
     for name in next(os.walk(path))[1]:
-        print(next(os.walk(path))[1])
         if not name.startswith(INVALID_PREFIXES):
             services['names'].append(name)
 
@@ -161,7 +160,6 @@ def compile_service(service_path, name, stubs):
 def compile_stubs(stubs):
     names = []
     for stub_name in stubs.keys():
-        print(stub_name)
         names.append(stub_name)
     stubs['names'] = names
 
