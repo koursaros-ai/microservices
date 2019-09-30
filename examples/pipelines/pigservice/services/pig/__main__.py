@@ -5,7 +5,7 @@ from koursaros.pipelines import pigservice
 pipeline = pigservice(__name__)
 
 piggfy_stub = pipeline.services.pig.stubs.piggify
-receive_stub = pipeline.services.backend.receive
+receive_stub = pipeline.services.backend.stubs.receive
 
 
 @piggfy_stub
