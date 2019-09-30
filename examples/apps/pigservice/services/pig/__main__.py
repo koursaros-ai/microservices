@@ -1,6 +1,6 @@
 
 
-from koursaros import Service
+from koursaros.pipelines import pigservice
 
 service = Service(__file__)
 

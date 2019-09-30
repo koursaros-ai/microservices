@@ -1,10 +1,10 @@
 
-import os
+
 from koursaros.utils import find_pipe_path
+import os
 
 PIPE_PATH = find_pipe_path(os.getcwd())
 __location__ = os.path.dirname(__file__)
-PIPELINES = f'{__location__}/../koursaros/pipelines'
 
 
 class KctlError(Exception):
@@ -17,9 +17,8 @@ def deploy_app(args):
 
 
 def save_pipeline(args):
-    # 1. Compile pipeline
     from koursaros.compile import compile_pipeline
-    compile_pipeline(PIPE_PATH, PIPELINES)
+    compile_pipeline(PIPE_PATH)
 
 
 def deploy_pipeline(args):

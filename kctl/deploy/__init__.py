@@ -1,7 +1,8 @@
-import sys
+
 from subprocess import Popen
-import os
 import signal
+import sys
+import os
 
 
 def deploy_pipeline(pipe_path, args):

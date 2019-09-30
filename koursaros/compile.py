@@ -1,10 +1,11 @@
 from koursaros.utils import find_pipe_path, parse_stub_string
+from koursaros import pipelines
 from inspect import getsource
 from grpc_tools import protoc
 import yaml as pyyaml
 import os
 
-
+PIPELINES_PATH = pipelines.__path__
 INVALID_PREFIXES = ('_', '.')
 IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import Pipeline']
 PROTECTED = ['from']
@@ -61,7 +62,7 @@ def set_imports(out_path):
         fh.write(imports)
 
 
-def compile_pipeline(path, out_path):
+def compile_pipeline(path):
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
     name = path.split('/')[-2]
@@ -72,10 +73,10 @@ def compile_pipeline(path, out_path):
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
 
-    out_dir = f'{out_path}/{name}'
-    os.makedirs(out_dir, exist_ok=True)
-    compile_messages(path, out_dir)
-    out_file = f'{out_dir}/__init__.py'
+    out_path = f'{PIPELINES_PATH}/{name}'
+    os.makedirs(out_path, exist_ok=True)
+    compile_messages(path)
+    out_file = f'{out_path}/__init__.py'
     print(f'Writing to {out_file}...')
     with open(out_file, 'w') as fh:
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
@@ -83,13 +84,13 @@ def compile_pipeline(path, out_path):
     set_imports(out_path)
 
 
-def compile_messages(pipe_path, out_path):
+def compile_messages(pipe_path):
     print(f'Compiling messages for {pipe_path}')
 
     protoc.main((
         '',
         f'-I={pipe_path}',
-        f'--python_out={out_path}',
+        f'--python_out={PIPELINES_PATH}',
         f'{pipe_path}/messages.proto',
     ))
 
