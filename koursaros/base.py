@@ -117,7 +117,6 @@ class Pipeline:
                 proto = self.proto_in()
                 proto.ParseFromString(body)
 
-                import pdb; pdb.set_trace()
                 t = Thread(target=self.func, args=(proto,))
                 t.start()
                 self.ack_callback(method.delivery_tag)
