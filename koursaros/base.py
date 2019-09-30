@@ -62,7 +62,7 @@ class Pipeline:
                     stubs = getattr(self.pipeline.services, self.pipeline.active_service).stubs
                     random_choice = randint(0, len(stubs.names) - 1)
                     stub = getattr(stubs, stubs.names[random_choice])
-                    stub.publish_callback(proto, self)
+                    stub.publish_callback(stub, proto, self)
 
             def publish(self, proto, stub_out):
                 type_in = stub_out.proto_in.__name__
