@@ -136,9 +136,10 @@ def compile_services(path):
     services['names'] = []
     for name in next(os.walk(path))[1]:
         print(next(os.walk(path))[1])
-        raise SystemExit
         if not name.startswith(INVALID_PREFIXES):
             services['names'].append(name)
+            import pdb
+            pdb.set_trace()
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
 
