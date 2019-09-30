@@ -53,10 +53,10 @@ class CompiledClass:
 
         self.lines = lines
         self.indent()
-        self.lines = [f'class {name}{parent}:'] + self.lines
+        self.lines = [f'class {name}{parent}:'] + self.lines + ['\n']
 
     def indent(self):
-        self.lines = ['    ' + line for line in self.lines] + ['\n']
+        self.lines = ['    ' + line for line in self.lines]
 
     def join(self):
         return '\n'.join(self.lines)
