@@ -42,10 +42,13 @@ class Pipeline:
             threads = []
             for name in self.stubs.names:
                 stub = getattr(self.stubs, name)
-                t = Thread(target=stub.consume)
-                print(f'Starting stub "{stub.name}" ({t.getName()})')
-                t.start()
-                threads.append((t, stub.name))
+                if isinstance(stub, self.Stub):
+                    t = Thread(target=stub.consume)
+                    print(f'Starting stub "{stub.name}" ({t.getName()})')
+                    t.start()
+                    threads.append((t, stub.name))
+                else:
+                    setattr(self.stubs, name, stub(self.Stub.func))
 
             for t, name in threads:
                 print(f'Waiting for stub "{name}" to finish ({t.getName()})')
@@ -53,7 +56,6 @@ class Pipeline:
 
         class Stub:
             def __init__(self, func):
-
                 self.func = func
                 setattr(self.service.stubs, self.name, self)
 
@@ -70,6 +72,9 @@ class Pipeline:
                     random_choice = randint(0, len(stubs.names) - 1)
                     stub = getattr(stubs, stubs.names[random_choice])
                     stub.publish_callback(proto, self)
+
+            def func(self, proto):
+                raise NotImplementedError(f'"{self.name}" stub not implemented')
 
             def publish(self, proto, stub_out):
                 type_in = stub_out.proto_in.__name__
