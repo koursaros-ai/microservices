@@ -193,7 +193,7 @@ def get_args():
     # kctl deploy pipeline
     kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
     kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
-    kctl_deploy_pipeline_parser.add_argument('pipelines', nargs='+')
+    kctl_deploy_pipeline_parser.add_argument('pipeline')
     kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
     kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
 
