@@ -84,7 +84,7 @@ class Pipeline:
 
             def consume(self):
 
-                conn = getattr(self.pipeline.connections, self.args.connection)
+                conn = getattr(self.pipeline.connections, self.pipeline.args.connection)
 
                 credentials = pika.credentials.PlainCredentials(
                     self.service.name, conn.password)
