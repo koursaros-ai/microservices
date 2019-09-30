@@ -10,6 +10,7 @@ INVALID_PREFIXES = ('_', '.')
 IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import Pipeline']
 PROTECTED = ['from']
 
+
 class CompiledClass:
     __slots__ = ['lines']
 
@@ -77,15 +78,12 @@ def compile_pipeline(path):
     compile_messages(path)
     out_file = f'{out_path}/__init__.py'
 
-
-
     print(f'Writing to {out_file}...')
     with open(out_file, 'w') as fh:
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
 
     set_imports(PIPELINES_PATH)
-    import pdb
-    pdb.set_trace()
+
 
 def compile_messages(pipe_path):
     print(f'Compiling messages for {pipe_path}')
