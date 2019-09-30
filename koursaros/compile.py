@@ -160,11 +160,12 @@ def compile_service(service_path, name, stubs):
 
 
 def compile_stubs(stubs):
-    stubs['names'] = []
+    names = []
     for stub_name in stubs.keys():
         print(stub_name)
-        stubs['names'].append(stub_name)
-    raise SystemExit
+        names.append(stub_name)
+    stubs['names'] = names
+
     return CompiledClass('stubs', stubs)
 
 
