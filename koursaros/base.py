@@ -60,7 +60,7 @@ class Pipeline:
             def __call__(self, proto):
                 print('AAAAAAA')
                 print(self.name)
-                print(self.proto)
+                print(proto)
                 print(self.service)
                 print()
                 if self.service.name == self.pipeline.active_service:
