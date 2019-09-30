@@ -19,8 +19,9 @@ def check_stubs(args):
             receiving_stub = False if stub.stub_out else True
             for stub2_name in service.stubs.names:
                 stub2 = getattr(service.stubs, stub2_name)
-                print('NAME:',stub2)
+
                 if stub2.name == stub.stub_out:
+                    print('NAME:' + stub2.name + stub.stub_out)
                     receiving_stub = True
                     if stub2.proto_in != stub.proto_out:
                         raise ValueError(
