@@ -74,7 +74,7 @@ def compile_pipeline(path):
     pipeline['services'] = compile_services(path)
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
-    return '\n\n'.join(IMPORTS) + pipeline.join()
+    return '\n'.join(IMPORTS) + '\n\n' + pipeline.join()
 
 
 # def compile_messages(app_path):
