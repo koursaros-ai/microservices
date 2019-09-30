@@ -147,6 +147,7 @@ def compile_services(path):
 def compile_service(service_path, name, stubs):
     service = dict()
     service['stubs'] = compile_stubs(stubs)
+    service['name'] = name
 
     path = service_path
     yaml = pyyaml.safe_load(open(path + '/service.yaml'))
