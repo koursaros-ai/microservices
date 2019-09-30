@@ -5,6 +5,7 @@ import functools
 from threading import Thread
 from random import randint
 from kctl.cli import get_args
+from inspect import isclass
 
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
@@ -42,13 +43,13 @@ class Pipeline:
             threads = []
             for name in self.stubs.names:
                 stub = getattr(self.stubs, name)
-                if isinstance(stub, self.Stub):
+                if not isclass(stub):
                     t = Thread(target=stub.consume)
                     print(f'Starting stub "{stub.name}" ({t.getName()})')
                     t.start()
                     threads.append((t, stub.name))
                 else:
-                    setattr(self.stubs, name, stub(self.Stub.func))
+                    setattr(self.service.stubs, name, stub(self.Stub.func))
 
             for t, name in threads:
                 print(f'Waiting for stub "{name}" to finish ({t.getName()})')
