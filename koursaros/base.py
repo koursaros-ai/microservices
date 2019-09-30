@@ -81,6 +81,8 @@ class Pipeline:
                 )
 
             def publish_callback(self, proto, stub_out):
+                print(self.name)
+                print(proto)
                 cb = functools.partial(self.publish, proto, stub_out)
                 self.connection.add_callback_threadsafe(cb)
 
