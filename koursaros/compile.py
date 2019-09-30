@@ -1,5 +1,6 @@
 import yaml as pyyaml
 import os
+import re
 from inspect import getsource
 from grpc_tools import protoc
 from koursaros.utils import find_pipe_path
@@ -8,7 +9,6 @@ INVALID_PREFIXES = ('_', '.')
 
 
 def parse_stub_string(stub_string):
-    import re
     s = r'\s*'
     ns = r'([^\s]*)'
     nsp = r'([^\s]+)'
@@ -56,7 +56,7 @@ class CompiledClass:
         self.lines = [f'class {name}{parent}:'] + self.lines
 
     def indent(self):
-        self.lines = ['    ' + line for line in self.lines]
+        self.lines = ['    ' + line for line in self.lines] + ['\n']
 
     def join(self):
         return '\n'.join(self.lines)
@@ -92,7 +92,7 @@ def compile_pipeline(path):
     pipeline['services'] = compile_services(path)
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
-    return pipeline.join()
+    return 'import messages_pb2\n\n' + pipeline.join()
 
 
 # def compile_messages(app_path):
