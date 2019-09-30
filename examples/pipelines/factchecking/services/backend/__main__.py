@@ -1,15 +1,22 @@
-from koursaros import Service
+from koursaros.pipelines import factchecking
 from flask import Flask, request, jsonify, render_template
 from queue import Queue
-import threading
+from threading import Thread
 import uuid
 import os
 
-service = Service(__file__)
+pipeline = factchecking(__file__)
 print(os.getcwd())
-app = Flask(__name__, static_folder='/home/jp954/koursaros/examples/apps/flask-service/fact-check/fever/build/static',
-            template_folder="/home/jp954/koursaros/examples/apps/flask-service/fact-check/fever/build")
+app = Flask(
+    __name__,
+    static_folder=__file__ + 'fever/build/static',
+    template_folder=__file__ + "fever/build"
+)
+
 sentences = dict()
+
+backend = pipeline.services.backend
+elastic = pipeline.services.elastic
 
 
 @app.route('/')
@@ -31,34 +38,35 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
 
-    sentence = service.messages.Claim(id=sentence_id, text=text)
-    send_sentence(sentence)
+    sentence = backend.stubs.send.Claim(id=sentence_id, text=text)
+    backend.stubs.send(sentence)
     return jsonify({
         "status": "success",
         "msg": queue.get()
-        })
-
-@service.stub
-def send_sentence(sentence, publish):
-    publish(sentence)
+    })
 
 
-@service.stub
-def receive(evaluated, publish):
+@backend.stubs.send
+def send_sentence(sentence):
+    elastic.stubs.retrieve(sentence)
+
+
+@backend.stubs.receive
+def receive(evaluated):
     global sentences
     response = {
-        "label" : evaluated.label,
-        "evidence" : [line for line in evaluated.evidence]
+        "label": evaluated.label,
+        "evidence": [line for line in evaluated.evidence]
     }
     sentences[evaluated.claim.id].put(response)
 
 
-def main():
-    threads = service.run()
-    threads.append(threading.Thread(target=app.run, kwargs={'host':'0.0.0.0'}))
+if __name__ == "__main__":
+    b = Thread(target=backend.run)
+    a = Thread(target=app.run, kwargs={'host': '0.0.0.0'})
 
-    for t in threads:
-        t.start()
+    b.start()
+    a.start()
 
-    for t in threads:
-        t.join()
+    b.join()
+    a.join()
