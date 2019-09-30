@@ -51,6 +51,16 @@ class CompiledClass:
         pass
 
 
+def set_imports(out_path):
+    imports = ''
+    for pipeline in next(os.walk(out_path))[1]:
+        if not pipeline.startswith(INVALID_PREFIXES):
+            imports += f'from .{pipeline} import {pipeline}'
+
+    with open(f'{out_path}/__init__.py', 'w') as fh:
+        fh.write(imports)
+
+
 def compile_pipeline(path, out_path):
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
@@ -69,6 +79,8 @@ def compile_pipeline(path, out_path):
     print(f'Writing to {out_file}...')
     with open(out_file, 'w') as fh:
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
+
+    set_imports(out_path)
 
 
 def compile_messages(pipe_path, out_path):
