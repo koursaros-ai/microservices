@@ -54,6 +54,8 @@ class Pipeline:
         class Stub:
             def __init__(self, func):
                 self.func = func
+                print(func)
+                raise SystemExit
 
             def __call__(self, proto):
                 if self.service == self.pipeline.active_service:
