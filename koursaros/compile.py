@@ -130,6 +130,8 @@ def compile_services(path):
             unserviced_stubs[service] = dict()
         unserviced_stubs[service][name] = stub
 
+    import pdb; pdb.set_trace()
+
     path = find_pipe_path(path) + 'services/'
     services['path'] = path
 
@@ -138,11 +140,11 @@ def compile_services(path):
         print(next(os.walk(path))[1])
         if not name.startswith(INVALID_PREFIXES):
             services['names'].append(name)
-            import pdb
-            pdb.set_trace()
+
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
-
+        import pdb
+        pdb.set_trace()
     return CompiledClass('services', services)
 
 
