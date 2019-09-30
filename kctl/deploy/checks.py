@@ -2,13 +2,11 @@
 
 CHECK_TIMEOUT = 10
 
+
 def check_stubs(args):
 
     koursaros = __import__(f'koursaros.pipelines.{args.pipeline}')
     pipeline = getattr(getattr(koursaros.pipelines, args.pipeline), args.pipeline)
-
-    import pdb
-    pdb.set_trace()
 
     for service_name in pipeline.services.names:
         service = getattr(pipeline.services, service_name)
@@ -36,7 +34,8 @@ def check_rabbitmq(args):
     import pika
     from ..utils import BOLD
 
-    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
+    koursaros = __import__(f'koursaros.pipelines.{args.pipeline}')
+    pipeline = getattr(getattr(koursaros.pipelines, args.pipeline), args.pipeline)
     connection = getattr(pipeline.connections, args.connection)
 
     host = connection.host

@@ -7,7 +7,8 @@ def bind_rabbitmq(args):
     import requests
     import pika
 
-    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
+    koursaros = __import__(f'koursaros.pipelines.{args.pipeline}')
+    pipeline = getattr(getattr(koursaros.pipelines, args.pipeline), args.pipeline)
     connection = getattr(pipeline.connections, args.connection)
 
     host = connection.host
