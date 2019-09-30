@@ -1,8 +1,8 @@
 
 import os
-from .utils import find_app_path
+from koursaros.utils import find_pipe_path
 
-APP_PATH = find_app_path(os.getcwd())
+PIPE_PATH = find_pipe_path(os.getcwd())
 __location__ = os.path.dirname(__file__)
 
 
@@ -17,16 +17,14 @@ def deploy_app(args):
 
 def deploy_pipeline(args):
 
-    if APP_PATH is None:
+    if PIPE_PATH is None:
         raise KctlError('Current working directory is not an app')
 
-    # 1. Compile messages.proto
-    from .deploy.protos import compile_messages
-    compile_messages(APP_PATH)
-
-    # 2. Compile yamls
-    from .deploy.yamls import compile_app
-    app = compile_app(APP_PATH)
+    # 1. Compile pipeline
+    from koursaros.compile import compile_pipeline
+    pipeline = compile_pipeline(PIPE_PATH)
+    print(pipeline)
+    raise SystemExit
 
     # 3. Check stubs.yaml, messages.proto, and rmq
     from .deploy.checks import check_stubs, check_rabbitmq

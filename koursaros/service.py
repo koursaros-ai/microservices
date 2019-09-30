@@ -5,8 +5,25 @@ from kctl.logger import redirect_out
 import pickle
 from kctl.cli import get_args
 
+from koursaros.pipelines import Pigservice
+
+pigservice = Pigservice(__file__)
+
+@pigservice.pig.piggify
+def hello(email):
+    note = piggify.client.receive.Note()
+    pggify.client.receive(note)
+
+
 
 def Service(path, prefetch=1):
+
+
+    class Args:
+        def register_args(self, args):
+            for arg, value in args.items():
+                setattr(self, arg, value)
+
 
     pipe_path = find_app_path(path)
     sys.path.append(f'{pipe_path}/.koursaros/')
@@ -17,23 +34,8 @@ def Service(path, prefetch=1):
         Pipeline = pickle.load(fh)
 
     service = Pipeline.services[name]
-    for stub in service.stubs:
-        stub.configure(args.connection, prefetch)
+    service.configure(args.connection, prefetch)
 
     return service
 
 
-        self.stubs = app.configure(args.pipelines, service, args.connection, prefetch)
-        self.messages = Messages(self.stubs)
-
-    def run(self):
-        threads = []
-        for stub in self.stubs:
-            t = Thread(target=stub.consume)
-            print(f'Starting thread {t.getName()}: "{stub.name}"')
-            t.start()
-            threads.append((t, stub.name))
-
-        for t, name in threads:
-            print(f'Waiting to finish {t.getName()}: "{name}"')
-            t.join()
