@@ -54,8 +54,7 @@ class Pipeline:
         class Stub:
             def __init__(self, func):
                 self.func = func
-                print(func)
-                raise SystemExit
+                print(self.name, func)
 
             def __call__(self, proto):
                 if self.service == self.pipeline.active_service:
@@ -118,6 +117,8 @@ class Pipeline:
                 proto = self.proto_in()
                 proto.ParseFromString(body)
 
+                print(self.name)
+                print(self.func)
                 t = Thread(target=self.func, args=(proto,))
                 t.start()
                 self.ack_callback(method.delivery_tag)
