@@ -22,7 +22,7 @@ def deploy_pipeline(args):
 
     # 1. Compile pipeline
     from koursaros.compile import compile_pipeline
-    pipeline = compile_pipeline(PIPE_PATH, __location__)
+    pipeline = compile_pipeline(PIPE_PATH, f'{__location__}/../koursaros/pipelines')
     # print(pipeline)
     raise SystemExit
 
