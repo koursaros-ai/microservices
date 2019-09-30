@@ -5,12 +5,9 @@ CHECK_TIMEOUT = 10
 
 def check_stubs(args):
 
-    import sys
+    import koursaros.pipelines
     import pdb
     pdb.set_trace()
-
-
-    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
 
     for service_name in pipeline.services.names:
         service = getattr(pipeline.services, service_name)
