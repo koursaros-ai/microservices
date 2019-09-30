@@ -65,7 +65,7 @@ class Pipeline:
                     stub.publish_callback(stub, proto, self)
 
             def publish(self, proto, stub_out):
-                type_in = stub_out.proto_in.__class__.__name__
+                type_in = stub_out.proto_in.__name__
                 type_out = proto.__class__.__name__
 
                 import pdb; pdb.set_trace()
