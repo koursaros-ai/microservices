@@ -39,7 +39,7 @@ class CompiledClass:
             if isinstance(v, str):
                 lines.append(f'{k} = "{v}"')
 
-            elif isinstance(v, (list, dict)):
+            elif isinstance(v, (list, dict, int)):
                 lines.append(f'{k} = {v}')
 
             elif callable(v):
@@ -50,7 +50,7 @@ class CompiledClass:
                 lines += v.lines
 
             else:
-                raise NotImplementedError(f'"{k}" of type {type(v)} not implemented')
+                raise NotImplementedError(f'var "{k}" of type {type(v)} not implemented')
 
         self.indent()
         self.lines = [f'class {name}{parent}:'] + self.lines
