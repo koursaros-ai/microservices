@@ -46,7 +46,6 @@ class CompiledClass:
                 lines += getsource(v).split('\n')
 
             elif isinstance(v, CompiledClass):
-                v.indent()
                 lines += v.lines
 
             else:
