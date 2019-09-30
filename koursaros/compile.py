@@ -171,10 +171,11 @@ def compile_stub(name, string):
     service, proto_in, proto_out, stub_out = parse_stub_string(string)
 
     if proto_in:
-        proto_in = CompiledClass.PlainString('messages_pb2.' + proto_in)
-        vars()[proto_in] = proto_in
+        vars()[proto_in] = CompiledClass.PlainString('messages_pb2.' + proto_in)
+        proto_in = proto_in
+
     if proto_out:
-        proto_out = CompiledClass.PlainString('messages_pb2.' + proto_out)
-        vars()[proto_in] = proto_in
+        vars()[proto_out] = CompiledClass.PlainString('messages_pb2.' + proto_out)
+        proto_out = proto_out
 
     return service, CompiledClass(name, vars(), parent='Pipeline.Service.Stub')
