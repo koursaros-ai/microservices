@@ -10,6 +10,7 @@ receive_stub = pipeline.services.backend.stubs.receive
 
 @piggfy_stub
 def piggify(sentence):
+    print(sentence)
     pig_latin = [word[1:] + word[0] + "ay" for word in sentence.text.split()]
     piggified = receive_stub.Piggified(
         sentence=sentence,
