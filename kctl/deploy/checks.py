@@ -5,7 +5,7 @@ CHECK_TIMEOUT = 10
 
 def check_stubs(args):
 
-    pipeline = __import__('koursaros.pipelines')
+    pipeline = __import__('koursaros.pipelines.pigservice')
     import sys
 
     print(sys.path)
