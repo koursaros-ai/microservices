@@ -165,6 +165,7 @@ def compile_service(service_path, name, stubs):
 
         del key
         del value
+    del stubs
 
     return CompiledClass(name, vars(), parent='Pipeline.Service')
 
