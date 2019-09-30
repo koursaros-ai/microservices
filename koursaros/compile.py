@@ -109,7 +109,8 @@ def compile_pipeline(path):
 
 def compile_connections(path):
     connections = dict()
-    connections['path'] = find_pipe_path(path) + '/connections.yaml'
+    path = find_pipe_path(path) + '/connections.yaml'
+    connections['path'] = path
     yaml = pyyaml.safe_load(open(path))
     connections['yaml'] = yaml
 
