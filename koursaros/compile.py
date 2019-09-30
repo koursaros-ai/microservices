@@ -140,7 +140,7 @@ def compile_services(path, pipeline):
 
 def compile_service(service_path, name):
     path = service_path
-    yaml = pyyaml.safe_load(open(path + 'service.yaml'))
+    yaml = pyyaml.safe_load(open(path + '/service.yaml'))
 
     for key, value in yaml['service'].items():
         vars()[key] = value
