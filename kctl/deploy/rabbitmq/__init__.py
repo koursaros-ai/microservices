@@ -22,8 +22,8 @@ def bind_rabbitmq(args):
 
     api = AdminAPI(url=url, auth=(username, password))  # admin connection
 
-    http_string = f'vhost "{pipeline}" on {BOLD.format(url)}'
-    pika_string = f'vhost "{pipeline}" on {BOLD.format(ip)}'
+    http_string = f'vhost "{pipeline.name}" on {BOLD.format(url)}'
+    pika_string = f'vhost "{pipeline.name}" on {BOLD.format(ip)}'
 
     try:
         print(f'Deleting {http_string}')
@@ -32,11 +32,11 @@ def bind_rabbitmq(args):
         print(f'Not found: {http_string}')
 
     print(f'Creating {http_string}')
-    api.create_vhost(pipeline)
-    api.create_user_permission(username, pipeline)
+    api.create_vhost(pipeline.name)
+    api.create_user_permission(username, pipeline.name)
 
     credentials = pika.PlainCredentials(username, password)
-    parameters = pika.ConnectionParameters(host, port, pipeline, credentials)
+    parameters = pika.ConnectionParameters(host, port, pipeline.name, credentials)
     connection = pika.BlockingConnection(parameters=parameters)  # pika connection
     channel = connection.channel()
 
@@ -47,7 +47,7 @@ def bind_rabbitmq(args):
         service = getattr(pipeline.services, service_name)
         for stub_name in service.stubs.names:
             queue = service_name + '.' + stub_name
-            print(f'Creating user "{pipeline}" on {http_string}')
+            print(f'Creating user "{service_name}" on {http_string}')
             api.create_user(service_name, password)
             api.create_user_permission(service_name, pipeline.name)
 
