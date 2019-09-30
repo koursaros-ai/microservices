@@ -105,7 +105,7 @@ def compile_pipeline(path):
 #     print(f'Compiling yamls for {app_path}')
 
 
-def compile_connections(path, pipeline):
+def compile_connections(path):
     path = find_pipe_path(path) + '/connections.yaml'
     yaml = pyyaml.safe_load(open(path))
 
