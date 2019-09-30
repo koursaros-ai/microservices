@@ -56,9 +56,14 @@ class Pipeline:
                 t.join()
 
         class Stub:
-            def __init__(self, func):
-                self.func = func
-                setattr(self.service.stubs, self.name, self)
+            def __init__(self, item):
+                if callable(item):
+                    self.func = item
+                    setattr(self.service.stubs, self.name, self)
+                else:
+                    self.func = None
+                    setattr(self.service.stubs, self.name, self)
+                    self.__call__(item)
 
             def __call__(self, proto):
                 print('AAAAAAA')
@@ -66,16 +71,14 @@ class Pipeline:
                 print(proto)
                 print(self.service)
                 print()
-                if self.service.name == self.pipeline.active_service:
-                    self.func(proto)
-                else:
-                    stubs = getattr(self.pipeline.services, self.pipeline.active_service).stubs
+                if self.func is None:
+                    active = self.pipeline.active_service
+                    stubs = getattr(self.pipeline.services, active).stubs
                     random_choice = randint(0, len(stubs.names) - 1)
                     stub = getattr(stubs, stubs.names[random_choice])
                     stub.publish_callback(proto, self)
-
-            def func(self, proto):
-                raise NotImplementedError(f'"{self.name}" stub not implemented')
+                else:
+                    self.func(proto)
 
             def publish(self, proto, stub_out):
                 type_in = stub_out.proto_in.__name__
