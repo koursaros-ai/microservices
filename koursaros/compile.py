@@ -130,8 +130,6 @@ def compile_services(path):
             unserviced_stubs[service] = dict()
         unserviced_stubs[service][name] = stub
 
-    import pdb; pdb.set_trace()
-
     path = find_pipe_path(path) + 'services/'
     services['path'] = path
 
@@ -164,7 +162,9 @@ def compile_service(service_path, name, stubs):
 def compile_stubs(stubs):
     stubs['names'] = []
     for stub_name in stubs.keys():
+        print(stub_name)
         stubs['names'].append(stub_name)
+    raise SystemExit
     return CompiledClass('stubs', stubs)
 
 
