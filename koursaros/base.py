@@ -19,7 +19,9 @@ class Pipeline:
 
     def __init__(self, name, prefetch=1):
         self.args = get_args()
-        self.active_service = name.split('.')[-2]
+        self.active_service = name.split('.')
+        print(self.active_service)
+        raise SystemExit
         self.prefetch = prefetch
 
         for name in self.services.names:
