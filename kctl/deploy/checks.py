@@ -5,8 +5,9 @@ CHECK_TIMEOUT = 10
 
 def check_stubs(args):
 
-    # import koursaros.pipelines.pigservice
+    from koursaros.pipelines import pigservice
     import sys
+
     print(sys.path)
     import pdb
     pdb.set_trace()
