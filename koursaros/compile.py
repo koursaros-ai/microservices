@@ -39,7 +39,7 @@ class CompiledClass:
 
         self.lines = lines
         self.indent()
-        self.lines = [f'class {name}{parent}:'] + self.lines + ['\n']
+        self.lines = [f'class {name}{parent}:'] + self.lines
 
     def indent(self):
         self.lines = ['    ' + line for line in self.lines]
@@ -52,8 +52,6 @@ class CompiledClass:
 
 
 def compile_pipeline(path, out_path):
-    # sys.path.append(f'{self.path}/.koursaros/')
-    # self.messages = __import__('messages_pb2')
     compile_messages(path, out_path)
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
@@ -72,8 +70,6 @@ def compile_pipeline(path, out_path):
 
 
 def compile_messages(pipe_path, out_path):
-    messages_path = f'{pipe_path}'
-
     print(f'Compiling messages for {pipe_path}')
 
     protoc.main((
@@ -121,8 +117,10 @@ def compile_services(path):
     path = find_pipe_path(path) + 'services/'
     services['path'] = path
 
+    services['names'] = []
     for name in next(os.walk(path))[1]:
         if not name.startswith(INVALID_PREFIXES):
+            services['names'].append(name)
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
 
@@ -131,6 +129,10 @@ def compile_services(path):
 
 def compile_service(service_path, name, stubs):
     service = dict()
+    service['names'] = []
+
+    for stub_name in stubs.keys():
+        service['names'].append(stub_name)
 
     service['stubs'] = compile_stubs(stubs)
 

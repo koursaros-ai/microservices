@@ -4,6 +4,7 @@ from koursaros.utils import find_pipe_path
 
 PIPE_PATH = find_pipe_path(os.getcwd())
 __location__ = os.path.dirname(__file__)
+PIPELINES = f'{__location__}/../koursaros/pipelines'
 
 
 class KctlError(Exception):
@@ -22,27 +23,21 @@ def deploy_pipeline(args):
 
     # 1. Compile pipeline
     from koursaros.compile import compile_pipeline
-    pipeline = compile_pipeline(PIPE_PATH, f'{__location__}/../koursaros/pipelines')
-    # print(pipeline)
-    raise SystemExit
+    compile_pipeline(PIPE_PATH, PIPELINES)
 
-    # 3. Check stubs.yaml, messages.proto, and rmq
-    from .deploy.checks import check_stubs, check_rabbitmq
+    # 2. Check stubs.yaml, messages.proto, and rmq
+    from kctl.deploy.checks import check_stubs, check_rabbitmq
+    check_stubs(args)
+    check_rabbitmq(args)
 
-    check_stubs(app, args)
-    check_rabbitmq(app, args)
-
-    # 4. Check rabbitmq connection
-    check_rabbitmq(app, args)
-
-    # 5. (Rebind) and deploy services
-    from .deploy.rabbitmq import bind_rabbitmq
-    from .deploy import deploy_pipelines
-
+    # 3. Rebind services
     if args.rebind:
-        bind_rabbitmq(app, args)
+        from kctl.deploy.rabbitmq import bind_rabbitmq
+        bind_rabbitmq(args)
 
-    deploy_pipelines(app, args)
+    # 4. Deploy pipeline
+    from .deploy import deploy_pipeline
+    deploy_pipeline(PIPE_PATH, args)
 
 
     # else:

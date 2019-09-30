@@ -2,36 +2,38 @@
 CHECK_TIMEOUT = 10
 
 
-def check_stubs(app, args):
+def check_stubs(args):
 
-    for pipeline in args.pipelines:
-        stubs = app.pipelines[pipeline].stubs.values()
-        for stub in stubs:
+    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
 
-            if stub.service not in app.services:
-                raise ValueError(f'{stub.service} service not found.')
+    for service_name in pipeline.services.names:
+        service = getattr(pipeline.services, service_name)
+        for stub_name in service.stubs.names:
+            stub = getattr(service.stubs, stub_name)
 
             if stub.proto_out and not stub.stub_out:
-                raise ValueError(f'{stub.name} is sending "{stub.proto_out}" proto to nothing...')
+                raise ValueError(f'"{stub.name}" is sending "{stub.proto_out}" proto to nothing...')
 
             receiving_stub = False if stub.stub_out else True
-            for stub_2 in stubs:
-                if stub_2.name == stub.stub_out:
+            for stub2_name in service.stubs.names:
+                stub2 = getattr(service.stubs, stub2_name)
+                if stub2.name == stub.stub_out:
                     receiving_stub = True
-                    if stub_2.proto_in != stub.proto_out:
+                    if stub2.proto_in != stub.proto_out:
                         raise ValueError(
                             f'{stub.name} is sending "{stub.proto_out}" proto,'
-                            f'but {stub_2.name} is receiving "{stub_2.proto_in}" proto')
+                            f'but {stub2.name} is receiving "{stub2.proto_in}" proto')
 
             if not receiving_stub:
                 raise ValueError(f'no receiving stub for "{stub.name}"')
 
 
-def check_rabbitmq(app, args):
+def check_rabbitmq(args):
     import pika
     from ..utils import BOLD
 
-    connection = app.connections[args.connection]
+    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
+    connection = getattr(pipeline.connections, args.connection)
 
     host = connection.host
     port = connection.port

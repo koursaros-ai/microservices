@@ -4,26 +4,22 @@ import os
 import signal
 
 
-def deploy_pipelines(app, args):
-    app_name = app.path.split('/')[-2]
-    os.chdir(app.path + '..')
+def deploy_pipeline(pipe_path, args):
+    app_name = pipe_path.split('/')[-2]
+    os.chdir(pipe_path + '..')
 
-    popens = []
-
-    # get only the services having to do with pipelines
-    services = set()
-    for pipeline in args.pipelines:
-        services |= {stub.service for stub in app.pipelines[pipeline].stubs.values()}
+    processes = []
+    pipeline = __import__(args.pipeline, fromlist=['koursaros.pipelines'])
 
     try:
-        for service in services:
+        for service in pipeline.services.names:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]
             print(f'Running {cmd}...')
-            popen = Popen(cmd)
-            popens.append((popen, service))
+            p = Popen(cmd)
+            processes.append((p, service))
 
-        for popen, service in popens:
-            popen.communicate()
+        for p, service in processes:
+            p.communicate()
 
     except KeyboardInterrupt:
         pass
@@ -31,10 +27,10 @@ def deploy_pipelines(app, args):
         print(exc)
 
     finally:
-        for popen, service in popens:
+        for p, service in processes:
 
-            if popen.poll() is None:
-                os.kill(popen.pid, signal.SIGTERM)
-                print(f'Killing pid {popen.pid}: {service}')
+            if p.poll() is None:
+                os.kill(p.pid, signal.SIGTERM)
+                print(f'Killing pid {p.pid}: {service}')
             else:
-                print(f'process {popen.pid}: "{service}" ended...')
+                print(f'process {p.pid}: "{service}" ended...')
