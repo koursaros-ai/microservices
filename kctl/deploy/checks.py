@@ -17,11 +17,11 @@ def check_stubs(args):
                 raise ValueError(f'"{stub.name}" is sending "{stub.proto_out}" proto to nothing...')
 
             receiving_stub = False if stub.stub_out else True
+            import pdb; pdb.set_trace()
             for stub2_name in service.stubs.names:
                 stub2 = getattr(service.stubs, stub2_name)
 
                 if stub2.name == stub.stub_out:
-                    print('NAME:' + stub2.name + stub.stub_out)
                     receiving_stub = True
                     if stub2.proto_in != stub.proto_out:
                         raise ValueError(
