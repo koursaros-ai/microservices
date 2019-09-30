@@ -5,11 +5,12 @@ from grpc_tools import protoc
 import yaml as pyyaml
 import os
 
-PIPELINES_PATH = pipelines.__path__
+PIPELINES_PATH = pipelines.__path__[0]
 INVALID_PREFIXES = ('_', '.')
 IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import Pipeline']
 PROTECTED = ['from']
-
+print(PIPELINES_PATH)
+raise SystemExit
 
 class CompiledClass:
     __slots__ = ['lines']
