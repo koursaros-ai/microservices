@@ -39,7 +39,7 @@ class CompiledClass:
             if isinstance(v, str):
                 lines.append(f'{k} = "{v}"')
 
-            elif isinstance(v, (list, dict, int)) or v is None:
+            elif isinstance(v, (list, dict, int, self.PlainString)) or v is None:
                 lines.append(f'{k} = {v}')
 
             elif callable(v):
@@ -60,6 +60,9 @@ class CompiledClass:
 
     def join(self):
         return '\n'.join(self.lines)
+
+    class PlainString(str):
+        pass
 
 '''
 from koursaros.base import Pipeline
@@ -173,7 +176,7 @@ def compile_stubs(stubs):
 def compile_stub(name, string):
     service, proto_in, proto_out, stub_out = parse_stub_string(string)
 
-    proto_in = 'messages_pb2.' + proto_in if proto_in else None
-    proto_out = 'messages_pb2.' + proto_out if proto_out else None
+    proto_in = CompiledClass.PlainString('messages_pb2.' + proto_in) if proto_in else None
+    proto_out = CompiledClass.PlainString('messages_pb2.' + proto_out) if proto_out else None
 
     return service, CompiledClass(name, vars(), parent='Pipeline.Service.Stub')
