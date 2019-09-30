@@ -104,7 +104,7 @@ class Pipeline:
 
                 self.channel.basic_qos(prefetch_count=self.pipeline.prefetch)
                 queue = self.service.name + '.' + self.name
-                cb = functools.partial(self.consume_callback, self)
+                cb = functools.partial(self.consume_callback)
                 self.channel.basic_consume(queue=queue, on_message_callback=cb)
                 print(f'Listening on {queue}...')
                 self.channel.start_consuming()
