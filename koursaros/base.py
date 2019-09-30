@@ -67,6 +67,7 @@ class Pipeline:
             def publish(self, proto, stub_out):
                 type_in = stub_out.proto_in.__name__
                 type_out = proto.__name__
+                import pdb; pdb.set_trace()
                 if type_in != type_out:
                     raise StubError(f'Attemping to send "{type_out}" to "{stub_out}"'
                                     f'... which expects "{type_in}" message')
