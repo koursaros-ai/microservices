@@ -17,7 +17,7 @@ class StubError(Exception):
 
 class Pipeline:
 
-    def __init__(self, name, prefetch=1):
+    def __init__(self, file, prefetch=1):
         self.args = get_args()
         self.active_service = file.split('/')[-2]
         self.prefetch = prefetch
