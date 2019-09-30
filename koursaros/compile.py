@@ -159,8 +159,9 @@ def compile_service(service_path, name, stubs):
 def compile_stubs(stubs):
     stubs['names'] = []
     for stub_name in stubs.keys():
+        print(stub_name)
         stubs['names'].append(stub_name)
-    return CompiledClass('stubs', stubs, parent='Pipeline.Service')
+    return CompiledClass('stubs', stubs)
 
 
 def compile_stub(name, string):
