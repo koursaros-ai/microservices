@@ -39,7 +39,7 @@ class CompiledClass:
             if isinstance(v, str):
                 lines.append(f'{k} = "{v}"')
 
-            elif isinstance(v, (list, dict, int)):
+            elif isinstance(v, (list, dict, int)) or v is None:
                 lines.append(f'{k} = {v}')
 
             elif callable(v):
