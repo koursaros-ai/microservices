@@ -66,16 +66,22 @@ class Piggify(Pipeline):
 def compile_pipeline(path, out_path):
     # sys.path.append(f'{self.path}/.koursaros/')
     # self.messages = __import__('messages_pb2')
-    print(out_path)
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
     name = path.split('/')[-2]
+    print(f'Compiling pipeline "{name}"...')
     pipeline['name'] = name
     pipeline['connections'] = compile_connections(path)
     pipeline['services'] = compile_services(path)
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
-    return '\n'.join(IMPORTS) + '\n\n' + pipeline.join()
+
+    out_file = f'{out_path}/{name}.py'
+    print(f'Writing to {out_file}...')
+    with open(out_file, 'w') as fh:
+        fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
+
+
 
 
 # def compile_messages(app_path):
