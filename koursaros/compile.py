@@ -142,6 +142,9 @@ def compile_services(path, pipeline):
 
 
 def compile_service(service_path, name, stubs):
+    for name, stub in stubs.items():
+        vars()[name] = stub
+
     path = service_path
     yaml = pyyaml.safe_load(open(path + '/service.yaml'))
 
