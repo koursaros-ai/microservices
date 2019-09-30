@@ -7,6 +7,7 @@ from koursaros.utils import find_pipe_path, parse_stub_string
 
 INVALID_PREFIXES = ('_', '.')
 IMPORTS = ['import messages_pb2', 'from koursaros import Pipeline']
+PROTECTED = ['from']
 
 
 class CompiledClass:
@@ -17,6 +18,9 @@ class CompiledClass:
         lines = []
 
         for k, v in vars_.items():
+
+            if k in PROTECTED:
+                raise ValueError(f'Invalid Attribute Name: "{k}"')
 
             if isinstance(v, (list, dict, int, self.PlainString)) or v is None:
                 lines.append(f'{k} = {v}')
@@ -46,26 +50,11 @@ class CompiledClass:
     class PlainString(str):
         pass
 
-'''
-from koursaros.base import Pipeline
-
-class Piggify(Pipeline):
-    class services:
-        class pig(Pipeline.Service):
-            path = /user/     
-
-            class stubs(Pipeline.Service.Stub):
-                channel = 3
-
-    class connections:
-        class dev_local(Pipeline.Connection):
-            host = 'localhost'
-'''
-
 
 def compile_pipeline(path, out_path):
     # sys.path.append(f'{self.path}/.koursaros/')
     # self.messages = __import__('messages_pb2')
+    compile_messages(path, out_path)
     pipeline = dict()
     pipeline['path'] = find_pipe_path(path)
     name = path.split('/')[-2]
@@ -82,21 +71,17 @@ def compile_pipeline(path, out_path):
         fh.write('\n'.join(IMPORTS) + '\n\n' + pipeline.join())
 
 
+def compile_messages(pipe_path, out_path):
+    messages_path = f'{pipe_path}'
 
+    print(f'Compiling messages for {pipe_path}')
 
-# def compile_messages(app_path):
-#     messages_path = f'{app_path}/messages'
-#
-#     print(f'Compiling messages for {app_path}')
-#
-#     protoc.main((
-#         '',
-#         f'-I={app_path}',
-#         f'--python_out={app_path}/.koursaros',
-#         f'{app_path}/messages.proto',
-#     ))
-#
-#     print(f'Compiling yamls for {app_path}')
+    protoc.main((
+        '',
+        f'-I={pipe_path}',
+        f'--python_out={out_path}',
+        f'{pipe_path}/messages.proto',
+    ))
 
 
 def compile_connections(path):
