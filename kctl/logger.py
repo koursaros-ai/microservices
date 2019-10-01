@@ -46,7 +46,7 @@ class KctlLogger:
         label = cls.stderr_label if err else cls.stdout_label
         write = cls.stderr_write if err else cls.stdout_write
 
-        code = _getframe(2).f_code
+        code = _getframe(1).f_code
         name = code.co_name
         file = code.co_filename[-50:]
         dots = '...' if len(file) == 50 else ''
