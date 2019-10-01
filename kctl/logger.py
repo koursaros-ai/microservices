@@ -34,15 +34,6 @@ class KctlLogger:
         return strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
-    def stack():
-        code = _getframe(2).f_code
-        name = code.co_name
-        file = code.co_filename[-50:]
-        dots = '...' if len(file) == 50 else ''
-        # return dots, file, name
-        return f'{dots}{file} → ️{name}(): '
-
-    @staticmethod
     def stdout_wrap(record=''):
         KctlLogger.format_line(record)
 
@@ -55,7 +46,14 @@ class KctlLogger:
         label = cls.stderr_label if err else cls.stdout_label
         write = cls.stderr_write if err else cls.stdout_write
 
+        code = _getframe(2).f_code
+        name = code.co_name
+        file = code.co_filename[-50:]
+        dots = '...' if len(file) == 50 else ''
+        # return dots, file, name
+        stack = f'{dots}{file} → ️{name}(): '
+
         if record == '\n':
-            write(record + cls.timestamp() + label + cls.stack() + '\n\t')
+            write(record + cls.timestamp() + label + stack + '\n\t')
         else:
             write(record.replace('\n', '\n\t'))
