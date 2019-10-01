@@ -39,8 +39,8 @@ class KctlLogger:
         name = code.co_name
         file = code.co_filename[-50:]
         dots = '...' if len(file) == 50 else ''
-        return dots, file, name
-        # return f'{dots}{file} → ️{name}(): '
+        # return dots, file, name
+        return f'{dots}{file} → ️{name}(): '
 
     @staticmethod
     def stdout_wrap(record=''):
@@ -56,9 +56,8 @@ class KctlLogger:
         write = cls.stderr_write if err else cls.stdout_write
 
         if record == '\n':
-            dots, file, name = cls.stack()
             # write(record + cls.timestamp() + label + cls.stack() + '\n\t')
-            write(record + cls.timestamp() + label + '\n\t')
+            write(record + cls.timestamp() + label + cls.stack() + '\n\t')
         else:
             # write(record.replace('\n', '\n\t'))
             write(record)
