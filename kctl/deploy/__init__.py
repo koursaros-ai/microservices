@@ -16,7 +16,7 @@ def deploy_pipeline(pipe_path, args):
     try:
         for service in pipeline.services.names:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]
-            print(f'Running {cmd}...')
+            print(f'''Running "{' '.join(cmd)}"...''')
             p = Popen(cmd)
             processes.append((p, service))
 
