@@ -49,7 +49,7 @@ class KctlLogger:
             to_write = record + timestamp + KctlLogger.stdout_label + stack + '\n'
             KctlLogger.stdout_write(to_write)
         else:
-            KctlLogger.stdout_write(record)
+            KctlLogger.stdout_write('\t' + record)
 
     @staticmethod
     def stderr_wrap(record=''):
@@ -58,5 +58,5 @@ class KctlLogger:
             to_write = record + timestamp + KctlLogger.stderr_label + '\n'
             KctlLogger.stderr_write(to_write)
         else:
-            KctlLogger.stderr_write(record)
+            KctlLogger.stderr_write('\t' + record)
 
