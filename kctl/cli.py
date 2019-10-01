@@ -16,8 +16,6 @@ import os
 SAVE_PATH = koursaros.__path__[0] + '/pipelines/'
 koursaros.compile.set_imports(SAVE_PATH)
 
-from koursaros import pipelines
-
 CWD = os.getcwd()
 PIPE_PATH = find_pipe_path(CWD)
 KCTL_PATH = kctl.__path__[0]
@@ -87,6 +85,7 @@ def save_pipeline(args):
 def deploy_pipeline(args):
     must_be_pipe_path()
     save_pipeline(args)
+    from koursaros import pipelines
     importlib.reload(pipelines)
     check_stubs(args)
     check_rabbitmq(args)
