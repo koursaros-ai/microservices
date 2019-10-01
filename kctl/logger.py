@@ -62,7 +62,7 @@ class KctlLogger:
             if record == '\n':
                 cls.stderr_write(record + line)
             else:
-                cls.stderr_write(record.replace('\n', '\n' + line))
+                cls.stderr_write(line + record.replace('\n', '\n' + line))
 
 
 
