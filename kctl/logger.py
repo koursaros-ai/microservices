@@ -44,13 +44,14 @@ class KctlLogger:
     @staticmethod
     def format_line(record, err=False):
         label = KctlLogger.stderr_label if err else KctlLogger.stdout_label
+        write = KctlLogger.stderr_write if err else KctlLogger.stdout_write
+
         if record == '\n':
             timestamp = KctlLogger.timestamp()
             stack = KctlLogger.stack()
-            to_write = record + timestamp + label + stack + '\n\t'
-            KctlLogger.stdout_write(to_write)
+            write(record + timestamp + label + stack + '\n\t')
         else:
-            KctlLogger.stdout_write(record.replace('\n', '\n\t'))
+            write(record.replace('\n', '\n\t'))
 
     @staticmethod
     def stdout_wrap(record=''):
