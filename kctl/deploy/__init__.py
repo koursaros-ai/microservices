@@ -1,5 +1,7 @@
 
+
 from subprocess import Popen
+from kctl.utils import BOLD
 import signal
 import sys
 import os
@@ -16,7 +18,7 @@ def deploy_pipeline(pipe_path, args):
     try:
         for service in pipeline.services.names:
             cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]
-            print(f'''Running "{' '.join(cmd)}"...''')
+            print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
             p = Popen(cmd)
             processes.append((p, service))
 
