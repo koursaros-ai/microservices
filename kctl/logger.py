@@ -1,10 +1,7 @@
 
-import time
-import sys
-from koursaros.utils import find_pipe_path
-import os
+from time import strftime
+from sys import stdout, stderr, _getframe
 
-PIPE_PATH = find_pipe_path(os.getcwd())
 
 BOLD = '\033[1m'
 GREEN = '\033[32m'
@@ -16,76 +13,51 @@ ITALICIZED = '\033[3m'
 RESET = '\033[0m'
 
 
-class Stdout:
-    stdout = None
-    name = None
-    outfile = open(PIPE_PATH + '/.koursaros/kctl-stdout.log', 'w') if PIPE_PATH else None
+class KctlLogger:
+    name = 'kctl'
+    stdout_write = stdout.write
+    stderr_write = stderr.write
+    stdout_label = ''
+    stderr_label = ''
+
+    @classmethod
+    def init(cls, name='kctl'):
+        cls.name = name
+        cls.stdout_label = f'[{BOLD}{cls.name}] {GREEN}STDOUT:{RESET}'
+        cls.stderr_label = f'[{BOLD}{cls.name}] {RED}STDERR:{RESET}'
+        stdout.write = cls.stdout_wrap
+        stderr.write = cls.stderr_wrap
+        print('Wrapping stdout with KctlLogger...')
 
     @staticmethod
-    def __init__(stdout, name):
-        Stdout.stdout = stdout
-        Stdout.name = name
+    def timestamp():
+        return strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
-    def fileno():
-        return 1
+    def stack():
+        code = _getframe(1).f_code
+        name = code.co_name
+        file = code.co_filename[-20:]
+        dots = '...' if len(file) == 20 else ''
+        return name, file, dots
 
     @staticmethod
-    def write(record=''):
-        if record != '\n':
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-            code = sys._getframe(1).f_code
-            name = code.co_name
-            file = code.co_filename[-30:]
-            dots = '...' if len(file) == 30 else ''
-
-            log = (
-                f'{timestamp} [{BOLD}{Stdout.name}] {GREEN}STDOUT:'
-                f'{RESET} {dots}{file} → ️{name}(): {record}\n'
-            )
-
-            Stdout.stdout.write(log)
-            if Stdout.outfile:
-                Stdout.outfile.write(log)
-
+    def stdout_wrap(record=''):
+        if record == '\n':
+            timestamp = KctlLogger.timestamp()
+            name, file, dots = KctlLogger.stack()
+            call = f'{dots}{file} → ️{name}():'
+            to_write = record + timestamp + KctlLogger.stdout_label + call
+            KctlLogger.stdout_write(to_write)
+        else:
+            KctlLogger.stdout_write(record)
 
     @staticmethod
-    def flush():
-        pass
-
-
-class Stderr:
-    stderr = None
-    name = None
-    errfile = open(PIPE_PATH + '/.koursaros/kctl-stderr.log', 'w') if PIPE_PATH else None
-
-    @staticmethod
-    def __init__(stderr, name):
-        Stderr.stderr = stderr
-        Stderr.name = name
-
-    @staticmethod
-    def fileno():
-        return 2
-
-    @staticmethod
-    def write(record=''):
-        if record != '\n':
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-            log = f'{timestamp} [{BOLD}{Stderr.name}] {RED}STDERR:{RESET} {record.rstrip()}\n'
-
-            Stderr.stderr.write(log)
-
-            if Stderr.errfile:
-                Stderr.errfile.write(log)
-
-    @staticmethod
-    def flush():
-        pass
-
-
-def redirect_out(name):
-    sys.stdout = Stdout(sys.stdout, name)
-    sys.stderr = Stderr(sys.stderr, name)
-
+    def stderr_wrap(record=''):
+        if record == '\n':
+            timestamp = KctlLogger.timestamp()
+            to_write = record + timestamp + KctlLogger.stderr_label
+            KctlLogger.stderr_write(to_write)
+        else:
+            KctlLogger.stderr_write(record)
 

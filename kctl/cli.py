@@ -3,8 +3,8 @@ from kctl.deploy.checks import check_stubs, check_rabbitmq
 from kctl.deploy.rabbitmq import bind_rabbitmq
 from koursaros.compile import compile_pipeline
 from koursaros.utils import find_pipe_path
-from kctl.logger import redirect_out
 from shutil import rmtree, copytree
+from kctl.logger import KctlLogger
 from koursaros import pipelines
 from subprocess import call
 import importlib
@@ -152,7 +152,7 @@ def pull_pipeline(args):
 
 
 def get_args(name):
-    redirect_out(name)
+    KctlLogger.init(name)
 
     parser = argparse.ArgumentParser(**KCTL_KWARGS)
     subparsers = parser.add_subparsers()
