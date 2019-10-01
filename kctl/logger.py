@@ -56,8 +56,6 @@ class KctlLogger:
         write = cls.stderr_write if err else cls.stdout_write
 
         if record == '\n':
-            # write(record + cls.timestamp() + label + cls.stack() + '\n\t')
             write(record + cls.timestamp() + label + cls.stack() + '\n\t')
         else:
-            # write(record.replace('\n', '\n\t'))
-            write(record)
+            write(record.replace('\n', '\n\t'))
