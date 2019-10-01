@@ -6,7 +6,7 @@ CHECK_TIMEOUT = 10
 def check_stubs(args):
 
     import koursaros.pipelines
-    pipeline = getattr(koursaros.pipelines, args.pipeline)
+    pipeline = getattr(koursaros.pipelines, args.pipeline_name)
 
     for service_name in pipeline.services.names:
         service = getattr(pipeline.services, service_name)
@@ -39,7 +39,7 @@ def check_rabbitmq(args):
     from ..utils import BOLD
 
     import koursaros.pipelines
-    pipeline = getattr(koursaros.pipelines, args.pipeline)
+    pipeline = getattr(koursaros.pipelines, args.pipeline_name)
     connection = getattr(pipeline.connections, args.connection)
 
     host = connection.host
