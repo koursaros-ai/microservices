@@ -35,19 +35,18 @@ class KctlLogger:
 
     @staticmethod
     def stack():
-        code = _getframe(1).f_code
+        code = _getframe(2).f_code
         name = code.co_name
         file = code.co_filename[-20:]
         dots = '...' if len(file) == 20 else ''
-        return name, file, dots
+        return f'{dots}{file} → ️{name}(): '
 
     @staticmethod
     def stdout_wrap(record=''):
         if record == '\n':
             timestamp = KctlLogger.timestamp()
-            name, file, dots = KctlLogger.stack()
-            call = f'{dots}{file} → ️{name}():'
-            to_write = record + timestamp + KctlLogger.stdout_label + call
+            stack = KctlLogger.stack()
+            to_write = record + timestamp + KctlLogger.stdout_label + stack + '\n'
             KctlLogger.stdout_write(to_write)
         else:
             KctlLogger.stdout_write(record)
@@ -56,7 +55,7 @@ class KctlLogger:
     def stderr_wrap(record=''):
         if record == '\n':
             timestamp = KctlLogger.timestamp()
-            to_write = record + timestamp + KctlLogger.stderr_label
+            to_write = record + timestamp + KctlLogger.stderr_label + '\n'
             KctlLogger.stderr_write(to_write)
         else:
             KctlLogger.stderr_write(record)
