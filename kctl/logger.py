@@ -41,18 +41,6 @@ class KctlLogger:
         dots = '...' if len(file) == 50 else ''
         return f'{dots}{file} → ️{name}(): '
 
-    @classmethod
-    def format_line(cls, record, err=False):
-        label = cls.stderr_label if err else cls.stdout_label
-        write = cls.stderr_write if err else cls.stdout_write
-
-        if record == '\n':
-            timestamp = cls.timestamp()
-            stack = cls.stack()
-            write(record + timestamp + label + stack + '\n\t')
-        else:
-            write(record.replace('\n', '\n\t'))
-
     @staticmethod
     def stdout_wrap(record=''):
         KctlLogger.format_line(record)
@@ -60,4 +48,15 @@ class KctlLogger:
     @staticmethod
     def stderr_wrap(record=''):
         KctlLogger.format_line(record, err=True)
+
+    @classmethod
+    def format_line(cls, record, err=False):
+        cls.stdout_write(record)
+        # label = cls.stderr_label if err else cls.stdout_label
+        # write = cls.stderr_write if err else cls.stdout_write
+        #
+        # if record == '\n':
+        #     write(record + cls.timestamp() + label + cls.stack() + '\n\t')
+        # else:
+        #     write(record.replace('\n', '\n\t'))
 
