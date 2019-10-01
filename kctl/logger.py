@@ -51,12 +51,12 @@ class KctlLogger:
 
     @classmethod
     def format_line(cls, record, err=False):
-        cls.stdout_write(record)
-        # label = cls.stderr_label if err else cls.stdout_label
-        # write = cls.stderr_write if err else cls.stdout_write
-        #
-        # if record == '\n':
-        #     write(record + cls.timestamp() + label + cls.stack() + '\n\t')
-        # else:
-        #     write(record.replace('\n', '\n\t'))
+        label = cls.stderr_label if err else cls.stdout_label
+        write = cls.stderr_write if err else cls.stdout_write
 
+        if record == '\n':
+            # write(record + cls.timestamp() + label + cls.stack() + '\n\t')
+            write(record)
+        else:
+            # write(record.replace('\n', '\n\t'))
+            write(record)
