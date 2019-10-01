@@ -19,7 +19,6 @@ class KctlLogger:
     stderr_write = stderr.write
     stdout_label = ''
     stderr_label = ''
-    buffer = ''
 
     @classmethod
     def init(cls, name='kctl'):
@@ -40,7 +39,6 @@ class KctlLogger:
         name = code.co_name
         file = code.co_filename[-20:]
         dots = '...' if len(file) == 20 else ''
-        # return dots, file, name
         return f'{dots}{file} → ️{name}(): '
 
     @staticmethod
