@@ -41,14 +41,14 @@ class KctlLogger:
         dots = '...' if len(file) == 50 else ''
         return f'{dots}{file} → ️{name}(): '
 
-    @staticmethod
-    def format_line(record, err=False):
-        label = KctlLogger.stderr_label if err else KctlLogger.stdout_label
-        write = KctlLogger.stderr_write if err else KctlLogger.stdout_write
+    @classmethod
+    def format_line(cls, record, err=False):
+        label = cls.stderr_label if err else cls.stdout_label
+        write = cls.stderr_write if err else cls.stdout_write
 
         if record == '\n':
-            timestamp = KctlLogger.timestamp()
-            stack = KctlLogger.stack()
+            timestamp = cls.timestamp()
+            stack = cls.stack()
             write(record + timestamp + label + stack + '\n\t')
         else:
             write(record.replace('\n', '\n\t'))
