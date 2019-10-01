@@ -18,7 +18,7 @@ koursaros.compile.set_imports(SAVE_PATH)
 
 CWD = os.getcwd()
 PIPE_PATH = find_pipe_path(CWD)
-PIPE_NAME = PIPE_PATH.split('/')[-1]
+PIPE_NAME = PIPE_PATH.split('/')[-2]
 print(PIPE_NAME)
 raise SystemExit
 KCTL_PATH = kctl.__path__[0]
