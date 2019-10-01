@@ -75,9 +75,7 @@ def must_not_be_pipe_path():
 
 def save_pipeline(args):
     must_be_pipe_path()
-
-
-    compile_pipeline(PIPE_PATH)
+    compile_pipeline(PIPE_PATH, SAVE_PATH)
 
 
 def deploy_pipeline(args):

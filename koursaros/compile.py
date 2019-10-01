@@ -62,20 +62,19 @@ def set_imports(out_path):
         fh.write(imports)
 
 
-def compile_pipeline(path):
+def compile_pipeline(pipe_path, save_path):
     pipeline = dict()
-    pipeline['path'] = find_pipe_path(path)
-    name = path.split('/')[-2]
+    name = pipe_path.split('/')[-2]
     print(f'Compiling pipeline "{name}"...')
     pipeline['name'] = name
-    pipeline['connections'] = compile_connections(path)
-    pipeline['services'] = compile_services(path)
+    pipeline['connections'] = compile_connections(pipe_path)
+    pipeline['services'] = compile_services(pipe_path)
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
 
-    out_path = f'{PIPELINES_PATH}/{name}'
+    out_path = f'{save_path}/{name}'
     os.makedirs(out_path, exist_ok=True)
-    compile_messages(path)
+    compile_messages(out_path)
     out_file = f'{out_path}/__init__.py'
 
     print(f'Writing to {out_file}...')
