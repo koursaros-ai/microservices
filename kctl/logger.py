@@ -19,8 +19,7 @@ class KctlLogger:
     stderr_write = stderr.write
     stdout_label = ''
     stderr_label = ''
-    stdout_nl = True
-    stderr_nl = True
+    buffer = ''
 
     @classmethod
     def init(cls, name='kctl'):
@@ -29,7 +28,7 @@ class KctlLogger:
         cls.stderr_label = f'[{BOLD}{cls.name}] {RED}STDERR: {RESET}'
         stdout.write = cls.stdout_wrap
         stderr.write = cls.stderr_wrap
-        print('\tWrapping stdout with KctlLogger...')
+        print('Wrapping stdout with KctlLogger...')
 
     @staticmethod
     def timestamp():
@@ -58,11 +57,12 @@ class KctlLogger:
         write = cls.stderr_write if err else cls.stdout_write
         stack = ''
 
-        for line in record.split('\n'):
-            if not err:
-                stack = cls.stack()
+        if not err:
+            stack = cls.stack()
 
-            write(cls.timestamp() + label + stack + line + '\n')
+        line = cls.timestamp() + label + stack + '\n'
+
+        write(record.replace('\n', line))
 
 
 
