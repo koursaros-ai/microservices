@@ -44,7 +44,7 @@ class KctlLogger:
     @classmethod
     def format_line(cls, record, err=False):
         label = cls.stderr_label if err else cls.stdout_label
-        write = cls.stderr_write if err else cls.stdout_write
+        write = cls. if err else cls.stdout_write
 
         if not err:
             code = _getframe(2).f_code
@@ -53,10 +53,17 @@ class KctlLogger:
             dots = '...' if len(file) == 50 else ''
             # return dots, file, name
             stack = f'{dots}{file} → ️{name}(): '
+            if record == '\n':
+                cls.stdout_write(record + cls.timestamp() + label + stack + '\n\n\t')
+            else:
+                cls.stdout_write(record.replace('\n', '\n\t'))
         else:
-            stack = ''
+            line = cls.timestamp() + label
 
-        if record == '\n':
-            write(record + cls.timestamp() + label + stack + '\n\n\t')
-        else:
-            write(record.replace('\n', '\n\t'))
+            if record == '\n':
+                cls.stderr_write(record + line)
+            else:
+                cls.stderr_write(record.replace('\n', '\n' + line))
+
+
+
