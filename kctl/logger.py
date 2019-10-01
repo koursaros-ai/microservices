@@ -60,7 +60,7 @@ class KctlLogger:
             line = cls.timestamp() + label
 
             if record == '\n':
-                cls.stderr_write(record + line)
+                cls.stderr_write(line + record + line)
             else:
                 cls.stderr_write(record.replace('\n', '\n' + line))
 
