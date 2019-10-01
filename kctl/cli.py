@@ -5,21 +5,27 @@ from koursaros.compile import compile_pipeline
 from koursaros.utils import find_pipe_path
 from shutil import rmtree, copytree
 from kctl.logger import KctlLogger
-from koursaros import pipelines
+from koursaros import compile
 from subprocess import call
+import koursaros
 import importlib
 import argparse
 import kctl
 import os
 
+SAVE_PATH = koursaros.__path__[0] + '/pipelines/'
+compile.set_imports(SAVE_PATH)
+
+from koursaros import pipelines
+
 CWD = os.getcwd()
 PIPE_PATH = find_pipe_path(CWD)
-SAVE_PATH = pipelines.__path__[0]
 KCTL_PATH = kctl.__path__[0]
 PIPE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipeline'
 SERVICE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipeline/services/service'
 HIDDEN_DIR = '.koursaros'
 CACHE_DIR = '.kctlcache'
+
 
 KCTL_DESC = '''
 kctl controls the \033[1;4mKoursaros\033[0m platform.
