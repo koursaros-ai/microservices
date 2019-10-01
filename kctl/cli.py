@@ -14,7 +14,7 @@ import kctl
 import os
 
 SAVE_PATH = koursaros.__path__[0] + '/pipelines/'
-compile.set_imports(SAVE_PATH)
+koursaros.compile.set_imports(SAVE_PATH)
 
 from koursaros import pipelines
 
