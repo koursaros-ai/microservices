@@ -5,9 +5,9 @@ from koursaros.compile import compile_pipeline
 from koursaros.utils import find_pipe_path
 from shutil import rmtree, copytree
 from kctl.logger import KctlLogger
-from koursaros import compile
+import koursaros.compile
 from subprocess import call
-import koursaros
+# import koursaros
 import importlib
 import argparse
 import kctl
