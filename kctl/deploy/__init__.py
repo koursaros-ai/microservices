@@ -11,7 +11,7 @@ def deploy_pipeline(pipe_path, args):
 
     processes = []
     import koursaros.pipelines
-    pipeline = getattr(koursaros.pipelines, args.pipeline)
+    pipeline = getattr(koursaros.pipelines, args.pipeline_name)
 
     try:
         for service in pipeline.services.names:
