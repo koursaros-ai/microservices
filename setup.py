@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='koursaros',
     packages=find_packages(),
-    package_data={'': ['*.proto', '*.yaml', '*.gitignore', 'create/*']},
+    package_data={'': ['*.proto', '*.yaml', '*.gitignore'], 'kctl': ['create/*']},
     version='0.0.1',
     license='MIT',
     description='Koursaros is a distributed, cloud-'
