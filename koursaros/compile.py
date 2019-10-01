@@ -100,10 +100,12 @@ def compile_connections(path):
     yaml = pyyaml.safe_load(open(path))
     connections['yaml'] = yaml
 
+    connections['names'] = []
     for name, configs in yaml['connections'].items():
         connections[name] = compile_connection(name, configs)
+        connections['names'].append(name)
 
-    return CompiledClass('connections', connections)
+    return CompiledClass('connections', connections, parent='Pipeline.connections')
 
 
 def compile_connection(name, configs):
@@ -138,7 +140,7 @@ def compile_services(path):
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
 
-    return CompiledClass('services', services)
+    return CompiledClass('services', services, parent='Pipeline.services')
 
 
 def compile_service(service_path, name, stubs):
@@ -161,7 +163,7 @@ def compile_stubs(stubs):
         names.append(stub_name)
     stubs['names'] = names
 
-    return CompiledClass('stubs', stubs)
+    return CompiledClass('stubs', stubs, parent='Pipeline.Service.stubs')
 
 
 def compile_stub(name, string):
