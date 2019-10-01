@@ -27,7 +27,7 @@ class KctlLogger:
         cls.stderr_label = f'[{BOLD}{cls.name}] {RED}STDERR:{RESET}'
         stdout.write = cls.stdout_wrap
         stderr.write = cls.stderr_wrap
-        print('Wrapping stdout with KctlLogger...')
+        print('\tWrapping stdout with KctlLogger...')
 
     @staticmethod
     def timestamp():
@@ -35,28 +35,28 @@ class KctlLogger:
 
     @staticmethod
     def stack():
-        code = _getframe(2).f_code
+        code = _getframe(3).f_code
         name = code.co_name
-        file = code.co_filename[-20:]
-        dots = '...' if len(file) == 20 else ''
+        file = code.co_filename[-50:]
+        dots = '...' if len(file) == 50 else ''
         return f'{dots}{file} → ️{name}(): '
 
     @staticmethod
-    def stdout_wrap(record=''):
+    def format_line(record, err=False):
+        label = KctlLogger.stderr_label if err else KctlLogger.stdout_label
         if record == '\n':
             timestamp = KctlLogger.timestamp()
             stack = KctlLogger.stack()
-            to_write = record + timestamp + KctlLogger.stdout_label + stack + '\n\t'
+            to_write = record + timestamp + label + stack + '\n\t'
             KctlLogger.stdout_write(to_write)
         else:
             KctlLogger.stdout_write(record.replace('\n', '\n\t'))
 
     @staticmethod
+    def stdout_wrap(record=''):
+        KctlLogger.format_line(record)
+
+    @staticmethod
     def stderr_wrap(record=''):
-        if record == '\n':
-            timestamp = KctlLogger.timestamp()
-            to_write = record + timestamp + KctlLogger.stderr_label + '\n\t'
-            KctlLogger.stderr_write(to_write)
-        else:
-            KctlLogger.stderr_write(record.replace('\n', '\n\t'))
+        KctlLogger.format_line(record, err=True)
 
