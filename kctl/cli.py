@@ -194,7 +194,6 @@ def get_args(name):
     # deploy pipeline
     deploy_pipeline_parser = deploy_subparsers.add_parser('pipeline')
     deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
-    deploy_pipeline_parser.add_argument('pipeline_name')
     deploy_pipeline_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
     deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
 
