@@ -44,7 +44,6 @@ class KctlLogger:
     @classmethod
     def format_line(cls, record, err=False):
         label = cls.stderr_label if err else cls.stdout_label
-        write = cls. if err else cls.stdout_write
 
         if not err:
             code = _getframe(2).f_code
