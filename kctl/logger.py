@@ -60,7 +60,7 @@ class KctlLogger:
         if not err:
             stack = cls.stack()
 
-        line = cls.timestamp() + label + stack + '\n'
+        line = '\n' + cls.timestamp() + label + stack
 
         write(record.replace('\n', line))
 
