@@ -1,49 +1,93 @@
 
-
+from kctl.deploy.checks import check_stubs, check_rabbitmq
+from kctl.deploy.rabbitmq import bind_rabbitmq
+from koursaros.compile import compile_pipeline
 from koursaros.utils import find_pipe_path
+from kctl.logger import redirect_out
+from shutil import rmtree, copytree
+from koursaros import pipelines
+from subprocess import call
+import importlib
+import argparse
+import kctl
 import os
 
-PIPE_PATH = find_pipe_path(os.getcwd())
-__location__ = os.path.dirname(__file__)
+CWD = os.getcwd()
+PIPE_PATH = find_pipe_path(CWD)
+SAVE_PATH = pipelines.__path__[0]
+KCTL_PATH = kctl.__path__[0]
+PIPE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipeline'
+SERVICE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipeline/services/service'
+HIDDEN_DIR = '.koursaros'
+CACHE_DIR = '.kctlcache'
+
+KCTL_DESC = '''
+kctl controls the \033[1;4mKoursaros\033[0m platform.
+Find more information at: https://github.com/koursaros-ai/koursaros
+
+'''
+
+CREATE_ARGS = ('create',)
+DEPLOY_ARGS = ('deploy',)
+SAVE_ARGS = ('save',)
+TRAIN_ARGS = ('train',)
+SAVE_PIPE_ARGS = ('pipeline',)
+CREATE_PIPE_ARGS = ('pipeline',)
+CREATE_SERVICE_ARGS = ('service',)
+PULL_ARGS = ('pull',)
+GIT_ARGS = ('-g', '--git')
+DIR_ARGS = ('-d', '--dir')
+
+KCTL_KWARGS = {'description': KCTL_DESC, 'prog': 'kctl'}
+CREATE_KWARGS = {'description': 'create an pipeline, backend, or model'}
+DEPLOY_KWARGS = {'description': 'Check configuration yamls, bind rabbitmq, and deploy'}
+SAVE_KWARGS = {'description': f'compile and save to {SAVE_PATH}'}
+PULL_KWARGS = {'description': 'pull an app'}
+TRAIN_KWARGS = {'description': 'train a model'}
+GIT_KWARGS = {'help': 'pull a pipeline from a git directory'}
+CONNECTION_ARGS = ('-c', '--connection')
+CONNECTION_KWARGS = {
+    'action': 'store',
+    'required': True,
+    'help': 'connection parameters to use from connections.yaml',
+}
+REBIND_ARGS = ('-r', '--rebind')
+REBIND_KWARGS = {
+    'action': 'store_true',
+    'help': 'clear and rebind the rabbitmq binds on entrance'
+}
+DIR_KWARGS = {'action': 'store', 'help': 'which directory the pipeline is in'}
 
 
 class KctlError(Exception):
     pass
 
 
-def deploy_app(args):
-    print('hello')
-    raise NotImplementedError
+def must_be_pipe_path():
+    if PIPE_PATH is None:
+        raise KctlError(f'"{CWD}" is not a pipeline')
+
+
+def must_not_be_pipe_path():
+    if PIPE_PATH is not None:
+        raise KctlError(f'"{PIPE_PATH}" is already a pipeline')
 
 
 def save_pipeline(args):
-    from koursaros.compile import compile_pipeline
+    must_be_pipe_path()
+
+
     compile_pipeline(PIPE_PATH)
 
 
 def deploy_pipeline(args):
-
-    if PIPE_PATH is None:
-        raise KctlError('Current working directory is not an app')
-
-    # 1. Compile pipeline
+    must_be_pipe_path()
     save_pipeline(args)
-
-    import importlib
-    import koursaros.pipelines
-    importlib.reload(koursaros.pipelines)
-
-    # 2. Check stubs.yaml, messages.proto, and rmq
-    from kctl.deploy.checks import check_stubs, check_rabbitmq
+    importlib.reload(pipelines)
     check_stubs(args)
     check_rabbitmq(args)
-
-    # 3. Rebind services
     if args.rebind:
-        from kctl.deploy.rabbitmq import bind_rabbitmq
         bind_rabbitmq(args)
-
-    # 4. Deploy pipeline
     from .deploy import deploy_pipeline
     deploy_pipeline(PIPE_PATH, args)
 
@@ -74,48 +118,22 @@ def deploy_pipeline(args):
     #         git_push(microservices=microservices)
 
 
-def create_app(args):
-
-    if APP_PATH is not None:
-        raise KctlError('Current working directory is already an app')
-
-    new_app_path = f'{os.getcwd()}/{args.name}'
-
-    from shutil import copytree
-    copytree(f'{__location__}/create/template/app', new_app_path)
-    os.makedirs(f'{new_app_path}/.koursaros', exist_ok=True)
-    open(f'{new_app_path}/.koursaros/__init__.py', 'w')
-    print(f'Created app: {new_app_path}')
-
-
 def create_pipeline(args):
-
-    if APP_PATH is None:
-        raise KctlError('Current working directory is not an app')
-
-    pipelines_path = APP_PATH + '/pipelines/'
-
-    os.makedirs(pipelines_path, exist_ok=True)
-    new_pipeline_path = pipelines_path + args.name
-
-    from shutil import copytree
-    copytree(f'{__location__}/create/template/app/pipelines/pipeline', new_pipeline_path)
-    print(f'Created pipeline: {new_pipeline_path}')
+    must_not_be_pipe_path()
+    new_pipe_path = f'{CWD}/{args.pipeline_name}'
+    copytree(PIPE_TEMPLATE_PATH, new_pipe_path)
+    os.makedirs(f'{new_pipe_path}/{HIDDEN_DIR}', exist_ok=True)
+    open(f'{new_pipe_path}/{HIDDEN_DIR}/__init__.py', 'w')
+    print(f'Created pipeline: {new_pipe_path}')
 
 
 def create_service(args):
-
-    if APP_PATH is None:
-        raise KctlError('Current working directory is not an app')
-
-    services_path = APP_PATH + '/services/'
-
+    must_be_pipe_path()
+    services_path = f'{PIPE_PATH}/services/'
     os.makedirs(services_path, exist_ok=True)
-    new_service_path = services_path + args.name
-
-    from shutil import copytree
-    copytree(f'{__location__}/create/template/app/services/backend', new_service_path)
-    print(f'Created backend: {new_service_path}')
+    new_service_path = services_path + args.service_name
+    copytree(SERVICE_TEMPLATE_PATH, new_service_path)
+    print(f'Created service: {new_service_path}')
 
 
 def train_model(args):
@@ -123,111 +141,69 @@ def train_model(args):
 
 
 def pull_pipeline(args):
-
-    if PIPE_PATH is not None:
-        raise KctlError('Current working directory is already an app')
-
-    from subprocess import call
+    must_not_be_pipe_path()
     call(['git', 'clone', args.git, args.name])
 
     if args.dir:
-        from shutil import rmtree, copytree
-        copytree(f'{args.name}/{args.dir}', '.kctlcache')
+        copytree(f'{args.name}/{args.dir}', CACHE_DIR)
         rmtree(args.name)
-        copytree('.kctlcache', args.name)
-        rmtree('.kctlcache')
+        copytree(CACHE_DIR, args.name)
+        rmtree(CACHE_DIR)
 
 
-def get_args():
-    from .logger import redirect_out
-    redirect_out('kctl')
+def get_args(name):
+    redirect_out(name)
 
-    import argparse
-    from .constants import DESCRIPTION
+    parser = argparse.ArgumentParser(**KCTL_KWARGS)
+    subparsers = parser.add_subparsers()
 
-    # kctl
-    kctl_parser = argparse.ArgumentParser(description=DESCRIPTION, prog='kctl')
-    kctl_subparsers = kctl_parser.add_subparsers()
+    # SAVE
+    save_parser = subparsers.add_parser(*SAVE_ARGS, **SAVE_KWARGS)
+    save_subparsers = save_parser.add_subparsers()
+    # save pipeline
+    save_pipeline_parser = save_subparsers.add_parser(*SAVE_PIPE_ARGS)
+    save_pipeline_parser.set_defaults(func=save_pipeline)
 
-    # kctl save
-    kctl_save_parser = kctl_subparsers.add_parser(
-        'save', description='compile and save to koursaros path'
-    )
-    kctl_save_subparsers = kctl_save_parser.add_subparsers()
-    # kctl save pipeline
-    kctl_save_pipeline_parser = kctl_save_subparsers.add_parser('pipeline')
-    kctl_save_pipeline_parser.set_defaults(func=save_pipeline)
+    # CREATE
+    create_parser = subparsers.add_parser(*CREATE_ARGS, **CREATE_KWARGS)
+    create_subparsers = create_parser.add_subparsers()
+    # create pipeline
+    create_pipeline_parser = create_subparsers.add_parser(*CREATE_PIPE_ARGS)
+    create_pipeline_parser.set_defaults(func=create_pipeline)
+    create_pipeline_parser.add_argument('pipeline_name')
+    # create service
+    create_service_parser = create_subparsers.add_parser(*CREATE_SERVICE_ARGS)
+    create_service_parser.set_defaults(func=create_service)
+    create_service_parser.add_argument('service_name')
 
-    # kctl create
-    kctl_create_parser = kctl_subparsers.add_parser(
-        'create', description='create an app, pipeline, backend, or model'
-    )
-    kctl_create_subparsers = kctl_create_parser.add_subparsers()
-    # kctl create app
-    kctl_create_app_parser = kctl_create_subparsers.add_parser('app')
-    kctl_create_app_parser.set_defaults(func=create_app)
-    kctl_create_app_parser.add_argument('name')
-    # kctl create pipeline
-    kctl_create_pipeline_parser = kctl_create_subparsers.add_parser('pipeline')
-    kctl_create_pipeline_parser.set_defaults(func=create_pipeline)
-    kctl_create_pipeline_parser.add_argument('name')
-    # kctl create backend
-    kctl_create_service_parser = kctl_create_subparsers.add_parser('backend')
-    kctl_create_service_parser.set_defaults(func=create_service)
-    kctl_create_service_parser.add_argument('name')
+    # TRAIN
+    train_parser = subparsers.add_parser(*TRAIN_ARGS, **TRAIN_KWARGS)
+    train_subparsers = train_parser.add_subparsers()
+    # train model
+    train_model_parser = train_subparsers.add_parser('model')
+    train_model_parser.set_defaults(func=train_model)
+    train_model_parser.add_argument('model_name')
+    train_model_parser.add_argument('--base_image', default='koursaros-base')
 
-    # kctl train
-    kctl_train_parser = kctl_subparsers.add_parser(
-        'train', description='train a model'
-    )
-    kctl_train_subparsers = kctl_train_parser.add_subparsers()
-    # kctl train model
-    kctl_train_model_parser = kctl_train_subparsers.add_parser('model')
-    kctl_train_model_parser.set_defaults(func=train_model)
-    kctl_train_model_parser.add_argument('name')
-    kctl_train_model_parser.add_argument('--base_image', default='koursaros-base')
-
-    # kctl deploy
-    kctl_deploy_parser = kctl_subparsers.add_parser(
-        'deploy', description='deploy an app or pipeline'
-    )
-    kctl_deploy_subparsers = kctl_deploy_parser.add_subparsers()
-    c_args = ('-c', '--connection')
-    c_kwargs = {
-        'action': 'store', 'required': True,
-        'help': 'connection parameters to use from connections.yaml',
-    }
-    r_args = ('-r', '--rebind')
-    r_kwargs = {
-        'action': 'store_true',
-        'help': 'clear and rebind the rabbitmq binds on entrance'
-    }
-    # kctl deploy app
-    kctl_deploy_app_parser = kctl_deploy_subparsers.add_parser('app')
-    kctl_deploy_app_parser.set_defaults(func=deploy_app)
-    kctl_deploy_app_parser.add_argument(*c_args, **c_kwargs)
-    kctl_deploy_app_parser.add_argument(*r_args, **r_kwargs)
-    # kctl deploy pipeline
-    kctl_deploy_pipeline_parser = kctl_deploy_subparsers.add_parser('pipeline')
-    kctl_deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
-    kctl_deploy_pipeline_parser.add_argument('pipeline')
-    kctl_deploy_pipeline_parser.add_argument(*c_args, **c_kwargs)
-    kctl_deploy_pipeline_parser.add_argument(*r_args, **r_kwargs)
+    # DEPLOY
+    deploy_parser = subparsers.add_parser(*DEPLOY_ARGS, **DEPLOY_KWARGS)
+    deploy_subparsers = deploy_parser.add_subparsers()
+    # deploy pipeline
+    deploy_pipeline_parser = deploy_subparsers.add_parser('pipeline')
+    deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
+    deploy_pipeline_parser.add_argument('pipeline_name')
+    deploy_pipeline_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
+    deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
 
     # kctl pull
-    kctl_pull_parser = kctl_subparsers.add_parser(
-        'pull', description='pull an app'
-    )
-    kctl_pull_subparsers = kctl_pull_parser.add_subparsers()
+    pull_parser = subparsers.add_parser(*PULL_ARGS, **PULL_KWARGS)
+    pull_subparsers = pull_parser.add_subparsers()
     # kctl pull pipeline
-    kctl_pull_pipeline_parser = kctl_pull_subparsers.add_parser('pipeline')
-    kctl_pull_pipeline_parser.set_defaults(func=pull_pipeline)
-    kctl_pull_pipeline_parser.add_argument('name')
-    kctl_pull_pipeline_parser.add_argument(
-        '-g', '--git', action='store', help='pull a pipeline from a git directory'
-    )
-    kctl_pull_pipeline_parser.add_argument(
-        '-d', '--dir', action='store', help='which directory the pipeline is in'
-    )
+    pull_pipeline_parser = pull_subparsers.add_parser('pipeline')
+    pull_pipeline_parser.set_defaults(func=pull_pipeline)
+    pull_pipeline_parser.add_argument('pipeline_name')
 
-    return kctl_parser.parse_args()
+    pull_pipeline_parser.add_argument(*GIT_ARGS, **GIT_KWARGS)
+    pull_pipeline_parser.add_argument(*DIR_ARGS, **DIR_KWARGS)
+
+    return parser.parse_args()

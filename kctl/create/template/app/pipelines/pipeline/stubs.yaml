@@ -1,3 +1,0 @@
-stubs:
- send: backend.send() -> Notification                    | receive
- receive: backend.receive(Notification)                   ->|

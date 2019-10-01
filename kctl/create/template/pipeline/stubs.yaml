@@ -1,0 +1,3 @@
+stubs:
+ send: backend() -> Notification                    | receive
+ receive: backend(Notification)                   ->|
