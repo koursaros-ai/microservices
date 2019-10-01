@@ -46,17 +46,17 @@ class KctlLogger:
         if record == '\n':
             timestamp = KctlLogger.timestamp()
             stack = KctlLogger.stack()
-            to_write = record + timestamp + KctlLogger.stdout_label + stack + '\n'
+            to_write = record + timestamp + KctlLogger.stdout_label + stack + '\n\t'
             KctlLogger.stdout_write(to_write)
         else:
-            KctlLogger.stdout_write(record.replace('\n', '\t\n'))
+            KctlLogger.stdout_write(record.replace('\n', '\n\t'))
 
     @staticmethod
     def stderr_wrap(record=''):
         if record == '\n':
             timestamp = KctlLogger.timestamp()
-            to_write = record + timestamp + KctlLogger.stderr_label + '\n'
+            to_write = record + timestamp + KctlLogger.stderr_label + '\n\t'
             KctlLogger.stderr_write(to_write)
         else:
-            KctlLogger.stderr_write(record.replace('\n', '\t\n'))
+            KctlLogger.stderr_write(record.replace('\n', '\n\t'))
 
