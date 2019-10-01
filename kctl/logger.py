@@ -56,7 +56,7 @@ class KctlLogger:
 
         if record == '\n':
             # write(record + cls.timestamp() + label + cls.stack() + '\n\t')
-            write(record)
+            write(label)
         else:
-            write(record.replace('\n', '\n\t'))
-            # write(record)
+            # write(record.replace('\n', '\n\t'))
+            write(record)
