@@ -19,8 +19,8 @@ CWD = os.getcwd()
 PIPE_PATH = find_pipe_path(CWD)
 PIPE_NAME = PIPE_PATH.split('/')[-2] if PIPE_PATH else None
 KCTL_PATH = kctl.__path__[0]
-PIPE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipelines'
-SERVICE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipelines/pipeline/services/service'
+PIPE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipeline'
+SERVICE_TEMPLATE_PATH = KCTL_PATH + '/create/template/pipeline/services/service'
 HIDDEN_DIR = '.koursaros'
 CACHE_DIR = '.kctlcache'
 
