@@ -23,15 +23,15 @@ class KctlLogger:
     @classmethod
     def init(cls, name='kctl'):
         cls.name = name
-        cls.stdout_label = f'[{BOLD}{cls.name}] {GREEN}STDOUT:{RESET}'
-        cls.stderr_label = f'[{BOLD}{cls.name}] {RED}STDERR:{RESET}'
+        cls.stdout_label = f'[{BOLD}{cls.name}] {GREEN}STDOUT: {RESET}'
+        cls.stderr_label = f'[{BOLD}{cls.name}] {RED}STDERR: {RESET}'
         stdout.write = cls.stdout_wrap
         stderr.write = cls.stderr_wrap
         print('\tWrapping stdout with KctlLogger...')
 
     @staticmethod
     def timestamp():
-        return strftime("%Y-%m-%d %H:%M:%S")
+        return strftime("%Y-%m-%d %H:%M:%S ")
 
     @staticmethod
     def stdout_wrap(record=''):
@@ -60,7 +60,7 @@ class KctlLogger:
             line = cls.timestamp() + label
 
             if record == '\n':
-                cls.stderr_write(line + record + line)
+                cls.stderr_write(record + line)
             else:
                 cls.stderr_write(record.replace('\n', '\n' + line))
 
