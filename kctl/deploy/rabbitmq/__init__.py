@@ -8,7 +8,7 @@ def bind_rabbitmq(args):
     import pika
 
     import koursaros.pipelines
-    pipeline = getattr(koursaros.pipelines, args.pipeline)
+    pipeline = getattr(koursaros.pipelines, args.pipeline_name)
     connection = getattr(pipeline.connections, args.connection)
 
     host = connection.host
