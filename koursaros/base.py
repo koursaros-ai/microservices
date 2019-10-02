@@ -144,6 +144,7 @@ class Service(ReprClassName):
     def __init__(self, _pipe):
         self._pipe = _pipe
         self._debug = _pipe.debug
+        print(super())
         import pdb; pdb.set_trace()
 
         if self._debug:
