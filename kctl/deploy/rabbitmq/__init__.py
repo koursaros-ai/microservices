@@ -9,7 +9,9 @@ def bind_rabbitmq(args):
 
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
-    connection = getattr(pipeline.connections, args.connection)
+    pipeline = pipeline(args.pipeline_name)
+
+    connection = pipeline.active_connection
 
     host = connection.host
     http_port = connection.http_port
