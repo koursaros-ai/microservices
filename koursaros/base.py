@@ -282,14 +282,17 @@ class Stub(ReprClassName):
         c = Thread(target=self._consumer.run)
 
         print(f'Running stub "{repr(self)}" publisher {c.getName()}')
+        p.start()
         self._pthread = p
 
         print(f'Running stub "{repr(self)}" consumer {c.getName()}')
+        c.start()
         self._cthread = c
 
     def join(self):
         p = self._pthread
         c = self._cthread
+
         print(f'Waiting for stub "{repr(self)}" publisher to finish {p.getName()}')
         p.join()
         print(f'Waiting for stub "{repr(self)}" consumer to finish {c.getName()}')
