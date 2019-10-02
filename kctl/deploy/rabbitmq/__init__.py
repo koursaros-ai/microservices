@@ -46,10 +46,10 @@ def bind_rabbitmq(args):
     print(f'Creating exchange "nyse" on {pika_string}')
     channel.exchange_declare(exchange='nyse', exchange_type='direct')
 
-    for service in pipeline.services:
-        for stub in service.stubs:
-            service_cls = service.__class__.__name__
-            stub_cls = stub.__class__.__name__
+    for Service in pipeline.Services:
+        for Stub in Service.Stubs:
+            service_cls = Service.__class__.__name__
+            stub_cls = Stub.__class__.__name__
             queue = service_cls + '.' + stub_cls
             print(f'Creating user "{service_cls}" on {http_string}')
             api.create_user(service_cls, password)

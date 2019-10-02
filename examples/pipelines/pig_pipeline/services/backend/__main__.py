@@ -11,7 +11,7 @@ sentences = dict()
 backend = Pipeline.Services.backend
 pig = Pipeline.Services.pig
 
-
+Pipeline.
 @app.route('/')
 def receive():
     text = request.args.get('q')
