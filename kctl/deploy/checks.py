@@ -8,30 +8,23 @@ def check_stubs(args):
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
 
-    for service_name in pipeline.services.names:
-        service = getattr(pipeline.services, service_name)
-        for stub_name in service.stubs.names:
-            stub = getattr(service.stubs, stub_name)
+    for service in pipeline.services:
+        for stub in service.stubs:
+            if stub._OutProto and not stub._InProto:
+                raise ValueError(f'"{stub.__name__}" is sending "{stub._InProto.__class__.__name__}" proto to nothing...')
 
-            if stub.proto_out and not stub.stub_out:
-                raise ValueError(f'"{stub.name}" is sending "{stub.proto_out}" proto to nothing...')
-
-            receiving_stub = False if stub.stub_out else True
-            for service2_name in pipeline.services.names:
-                service = getattr(pipeline.services, service2_name)
-
-                for stub2_name in service.stubs.names:
-                    stub2 = getattr(service.stubs, stub2_name)
-
-                    if stub2.name == stub.stub_out:
+            receiving_stub = False if stub._out_stub else True
+            for service2 in pipeline.services:
+                for stub2 in service2.stubs:
+                    if stub2.__name__ == stub._out_stub.__name__:
                         receiving_stub = True
-                        if stub2.proto_in != stub.proto_out:
+                        if stub2._InProto != stub._OutProto:
                             raise ValueError(
-                                f'{stub.name} is sending "{stub.proto_out}" proto,'
-                                f'but {stub2.name} is receiving "{stub2.proto_in}" proto')
+                                f'{stub.__name__} is sending "{stub._OutProto.__class__.__name__}" proto,'
+                                f'but {stub2.__name__} is receiving "{stub2._InProto.__class__.__name__}" proto')
 
             if not receiving_stub:
-                raise ValueError(f'no receiving stub for "{stub.name}"')
+                raise ValueError(f'no receiving stub for "{stub.__name__}"')
 
 
 def check_rabbitmq(args):

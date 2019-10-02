@@ -22,8 +22,8 @@ def bind_rabbitmq(args):
 
     api = AdminAPI(url=url, auth=(username, password))  # admin connection
 
-    http_string = f'vhost "{pipeline.name}" on {BOLD.format(url)}'
-    pika_string = f'vhost "{pipeline.name}" on {BOLD.format(ip)}'
+    http_string = f'vhost "{pipeline.__name__}" on {BOLD.format(url)}'
+    pika_string = f'vhost "{pipeline.__name__}" on {BOLD.format(ip)}'
 
     try:
         print(f'Deleting {http_string}')
@@ -43,17 +43,16 @@ def bind_rabbitmq(args):
     print(f'Creating exchange "nyse" on {pika_string}')
     channel.exchange_declare(exchange='nyse', exchange_type='direct')
 
-    for service_name in pipeline.services.names:
-        service = getattr(pipeline.services, service_name)
-        for stub_name in service.stubs.names:
-            queue = service_name + '.' + stub_name
-            print(f'Creating user "{service_name}" on {http_string}')
-            api.create_user(service_name, password)
-            api.create_user_permission(service_name, pipeline.name)
+    for service in pipeline.services:
+        for stub in service.stubs:
+            queue = service.__name__ + '.' + stub.__name__
+            print(f'Creating user "{service.__name__}" on {http_string}')
+            api.create_user(service.__name__, password)
+            api.create_user_permission(service.__name__, pipeline.__name__)
 
             print(f'Creating queue "{queue}" on {pika_string}')
             channel.queue_declare(queue=queue, durable=True)
 
-            print(f'Binding "{stub_name}" to "{queue}" queue on {pika_string}')
-            channel.queue_bind(exchange='nyse', queue=queue, routing_key=stub_name)
+            print(f'Binding "{stub.__name__}" to "{queue}" queue on {pika_string}')
+            channel.queue_bind(exchange='nyse', queue=queue, routing_key=stub.__name__)
 
