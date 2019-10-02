@@ -157,18 +157,20 @@ class Stub(ReprClassName):
     _out_proto = None
     _OutProto = None
     _should_send = False
-    connection = None
-    channel = None
-    run_threads = []
-    process_thread = None
 
-    def __init__(self, _pipe, _service):
-        if _pipe.args.debug:
-            print(f'Initializing "{self}" stub...')
+    _consumer = None
+    _publisher = None
 
-        self._name = repr(self)
-        self._pipe = _pipe
+    _pthread = []
+    _cthread = None
+
+    def __init__(self, _service):
+
+        self._pipe = _service._pipe
         self._service = _service
+
+        if self._pipe.args.debug:
+            print(f'Initializing "{self}" stub...')
 
     def __call__(self, func):
         if not self.__active__:
@@ -202,17 +204,17 @@ class Stub(ReprClassName):
 
     def raise_not_active(self):
         # if the parent service is not active then crash
-        msg = (f'Cannot use stubs from "{repr(self._service)}"'
+        msg = (f'Cannot use stubs from "{self._service}"'
                f'service in "{self._pipe.active}" service')
         raise self.NotInActiveServiceError(msg)
 
     def raise_no_return(self):
-        msg = (f'"{self._name}" stub did not return anything,'
-               f'but it should be sending to "{repr(self._out_stub)}" stub')
+        msg = (f'"{self}" stub did not return anything,'
+               f'but it should be sending to "{self._out_stub}" stub')
         raise self.NoReturnError(msg)
 
     def raise_should_not_return(self):
-        msg = f'"{self._name}" stub should not return anything...'
+        msg = f'"{self}" stub should not return anything...'
         raise self.ShouldNotReturnError(msg)
 
     def set_out_stub(self):
@@ -255,7 +257,7 @@ class Stub(ReprClassName):
             tag = method.delivery_tag
             if debug:
                 print(f'"{self}" stub sending ack callback: {tag}')
-            self.ack_callback(tag)
+            self._consumer.ack_callback(tag)
 
     def send(self, proto):
 
@@ -264,29 +266,80 @@ class Stub(ReprClassName):
             print(f'"{self}" is {not_}active...')
 
         if self.__active__:
-            # self.publish(proto)
-            self.publish_callback(proto)
+            self._publisher.publish_callback(proto)
 
         # if the stub is not in the current service then send to it
         else:
             # if stub is not active then find a random
             stub = self._pipe.active_service.Stubs.randomactive()
-            stub.publish_callback(proto)
+            stub.send(proto)
+
+    def run(self):
+        self._consumer = Consumer(self)
+        self._publisher = Publisher(self)
+
+        p = Thread(target=self._publisher.run)
+        c = Thread(target=self._consumer.run)
+
+        print(f'Running stub "{repr(self)}" publisher {c.getName()}')
+        self._pthread = p
+
+        print(f'Running stub "{repr(self)}" consumer {c.getName()}')
+        self._cthread = c
+
+    def join(self):
+        p = self._pthread
+        c = self._cthread
+        print(f'Waiting for stub "{repr(self)}" publisher to finish {p.getName()}')
+        p.join()
+        print(f'Waiting for stub "{repr(self)}" consumer to finish {c.getName()}')
+        c.join()
+
+
+class Connector:
+    _connection = None
+    _channel = None
+
+    def __init__(self, _stub):
+        self._pipe = _stub._service._pipe
+        self._service = _stub._service
+        self._stub = _stub
+        self._connect()
+
+    def _connect(self):
+        conn = self._pipe.active_connection
+        credentials = pika.credentials.PlainCredentials(repr(self._pipe), conn.password)
+        params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
+
+        while True:
+            try:
+                self._connection = pika.BlockingConnection(parameters=params)
+                self._channel = self._connection.channel()
+                break
+            except Exception as exc:
+                print(f'Failed pika connection...\n{exc.args}')
+                import time
+                time.sleep(RECONNECT_DELAY)
+
+
+class Publisher(Connector):
+    def run(self):
+        pass
 
     def publish(self, proto):
         # check proto type against expected type
         proto_cls = proto.__class__.__name__
-        if self._OutStub._in_proto != proto_cls:
-            self.raise_wrong_msg_type(proto_cls)
+        if self._stub._OutStub._in_proto != proto_cls:
+            self._stub.raise_wrong_msg_type(proto_cls)
 
         body = proto.SerializeToString()
 
         if self._pipe.args.debug:
-            print(f'"{self}" stub publishing "{proto_cls}" to {self._out_stub}...')
+            print(f'"{self}" stub publishing "{proto_cls}" to {self._stub._out_stub}...')
 
-        self.channel.basic_publish(
+        self._channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=repr(self._out_stub),
+            routing_key=repr(self._stub._out_stub),
             body=body,
             properties=PROPS
         )
@@ -296,53 +349,31 @@ class Stub(ReprClassName):
             print(f'"{self}" stub adding threadsafe publish callback for "{proto.__class__.__name__}"')
 
         cb = functools.partial(self.publish, proto)
-        self.connection.add_callback_threadsafe(cb)
+        self._connection.add_callback_threadsafe(cb)
+
+
+class Consumer(Connector):
+    def run(self):
+        self.consume()
 
     def consume(self):
-        conn = self._pipe.active_connection
 
-        credentials = pika.credentials.PlainCredentials(repr(self._service), conn.password)
-        params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
-
-        while True:
-            try:
-                self.connection = pika.BlockingConnection(parameters=params)
-                self.channel = self.connection.channel()
-                break
-            except Exception as exc:
-                print(f'Failed pika connection...\n{exc.args}')
-                import time
-                time.sleep(RECONNECT_DELAY)
-
-        self.channel.basic_qos(prefetch_count=self._pipe.prefetch)
+        self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
         queue = repr(self._service) + '.' + repr(self)
-        self.channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
+        self._channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
         print(f'Consuming messages on {queue}...')
-        self.channel.start_consuming()
+        self._channel.start_consuming()
 
     def ack_callback(self, delivery_tag):
-        cb = functools.partial(self.channel.basic_ack, delivery_tag)
-        self.connection.add_callback_threadsafe(cb)
+        cb = functools.partial(self._channel.basic_ack, delivery_tag)
+        self._connection.add_callback_threadsafe(cb)
 
     def consume_callback(self, channel, method, properties, body):
-        proto = self._InProto()
+        proto = self._stub._InProto()
         proto.ParseFromString(body)
 
         if self._pipe.args.debug:
             print(f'"{self}" stub received "{proto.__class__.__name__}" message on {channel}...')
 
-        # process_thread = Thread(target=self.process, args=(proto, method))
-        # process_thread.run()
-        self.process(proto, method)
-
-    def run(self):
-        t = Thread(target=self.consume)
-        print(f'Running stub "{repr(self)}" {t.getName()}')
-        t.start()
-        self.run_threads.append(t)
-
-    def join(self):
-        for t in self.run_threads:
-            print(f'Waiting for stub "{repr(self)}" to finish {t.getName()}')
-            t.join()
-            self.run_threads.clear()
+        process_thread = Thread(target=self._stub.process, args=(proto, method))
+        process_thread.run()
