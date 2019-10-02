@@ -55,7 +55,7 @@ class KctlLogger:
         label = cls.stderr_label if err else cls.stdout_label
         write = cls.stderr_write if err else cls.stdout_write
         stack = ''
-
+        import pdb; pdb.set_trace()
         if not err:
             stack = cls.stack()
 
