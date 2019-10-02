@@ -404,6 +404,10 @@ class Connector:
 
         self._channel = channel
         self.add_on_channel_close_callback()
+        self.start()
+
+    def start(self):
+        raise NotImplementedError
 
     def add_on_channel_close_callback(self):
         """This method tells pika to call the on_channel_closed method if
@@ -643,6 +647,9 @@ class Publisher(Connector):
         self._deliveries.append(self._message_number)
         if debug:
             print('Published message # %i', self._message_number)
+
+    def start(self):
+        self.start_publishing()
 
     def start_publishing(self):
         """This method will enable delivery confirmations and schedule the
