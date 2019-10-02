@@ -300,7 +300,7 @@ class Stub(ReprClassName):
         c.join()
 
 
-class Connector:
+class Connector(ReprClassName):
     _connection = None
     _channel = None
 
