@@ -252,9 +252,9 @@ class Stub(ReprClassName):
                 self.raise_should_not_return()
         if method is not None:
             tag = method.delivery_tag
-            self.ack_callback(tag)
             if debug:
                 print(f'"{self}" stub sending ack callback: {tag}')
+            self.ack_callback(tag)
 
     def send(self, proto):
 
@@ -314,8 +314,7 @@ class Stub(ReprClassName):
 
         self.channel.basic_qos(prefetch_count=self._pipe.prefetch)
         queue = repr(self._service) + '.' + repr(self)
-        cb = functools.partial(self.consume_callback)
-        self.channel.basic_consume(queue=queue, on_message_callback=cb)
+        self.channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
         print(f'Consuming messages on {queue}...')
         self.channel.start_consuming()
 
