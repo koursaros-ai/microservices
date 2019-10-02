@@ -96,6 +96,7 @@ class Pipeline:
         self.services = self._Services([active_service_name], self, active_service_name)
         self.connections = self._Connections([active_connection_name])
         KctlLogger.init(active_connection_name + '.' + active_service_name)
+        import pdb; pdb.set_trace()
 
         self.active_service = getattr(self.services, active_service_name)
         self.active_connection = getattr(self.services, active_service_name)
