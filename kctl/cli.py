@@ -153,9 +153,9 @@ def pull_pipeline(args):
 
 
 def get_args():
+
     parser = argparse.ArgumentParser(**KCTL_KWARGS)
     parser.set_defaults(pipeline_name=PIPE_NAME)
-    parser.add_argument('-d', '--debug', action='store_true')
     subparsers = parser.add_subparsers()
 
     # SAVE
@@ -194,6 +194,7 @@ def get_args():
     deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
     deploy_pipeline_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
     deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
+    parser.add_argument('-d', '--debug', action='store_true')
 
     # kctl pull
     pull_parser = subparsers.add_parser(*PULL_ARGS, **PULL_KWARGS)
