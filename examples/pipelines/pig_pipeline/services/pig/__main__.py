@@ -1,8 +1,8 @@
 
 
-from koursaros.pipelines import pigservice
+from koursaros.pipelines import pig_pipeline
 
-pipeline = pigservice(__package__)
+pipeline = pig_pipeline(__package__)
 
 backend = pipeline.services.backend
 pig = pipeline.services.pig

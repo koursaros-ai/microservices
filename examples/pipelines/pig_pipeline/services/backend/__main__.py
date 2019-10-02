@@ -1,10 +1,10 @@
-from koursaros.pipelines import pigservice
+from koursaros.pipelines import pig_pipeline
 from flask import Flask, request, jsonify
 from queue import Queue
 from threading import Thread
 import uuid
 
-pipeline = pigservice(__package__)
+pipeline = pig_pipeline(__package__)
 app = Flask(__name__)
 sentences = dict()
 
