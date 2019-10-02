@@ -156,6 +156,7 @@ def get_args():
 
     parser = argparse.ArgumentParser(**KCTL_KWARGS)
     parser.set_defaults(pipeline_name=PIPE_NAME)
+    parser.add_argument('-d', '--debug', default=False)
     subparsers = parser.add_subparsers()
 
     # SAVE

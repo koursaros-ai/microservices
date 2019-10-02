@@ -84,7 +84,7 @@ class Pipeline(ReprClassName):
         pass
 
     def __init__(self, package, prefetch=1):
-        print(f'Initializing "{repr(self)}" pipeline...')
+        print(f'Initializing "{repr(self)}"...')
 
         # predicts the active service from file path
         self.args = get_args()
@@ -100,9 +100,11 @@ class Pipeline(ReprClassName):
         else:
             active_service_name = package.split('.')[-1]
 
+        if self.args.debug:
+            print(f'Initializing {self}.Services')
+
         # init services with reference to pipeline
         self.Services = self.Services([active_service_name], self)
-
 
         if package is not None:
             self.active_service = getattr(self.Services, active_service_name)
@@ -129,6 +131,8 @@ class Service(ReprClassName):
         pass
 
     def __init__(self, _pipe):
+        if _pipe.args.debug:
+            print(f'Initializing "{self}" service...')
 
         self._pipe = _pipe
         active_stub_names = self.Stubs.__names__ if self.__active__ else []
@@ -158,6 +162,9 @@ class Stub(ReprClassName):
     process_thread = None
 
     def __init__(self, _pipe, _service):
+        if _pipe.args.debug:
+            print(f'Initializing "{self}" stub...')
+
         self._name = repr(self)
         self._pipe = _pipe
         self._service = _service
@@ -224,6 +231,10 @@ class Stub(ReprClassName):
                 self.raise_wrong_msg_type(self._out_proto)
 
     def process(self, proto, method=None):
+        debug = self._pipe.args.debug
+        if debug:
+            print(f'Processing {proto.__class__.__name__}...')
+
         returned = self.func(proto)
 
         if self._should_send:
@@ -235,13 +246,16 @@ class Stub(ReprClassName):
 
         else:
             if returned is not None:
-                # import pdb;
-                # pdb.set_trace()
                 self.raise_should_not_return()
         if method is not None:
-            self.ack_callback(method.delivery_tag)
+            tag = method.delivery_tag
+            self.ack_callback(tag)
+            if debug:
+                print(f'Sending ack callback: {tag}')
 
     def send(self, proto):
+        debug = self._pipe.args.debug
+
         if self.__active__:
             self.publish_callback(proto)
 
@@ -253,10 +267,14 @@ class Stub(ReprClassName):
 
     def publish(self, proto):
         # check proto type against expected type
-        if self._OutStub._in_proto != proto.__class__.__name__:
-            self.raise_wrong_msg_type(proto.__class__.__name__)
+        proto_cls = proto.__class__.__name__
+        if self._OutStub._in_proto != proto_cls:
+            self.raise_wrong_msg_type(proto_cls)
 
         body = proto.SerializeToString()
+
+        if self._pipe.args.debug:
+            print(f'Publishing {proto_cls} to {self._out_stub}...')
 
         self.channel.basic_publish(
             exchange=EXCHANGE,
@@ -266,6 +284,9 @@ class Stub(ReprClassName):
         )
 
     def publish_callback(self, proto):
+        if self._pipe.args.debug:
+            print(f'Adding threadsafe publish callback for {proto.__class__.__name__}')
+
         cb = functools.partial(self.publish, proto)
         self.connection.add_callback_threadsafe(cb)
 
@@ -288,7 +309,7 @@ class Stub(ReprClassName):
         queue = repr(self._service) + '.' + repr(self)
         cb = functools.partial(self.consume_callback)
         self.channel.basic_consume(queue=queue, on_message_callback=cb)
-        print(f'Listening on {queue}...')
+        print(f'Consuming messages on {queue}...')
         self.channel.start_consuming()
 
     def ack_callback(self, delivery_tag):
@@ -298,6 +319,9 @@ class Stub(ReprClassName):
     def consume_callback(self, channel, method, properties, body):
         proto = self._InProto()
         proto.ParseFromString(body)
+
+        if self._pipe.args.debug:
+            print(f'Received "{proto.__class__.__name__}" message on {channel}...')
 
         self.process_thread = Thread(target=self.process, args=(proto, method))
         self.process_thread.run()
