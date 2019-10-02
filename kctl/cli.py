@@ -153,7 +153,6 @@ def pull_pipeline(args):
 
 
 def get_args():
-
     parser = argparse.ArgumentParser(**KCTL_KWARGS)
     parser.set_defaults(pipeline_name=PIPE_NAME)
     parser.add_argument('-d', '--debug', action='store_true')
