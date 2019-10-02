@@ -364,7 +364,7 @@ class Consumer(Connector):
     def consume(self):
 
         self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        queue = repr(self._service) + '.' + repr(self)
+        queue = repr(self._service) + '.' + repr(self._stub)
         self._channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
         print(f'Consuming messages on {queue}...')
         self._channel.start_consuming()
