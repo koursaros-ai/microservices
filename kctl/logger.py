@@ -19,7 +19,6 @@ RESET = '\033[0m'
 class KctlLogger:
     stdout_write = stdout.write
     stderr_write = stderr.write
-    label = '{} {} {} {} {} {} '
     newline = True
 
     @classmethod
@@ -45,14 +44,13 @@ class KctlLogger:
         write = cls.stderr_write if err else cls.stdout_write
 
         if err:
-            label = cls.label.format(BOLD, '', RED, 'STDERR:', RESET, '')
-
+            label = f'{BOLD}{RED}STDERR:{RESET}'
         else:
             s2 = stack()[2]
             func = s2.function
             lineno = s2.lineno
             name = s2.frame.f_globals.get('__name__', '')
-            label = cls.label.format(BOLD, f'[{name}]', GREEN, 'STDOUT:', RESET, func + f'({lineno}):')
+            label = f'{BOLD}[{name}] {GREEN}STDOUT:{RESET} {func}({lineno}):'
 
         line = cls.timestamp() + label
 
