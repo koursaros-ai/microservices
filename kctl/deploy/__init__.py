@@ -14,15 +14,17 @@ def deploy_pipeline(pipe_path, args):
     processes = []
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
+    pipeline = pipeline(None)
 
     try:
-        for service in pipeline.services.names:
-            cmd = [sys.executable, '-m', f'{app_name}.services.{service}'] + sys.argv[1:]
+        for service in pipeline.services:
+            service_cls = service.__class__.__name__
+            cmd = [sys.executable, '-m', f'{app_name}.services.{service_cls}'] + sys.argv[1:]
             print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
             p = Popen(cmd)
-            processes.append((p, service))
+            processes.append((p, service_cls))
 
-        for p, service in processes:
+        for p, service_cls in processes:
             p.communicate()
 
     except KeyboardInterrupt:
@@ -31,10 +33,10 @@ def deploy_pipeline(pipe_path, args):
         print(exc)
 
     finally:
-        for p, service in processes:
+        for p, service_cls in processes:
 
             if p.poll() is None:
                 os.kill(p.pid, signal.SIGTERM)
-                print(f'Killing pid {p.pid}: {service}')
+                print(f'Killing pid {p.pid}: {service_cls}')
             else:
-                print(f'process {p.pid}: "{service}" ended...')
+                print(f'process {p.pid}: "{service_cls}" ended...')
