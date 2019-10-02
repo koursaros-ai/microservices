@@ -1,7 +1,7 @@
 
 
 from koursaros.pipelines import pigservice
-import pdb; pdb.set_trace()
+
 pipeline = pigservice(__package__)
 
 backend = pipeline.services.backend

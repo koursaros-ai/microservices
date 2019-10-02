@@ -84,7 +84,7 @@ class Pipeline:
     class _Services(ActivatingContainer):
         pass
 
-    def __init__(self, package, prefetch=1):
+    def __init__(self, package, prefetch=1, debug=False):
         # predicts the active service from file path
         self.args = get_args()
         self.prefetch = prefetch
@@ -97,9 +97,11 @@ class Pipeline:
         self.connections = self._Connections([active_connection_name])
         KctlLogger.init(active_connection_name + '.' + active_service_name)
 
-
-        self.active_service = getattr(self.services, active_service_name)
         self.active_connection = getattr(self.services, active_service_name)
+
+        if not debug:
+            self.active_service = getattr(self.services, active_service_name)
+
 
 
 class Connection:
