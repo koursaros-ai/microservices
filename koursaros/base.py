@@ -106,8 +106,7 @@ class Pipeline(ReprClassName):
 
         # init services with reference to pipeline
         self.Services = self.Services([active_service_name], self)
-        import pdb;
-        pdb.set_trace()
+
 
         if package is not None:
             self.active_service = getattr(self.Services, active_service_name)
@@ -117,7 +116,8 @@ class Pipeline(ReprClassName):
         for Service in self.Services:
             for Stub in Service.Stubs:
                 Stub.set_out_stub()
-
+        import pdb;
+        pdb.set_trace()
 
 class Connection(ReprClassName):
     pass
