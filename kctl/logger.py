@@ -21,8 +21,6 @@ class KctlLogger:
 
     @classmethod
     def init(cls):
-
-        cls.stderr_label = f'[{BOLD}{}] {RED}STDERR: {RESET}'
         stdout.write = cls.stdout_wrap
         stderr.write = cls.stderr_wrap
         print('Wrapping stdout with KctlLogger...')
@@ -42,8 +40,6 @@ class KctlLogger:
     @classmethod
     def format_line(cls, record, err=False):
         write = cls.stderr_write if err else cls.stdout_write
-        func = ''
-        spec = ''
 
         if err:
             label = cls.label.format(BOLD, '', RED, 'STDERR: ', RESET, '')
