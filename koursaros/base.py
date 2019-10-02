@@ -271,12 +271,22 @@ class Stub(ReprClassName):
             stub._queue.put((proto, True))
 
     def run(self):
-        self._publisher = Publisher(self)
-        self._consumer = Consumer(self)
+        p = Thread(target=self._init_publisher)
+        c = Thread(target=self._init_consumer)
         t = Thread(target=self._ioloop)
+
         print(f'Running stub "{repr(self)}" {t.getName()}')
+        p.start()
+        c.start()
         t.start()
-        self.run_threads.append(t)
+
+        self.run_threads += [p, c, t]
+
+    def _init_publisher(self):
+        self._publisher = Publisher(self)
+
+    def _init_consumer(self):
+        self._consumer = Consumer(self)
 
     def _ioloop(self):
         while True:
