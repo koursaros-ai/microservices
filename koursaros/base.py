@@ -116,8 +116,7 @@ class Pipeline(ReprClassName):
         for Service in self.Services:
             for Stub in Service.Stubs:
                 Stub.set_out_stub()
-        import pdb;
-        pdb.set_trace()
+
 
 class Connection(ReprClassName):
     pass
@@ -239,7 +238,8 @@ class Stub(ReprClassName):
 
         else:
             if returned is not None:
-                # import pdb; pdb.set_trace()
+                import pdb;
+                pdb.set_trace()
                 self.raise_should_not_return()
         if method is not None:
             self.ack_callback(method.delivery_tag)
