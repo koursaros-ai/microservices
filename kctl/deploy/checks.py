@@ -3,35 +3,6 @@
 CHECK_TIMEOUT = 10
 
 
-def check_stubs(args):
-
-    import koursaros.pipelines
-    pipeline = getattr(koursaros.pipelines, args.pipeline_name)
-    pipeline = pipeline(None)
-
-    for Service in pipeline.Services:
-        for Stub in Service.Stubs:
-            out_cls = Stub._OutProto.__class__.__name__
-            in_cls = Stub._InProto.__class__.__name__
-
-            if out_cls and not in_cls:
-                raise ValueError(f'"{repr(Stub)}" is sending "{in_cls}" proto to nothing...')
-
-            receiving_stub = False if Stub._out_stub else True
-            for Service2 in pipeline.Services:
-                for Stub2 in Service2.Stubs:
-                    if repr(Stub2) == Stub._out_stub.__class__.__name__:
-                        receiving_stub = True
-                        in2_cls = Stub2._InProto.__class__.__name__
-                        if in2_cls != out_cls:
-                            raise ValueError(
-                                f'{repr(Stub)} is sending "{out_cls}" proto,'
-                                f'but {repr(Stub2)} is receiving "{in2_cls}" proto')
-
-            if not receiving_stub:
-                raise ValueError(f'no receiving stub for "{repr(Stub)}"')
-
-
 def check_rabbitmq(args):
     import pika
     from ..utils import BOLD

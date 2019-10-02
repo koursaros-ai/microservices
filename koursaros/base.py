@@ -110,9 +110,9 @@ class Pipeline(ReprClassName):
             KctlLogger.init(active_connection_name + '.' + active_service_name)
 
         # set stub with refs to each other
-        for service in self.Services:
-            for stub in service.Stubs:
-                stub.set_out_stub()
+        for Service in self.Services:
+            for Stub in Service.Stubs:
+                Stub.set_out_stub()
 
 
 class Connection(ReprClassName):
@@ -138,16 +138,19 @@ class Service(ReprClassName):
         self.Stubs = self.Stubs(active_stub_names, _pipe, self)
 
     def run(self):
-        for stub in self.Stubs:
-            stub.run()
-        for stub in self.Stubs:
-            stub.join()
+        for Stub in self.Stubs:
+            Stub.run()
+        for Stub in self.Stubs:
+            Stub.join()
 
 
 class Stub(ReprClassName):
     __active__ = False
     _out_stub = None
+    _OutStub = None
+    _in_proto = None
     _InProto = None
+    _out_proto = None
     _OutProto = None
     _should_send = False
     connection = None
@@ -175,13 +178,20 @@ class Stub(ReprClassName):
     class ShouldNotReturnError(Exception):
         pass
 
-    class WrongProtoTypeError(Exception):
+    class WrongMessageTypeError(Exception):
         pass
 
-    def raise_invalid_proto_out(self, correct_type, incorrect_type):
-        msg = (f'Attemped to send "{correct_type}" to "{repr(self._out_stub)}"'
-               f'... which expects "{incorrect_type}" message')
-        raise self.WrongProtoTypeError(msg)
+    class StubNotFoundError(Exception):
+        pass
+
+    def raise_wrong_msg_type(self, incorrect_type):
+        msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
+               f'but {repr(self._OutStub)} expects "{self._OutStub._in_proto}" message')
+        raise self.WrongMessageTypeError(msg)
+
+    def raise_stub_not_found(self):
+        msg = f'{repr(self)} could not find "{self._out_stub}" stub to send to'
+        raise self.StubNotFoundError(msg)
 
     def raise_not_active(self):
         # if the parent service is not active then crash
@@ -200,12 +210,18 @@ class Stub(ReprClassName):
 
     def set_out_stub(self):
         if self._out_stub is not None:
-            for service in self._pipe.Services:
-                for stub in service.Stubs:
-                    if repr(stub) == repr(self._out_stub):
-                        self._out_stub = stub
+            for Service in self._pipe.Services:
+                for Stub in Service.Stubs:
+                    if repr(Stub) == repr(self._out_stub):
+                        self._OutStub = Stub
 
             self._should_send = True
+
+            if self._OutStub is None:
+                self.raise_stub_not_found()
+
+            if self._out_proto != self._OutStub._in_proto:
+                self.raise_wrong_msg_type(self._out_proto)
 
     def process(self, proto, method=None):
         returned = self.func(proto)
@@ -234,11 +250,8 @@ class Stub(ReprClassName):
             stub.publish_callback(proto)
 
     def check_proto_type(self, proto):
-        correct_proto_type = self._OutProto.__name__
-        checking_proto_type = proto.__class__.__name__
-
-        if correct_proto_type != checking_proto_type:
-            self.raise_invalid_proto_out(correct_proto_type, checking_proto_type)
+        if self._OutProto._proto_in != proto.__class__.__name__:
+            self.raise_wrong_msg_type(proto.__class__.__name__)
 
     def publish(self, proto):
         self.check_proto_type(proto)
@@ -256,9 +269,7 @@ class Stub(ReprClassName):
         self.connection.add_callback_threadsafe(cb)
 
     def consume(self):
-        print(dir(self._pipe.Connections))
         conn = self._pipe.active_connection
-        print(dir(conn))
 
         credentials = pika.credentials.PlainCredentials(repr(self._service), conn.password)
         params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
@@ -301,4 +312,3 @@ class Stub(ReprClassName):
             print(f'Waiting for stub "{repr(self)}" to finish {t.getName()}')
             t.join()
             self.run_threads.clear()
-
