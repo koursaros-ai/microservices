@@ -84,22 +84,22 @@ class Pipeline:
     class _Services(ActivatingContainer):
         pass
 
-    def __init__(self, package, prefetch=1, debug=False):
+    def __init__(self, package, prefetch=1):
         # predicts the active service from file path
         self.args = get_args()
         self.prefetch = prefetch
 
-        active_service_name = package.split('.')[-1]
         active_connection_name = self.args.connection
-
-        # init services with reference to pipeline
-        self.services = self._Services([active_service_name], self, active_service_name)
         self.connections = self._Connections([active_connection_name])
-        KctlLogger.init(active_connection_name + '.' + active_service_name)
+        self.active_connection = getattr(self.services, active_connection_name)
 
-        self.active_connection = getattr(self.services, active_service_name)
+        if package is None:
+            active_service_name = package.split('.')[-1]
+            # init services with reference to pipeline
+            self.services = self._Services([active_service_name], self, active_service_name)
 
-        if not debug:
+            KctlLogger.init(active_connection_name + '.' + active_service_name)
+
             self.active_service = getattr(self.services, active_service_name)
 
 
