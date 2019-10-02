@@ -44,13 +44,13 @@ class KctlLogger:
         write = cls.stderr_write if err else cls.stdout_write
 
         if err:
-            label = f'{BOLD}{RED}STDERR:{RESET}'
+            label = f'{BOLD}{RED}STDERR:{RESET} '
         else:
             s2 = stack()[2]
             func = s2.function
             lineno = s2.lineno
             name = s2.frame.f_globals.get('__name__', '')
-            label = f'{BOLD}[{name}] {GREEN}STDOUT:{RESET} {func}({lineno}):'
+            label = f' {BOLD}[{name}] {GREEN}STDOUT:{RESET} {func}({lineno}): '
 
         line = cls.timestamp() + label
 
