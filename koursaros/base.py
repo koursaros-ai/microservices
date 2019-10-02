@@ -118,16 +118,16 @@ class Service:
     """
     __active__ = False
 
-    class _Stubs(ActivatingContainer):
+    class Stubs(ActivatingContainer):
         pass
 
     def __init__(self, _pipe):
 
         self._pipe = _pipe
-        active_stub_names = self._Stubs.__names__ if self.__active__ else []
+        active_stub_names = self.Stubs.__names__ if self.__active__ else []
 
         # init stubs with reference to pipeline and service
-        self.Stubs = self._Stubs(active_stub_names, _pipe, self)
+        self.Stubs = self.Stubs(active_stub_names, _pipe, self)
 
         # set stub with refs to each other
         for stub in self.Stubs:
