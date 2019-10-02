@@ -99,7 +99,6 @@ class Pipeline:
         else:
             active_service_name = package.split('.')[-1]
             self.active_service = getattr(self.services, active_service_name)
-            import
             KctlLogger.init(active_connection_name + '.' + active_service_name)
 
         # init services with reference to pipeline
