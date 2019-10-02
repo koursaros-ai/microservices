@@ -254,6 +254,7 @@ class Stub:
     def consume(self):
         print(dir(self._pipe.Connections))
         conn = self._pipe.Connections.randomactive()
+        print(dir(conn))
         service_cls = self._service.__class__.__name__
         pipe_cls = self._pipe.__class__.__name__
 
