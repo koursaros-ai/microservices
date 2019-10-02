@@ -298,3 +298,4 @@ class Stub:
             print(f'Waiting for stub "{self.__class__.__name__}" to finish {t.getName()}')
             t.join()
             self.run_threads.clear()
+
