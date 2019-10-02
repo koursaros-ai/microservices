@@ -50,7 +50,6 @@ class KctlLogger:
             lineno = stack()[2].lineno
             name = stack()[2].frame.f_globals.get('__name__', '')
             label = cls.label.format(BOLD, name, GREEN, 'STDOUT:', RESET, func + f'({lineno}):')
-            import pdb; pdb.set_trace()
 
         line = cls.timestamp() + label
 
