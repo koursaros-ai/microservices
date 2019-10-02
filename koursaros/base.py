@@ -161,7 +161,7 @@ class Stub(ReprClassName):
     _consumer = None
     _publisher = None
 
-    _pthread = []
+    _pthread = None
     _cthread = None
 
     def __init__(self, _service):
@@ -363,9 +363,8 @@ class Publisher(Connector):
             print(f'"{self}" stub publishing "{proto.__class__.__name__}"'
                   f'to "{self._stub._OutStub.queue}"')
 
-        self.publish(proto)
-        # cb = functools.partial(self.publish, proto)
-        # self._connection.add_callback_threadsafe(cb)
+        cb = functools.partial(self.publish, proto)
+        self._connection.add_callback_threadsafe(cb)
 
 
 class Consumer(Connector):
