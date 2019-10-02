@@ -28,6 +28,7 @@ def receive():
     sentence = backend.Stubs.send.Sentence(id=sentence_id, text=text)
     backend.Stubs.send.process(sentence)
     piggified = queue.get()
+    del queue
 
     return jsonify({
         "status": "success",
