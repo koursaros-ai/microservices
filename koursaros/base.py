@@ -12,8 +12,8 @@ RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
-def tag_proto(proto):
-    proto.cls = proto.__class__.__name__
+def cls(obj):
+    return obj.__class__.__name__
 
 
 class ReprClassName:
@@ -124,7 +124,7 @@ class Pipeline(ReprClassName):
         # set stub with refs to each other
         for service in self.Services:
             for stub in service.Stubs:
-                stub.set_out_stub()
+                stub.bind_send_stub()
 
 
 class Connection(ReprClassName):
@@ -144,8 +144,6 @@ class Service(ReprClassName):
     def __init__(self, _pipe):
         self._pipe = _pipe
         self._debug = _pipe.debug
-        print(super())
-        import pdb; pdb.set_trace()
 
         if self._debug:
             print(f'Initializing "{self}" service...')
@@ -165,13 +163,12 @@ class Service(ReprClassName):
 class Stub(ReprClassName):
     __active__ = False
 
-    in_proto = None
-    out_proto = None
-    InProto = None
-    OutProto = None
+    rcv_proto = None
+    send_proto = None
+    RcvProto = None
+    SendProto = None
 
-    out_stub = None
-    OutStub = None
+    _send_stub = None
 
     _should_send = False
 
@@ -185,7 +182,6 @@ class Stub(ReprClassName):
         self._service = _service
         self._pipe = _service._pipe
         self._debug = self._pipe.debug
-        self._queue = repr(self._service) + '.' + repr(self)
 
         if self._debug:
             print(f'Initializing "{self}" stub...')
@@ -213,11 +209,11 @@ class Stub(ReprClassName):
 
     def raise_wrong_msg_type(self, incorrect_type):
         msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
-               f'but {repr(self.OutStub)} expects "{self.OutStub.OutProto.cls}" message')
+               f'but {repr(self.RcvStub)} expects "{cls(self.RcvStub.RcvProto)}" message')
         raise self.WrongMessageTypeError(msg)
 
     def raise_stub_not_found(self):
-        msg = f'{repr(self)} could not find "{self.out_stub}" stub to send to'
+        msg = f'{repr(self)} could not find "{self.rcv_stub}" stub to send to'
         raise self.StubNotFoundError(msg)
 
     def raise_not_active(self):
@@ -228,41 +224,22 @@ class Stub(ReprClassName):
 
     def raise_no_return(self):
         msg = (f'"{self}" stub did not return anything,'
-               f'but it should be sending to "{self.OutStub}" stub')
+               f'but it should be sending to "{self.RcvStub}" stub')
         raise self.NoReturnError(msg)
 
     def raise_should_not_return(self):
         msg = f'"{self}" stub should not return anything...'
         raise self.ShouldNotReturnError(msg)
 
-    def set_out_stub(self):
-        if self.out_stub is not None:
-
-            for service in self._pipe.Services:
-                for stub in service.Stubs:
-                    if repr(stub) == self.out_stub:
-                        self.OutStub = stub
-                        tag_proto(self.OutStub.OutProto)
-
-            self._should_send = True
-
-            if self.OutStub is None:
-                self.raise_stub_not_found()
-
-            if self.out_proto != self.OutStub._in_proto:
-                self.raise_wrong_msg_type(self.out_proto)
-
     def process(self, proto, method=None):
-        tag_proto(proto)
 
         if self._debug:
-            print(f'"{self}" stub processing "{proto.cls}"...')
+            print(f'"{self}" stub processing "{cls(proto)}"...')
 
         returned = self.func(proto)
-        tag_proto(proto)
 
         if self._debug:
-            print(f'"{self.func.__name__}" returned "{returned.cls}"...')
+            print(f'"{self.func.__name__}" returned "{cls(returned)}"...')
 
         if self._should_send:
             if returned is None:
@@ -320,9 +297,11 @@ class Stub(ReprClassName):
 class Connector(ReprClassName):
     _connection = None
     _channel = None
+    _debug = False
 
     def __init__(self, _stub):
         self._pipe = _stub._service._pipe
+        self._debug = self._pipe.debug
         self._service = _stub._service
         self._stub = _stub
         self._connect()
@@ -346,33 +325,40 @@ class Connector(ReprClassName):
 
 
 class Publisher(Connector):
+
     def run(self):
         pass
+
+    def check_send_proto(self, proto):
+        """Checks an outgoing proto against the
+        type that the receiving stub expects
+        """
+        if cls(self._stub.RcvStub.InProto) != cls(proto):
+            self._stub.raise_wrong_msg_type(cls(proto))
 
     def publish(self, proto):
         # tag outgoing protos with their class names
         proto.cls = proto.__class__.__name__
 
-        # check proto type against expected type
-        if self._stub._OutStub._in_proto != proto.cls:
-            self._stub.raise_wrong_msg_type(proto.cls)
+        self.check_send_proto(proto)
+
 
         body = proto.SerializeToString()
 
-        _out_queue = self._stub._OutStub.queue
+        send_queue = self._stub.RcvStub.queue
 
         if self._debug:
-            print(f'"{self._stub}" stub publishing "{proto_cls}" to {_out_queue}...')
+            print(f'"{self._stub}" stub publishing "{cls(proto)}" to {out_queue}...')
 
         self._channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=_out_queue,
+            routing_key=out_queue,
             body=body,
             properties=PROPS
         )
 
-        if debug:
-            print(f'"{self._stub}" stub published "{proto_cls}"')
+        if self._debug:
+            print(f'"{self._stub}" stub published "{cls(proto)}"')
 
 
 class Consumer(Connector):
@@ -392,7 +378,7 @@ class Consumer(Connector):
         self._connection.add_callback_threadsafe(cb)
 
     def consume_callback(self, channel, method, properties, body):
-        proto = self._stub._InProto()
+        proto = self._stub.InProto()
         proto.ParseFromString(body)
 
         if self._pipe.args.debug:
