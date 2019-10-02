@@ -30,16 +30,16 @@ def bind_rabbitmq(args):
 
     try:
         print(f'Deleting {http_string}')
-        api.delete_vhost(pipeline.name)
+        api.delete_vhost(pipeline_cls)
     except requests.exceptions.HTTPError:
         print(f'Not found: {http_string}')
 
     print(f'Creating {http_string}')
-    api.create_vhost(pipeline.name)
-    api.create_user_permission(username, pipeline.name)
+    api.create_vhost(pipeline_cls)
+    api.create_user_permission(username, pipeline_cls)
 
     credentials = pika.PlainCredentials(username, password)
-    parameters = pika.ConnectionParameters(host, port, pipeline.name, credentials)
+    parameters = pika.ConnectionParameters(host, port, pipeline_cls, credentials)
     connection = pika.BlockingConnection(parameters=parameters)  # pika connection
     channel = connection.channel()
 
