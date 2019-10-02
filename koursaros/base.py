@@ -612,6 +612,8 @@ class Publisher(Connector):
         """
 
         debug = self._stub._pipe.args.debug
+        if debug:
+            print('Publishing message...')
 
         if self._channel is None or not self._channel.is_open:
             print(f'"{self}" stub channel closed')
