@@ -1,6 +1,6 @@
+from threading import Thread, Condition
 from kctl.logger import KctlLogger
 from kctl.cli import get_args
-from threading import Thread
 from random import randint
 from queue import Queue
 import functools
@@ -294,6 +294,7 @@ class Stub(ReprClassName):
             if self._pipe.args.debug:
                 method = 'Sending' if out else 'Received'
                 print(f'{method} proto "{proto.__class__.__name__}"...')
+
             if out:
                 self._publisher._queue.put(proto)
             else:
@@ -311,6 +312,7 @@ class Connector:
     _channel = None
     _closing = False
     _url = None
+    _queue = Queue()
 
     def __init__(self, _stub):
         """Run the consumer by connecting to RabbitMQ and then
@@ -569,7 +571,6 @@ class Publisher(Connector):
     _message_number = 0
     _acked = 0
     _nacked = 0
-    _queue = Queue()
 
     def publish_message(self):
         """If the class is not stopping, publish a message to RabbitMQ,
