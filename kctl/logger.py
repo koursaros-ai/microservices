@@ -45,6 +45,7 @@ class KctlLogger:
             label = cls.label.format(BOLD, '', RED, 'STDERR: ', RESET, '')
 
         else:
+            import pdb; pdb.set_trace()
             func = _getframe(3).f_code.name
             spec = getattr(__spec__, 'name', '')
             label = cls.label.format(BOLD, spec, GREEN, 'STDERR: ', RESET, func + '():')
