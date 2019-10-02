@@ -307,7 +307,7 @@ class Connector:
         starting the IOLoop to block and allow the SelectConnection to operate.
         """
         self._stub = _stub
-        conn = self._pipe.active_connection
+        conn = _stub._pipe.active_connection
         self._url = f'amqp://{conn.user}:{conn.password}@{conn.host}:{conn.port}/{self._pipe}'
         self._connection = self.connect()
         self._connection.ioloop.start()
@@ -318,7 +318,7 @@ class Connector:
         will be invoked by pika.
         :rtype: pika.SelectConnection
         """
-        if self._pipe.args.debug:
+        if self._stub._pipe.args.debug:
             print(f'Connecting "{self}" stub')
         return pika.SelectConnection(
             parameters=pika.URLParameters(self._url),
@@ -384,7 +384,7 @@ class Connector:
         Since the channel is now open, we'll declare the exchange to use.
         :param pika.channel.Channel channel: The channel object
         """
-        if self._pipe.args.debug:
+        if self._stub._pipe.args.debug:
             print('Channel opened')
 
         self._channel = channel
@@ -394,7 +394,7 @@ class Connector:
         """This method tells pika to call the on_channel_closed method if
         RabbitMQ unexpectedly closes the channel.
         """
-        if self._pipe.args.debug:
+        if self._stub._pipe.args.debug:
             print('Adding channel close callback')
         self._channel.add_on_close_callback(self.on_channel_closed)
 
