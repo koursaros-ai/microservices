@@ -91,7 +91,7 @@ class Pipeline:
 
         active_connection_name = self.args.connection
         self.connections = self._Connections([active_connection_name])
-        self.active_connection = getattr(self.services, active_connection_name)
+        self.active_connection = getattr(self.connections, active_connection_name)
 
         if package is None:
             active_service_name = package.split('.')[-1]
