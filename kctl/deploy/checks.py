@@ -7,7 +7,7 @@ def check_stubs(args):
 
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
-    pipeline = pipeline()
+    pipeline = pipeline(None)
 
     for service in pipeline.services:
         for stub in service.stubs:
@@ -34,7 +34,7 @@ def check_rabbitmq(args):
 
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
-    pipeline = pipeline()
+    pipeline = pipeline(None)
     connection = pipeline.active_connection
 
     host = connection.host
