@@ -256,7 +256,7 @@ class Stub(ReprClassName):
     def send(self, proto):
 
         if self._pipe.args.debug:
-            not_ = 'not' if self.__active__ else ''
+            not_ = '' if self.__active__ else 'not'
             print(f'"{self}" is {not_} active...')
 
         if self.__active__:
@@ -288,7 +288,7 @@ class Stub(ReprClassName):
 
     def publish_callback(self, proto):
         if self._pipe.args.debug:
-            print(f'"{self}" adding threadsafe publish callback for "{proto.__class__.__name__}"')
+            print(f'"{self}" stub adding threadsafe publish callback for "{proto.__class__.__name__}"')
 
         cb = functools.partial(self.publish, proto)
         self.connection.add_callback_threadsafe(cb)
