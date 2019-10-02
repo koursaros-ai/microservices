@@ -283,7 +283,7 @@ class Stub(ReprClassName):
             proto, out = self._queue.get()
             if self._pipe.args.debug:
                 method = 'Sending' if out else 'Received'
-                print(f'{method} proto {proto.__class__.__name__}...')
+                print(f'{method} proto "{proto.__class__.__name__}"...')
             if out:
                 self._publisher._queue.put(proto)
             else:
@@ -303,12 +303,10 @@ class Connector:
     _url = None
 
     def __init__(self, _stub):
-        self._stub = _stub
-
-    def run(self):
         """Run the consumer by connecting to RabbitMQ and then
         starting the IOLoop to block and allow the SelectConnection to operate.
         """
+        self._stub = _stub
         conn = self._pipe.active_connection
         self._url = f'amqp://{conn.user}:{conn.password}@{conn.host}:{conn.port}/{self._pipe}'
         self._connection = self.connect()
