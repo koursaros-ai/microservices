@@ -3,6 +3,10 @@ from time import strftime
 from sys import stdout, stderr
 from inspect import stack
 
+import logging
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
 
 BOLD = '\033[1m'
 GREEN = '\033[32m'
