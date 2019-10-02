@@ -329,7 +329,7 @@ class Connector:
         :rtype: pika.SelectConnection
         """
         if self._stub._pipe.args.debug:
-            print(f'Connecting "{self}" stub')
+            print(f'Connecting "{self}" stub to {self._url}')
         return pika.SelectConnection(
             parameters=pika.URLParameters(self._url),
             on_open_callback=self.on_connection_open,
