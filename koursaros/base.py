@@ -116,7 +116,9 @@ class Pipeline(ReprClassName):
         for Service in self.Services:
             for Stub in Service.Stubs:
                 Stub.set_out_stub()
+
                 print('AAAAAAA', Stub, dir(Stub), Stub._out_stub)
+            print('BBBB', Service, dir(Service), Service.Stubs)
 
 
 class Connection(ReprClassName):
