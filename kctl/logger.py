@@ -35,7 +35,7 @@ class KctlLogger:
 
     @staticmethod
     def stack():
-        code = _getframe(3).f_code
+        code = _getframe(2).f_code
         name = code.co_name
         file = code.co_filename[-20:]
         dots = '...' if len(file) == 20 else ''
