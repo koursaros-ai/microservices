@@ -52,7 +52,7 @@ if __name__ == "__main__":
     a = Thread(target=app.run)
 
     s.start()
-    a.start()
+    # a.start()
     s.join()
     a.join()
 
