@@ -1,6 +1,7 @@
 
 from time import strftime
-from sys import stdout, stderr, _getframe
+from sys import stdout, stderr
+from inspect import stack
 
 
 BOLD = '\033[1m'
@@ -45,8 +46,7 @@ class KctlLogger:
             label = cls.label.format(BOLD, '', RED, 'STDERR: ', RESET, '')
 
         else:
-            import pdb; pdb.set_trace()
-            func = _getframe(3).f_code.name
+            func = stack()[0].function
             spec = getattr(__spec__, 'name', '')
             label = cls.label.format(BOLD, spec, GREEN, 'STDERR: ', RESET, func + '():')
 
