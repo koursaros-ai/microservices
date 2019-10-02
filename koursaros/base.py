@@ -168,6 +168,7 @@ class Stub(ReprClassName):
 
         self._pipe = _service._pipe
         self._service = _service
+        self.queue = repr(self._service) + '.' + repr(self)
 
         if self._pipe.args.debug:
             print(f'Initializing "{self}" stub...')
@@ -333,7 +334,6 @@ class Publisher(Connector):
 
     def publish(self, proto):
         debug = self._pipe.args.debug
-        queue = repr(self._service) + '.' + repr(self._stub)
 
         # check proto type against expected type
         proto_cls = proto.__class__.__name__
@@ -342,12 +342,14 @@ class Publisher(Connector):
 
         body = proto.SerializeToString()
 
+        _out_queue = self._stub._OutStub.queue
+
         if debug:
-            print(f'"{self._stub}" stub publishing "{proto_cls}" to {queue}...')
+            print(f'"{self._stub}" stub publishing "{proto_cls}" to {_out_queue}...')
 
         self._channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=queue,
+            routing_key=_out_queue,
             body=body,
             properties=PROPS
         )
@@ -373,7 +375,7 @@ class Consumer(Connector):
     def consume(self):
 
         self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        queue = repr(self._service) + '.' + repr(self._stub)
+        queue = self._stub.queue
         self._channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
         print(f'Consuming messages on {queue}...')
         self._channel.start_consuming()
