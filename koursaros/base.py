@@ -95,7 +95,7 @@ class Pipeline:
         # init services with reference to pipeline
         self.services = self._Services([active_service_name], self, active_service_name)
         self.connections = self._Connections([active_connection_name])
-        KctlLogger.init(active_service_name + '.' + active_connection_name)
+        KctlLogger.init(active_connection_name + '.' + active_service_name)
 
         self.active_service = getattr(self.services, active_service_name)
         self.active_connection = getattr(self.services, active_service_name)
