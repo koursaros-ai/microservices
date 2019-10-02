@@ -274,11 +274,11 @@ class Stub(ReprClassName):
         self._publisher = Publisher(self)
         self._consumer = Consumer(self)
         t = Thread(target=self._ioloop)
+        print(f'Running stub "{repr(self)}" {t.getName()}')
         t.start()
         self.run_threads.append(t)
 
     def _ioloop(self):
-        print(f'Running stub "{repr(self)}" ioloop {t.getName()}')
         while True:
             proto, out = self._queue.get()
             if out:
