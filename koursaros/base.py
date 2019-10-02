@@ -237,6 +237,9 @@ class Stub(ReprClassName):
 
         returned = self.func(proto)
 
+        if debug:
+            print(f'"{self.func.__name__}" returned "{returned.__class__.__name__}"...')
+
         if self._should_send:
             if returned is None:
                 self.raise_no_return()
@@ -256,8 +259,8 @@ class Stub(ReprClassName):
     def send(self, proto):
 
         if self._pipe.args.debug:
-            not_ = '' if self.__active__ else 'not'
-            print(f'"{self}" is {not_} active...')
+            not_ = '' if self.__active__ else 'not '
+            print(f'"{self}" is {not_}active...')
 
         if self.__active__:
             self.publish_callback(proto)
@@ -326,8 +329,9 @@ class Stub(ReprClassName):
         if self._pipe.args.debug:
             print(f'"{self}" stub received "{proto.__class__.__name__}" message on {channel}...')
 
-        process_thread = Thread(target=self.process, args=(proto, method))
-        process_thread.run()
+        # process_thread = Thread(target=self.process, args=(proto, method))
+        # process_thread.run()
+        self.process(proto, method)
 
     def run(self):
         t = Thread(target=self.consume)
