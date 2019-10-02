@@ -59,5 +59,5 @@ def bind_rabbitmq(args):
             channel.queue_declare(queue=queue, durable=True)
 
             print(f'Binding "{stub_cls}" to "{queue}" queue on {pika_string}')
-            channel.queue_bind(exchange='nyse', queue=queue, routing_key=stub_cls)
+            channel.queue_bind(exchange='nyse', queue=queue, routing_key=queue)
 

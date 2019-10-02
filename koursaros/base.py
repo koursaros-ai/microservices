@@ -361,7 +361,7 @@ class Publisher(Connector):
     def publish_callback(self, proto):
         if self._pipe.args.debug:
             print(f'"{self}" stub publishing "{proto.__class__.__name__}"'
-                  f'to "{self._stub._out_stub}"')
+                  f'to "{self._stub._OutStub.queue}"')
 
         self.publish(proto)
         # cb = functools.partial(self.publish, proto)
