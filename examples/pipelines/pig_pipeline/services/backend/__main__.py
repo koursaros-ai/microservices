@@ -35,12 +35,14 @@ def receive():
 
 @backend.Stubs.send
 def send_sentence(sentence):
+    print(sentence)
     return sentence
 
 
 @backend.Stubs.receive
 def receive(piggified):
     global sentences
+    print(sentences)
     sentences[piggified.sentence.id].put(piggified.pig_latin)
 
 
