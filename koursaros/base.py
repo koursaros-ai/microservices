@@ -252,6 +252,7 @@ class Stub:
         self.connection.add_callback_threadsafe(cb)
 
     def consume(self):
+        import pdb; pdb.set_trace()
         conn = self._pipe.connections.randomactive()
         service_cls = self._service.__class__.__name__
         pipe_cls = self._pipe.__class__.__name__
