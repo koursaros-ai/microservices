@@ -14,18 +14,15 @@ RESET = '\033[0m'
 
 
 class KctlLogger:
-    name = 'kctl'
     stdout_write = stdout.write
     stderr_write = stderr.write
-    stdout_label = ''
-    stderr_label = ''
+    label = '{}[{}] {}{} {}'
     newline = True
 
     @classmethod
-    def init(cls, name='kctl'):
-        cls.name = name
-        cls.stdout_label = f'[{BOLD}{cls.name}] {GREEN}STDOUT: {RESET}'
-        cls.stderr_label = f'[{BOLD}{cls.name}] {RED}STDERR: {RESET}'
+    def init(cls):
+
+        cls.stderr_label = f'[{BOLD}{}] {RED}STDERR: {RESET}'
         stdout.write = cls.stdout_wrap
         stderr.write = cls.stderr_wrap
         print('Wrapping stdout with KctlLogger...')
@@ -33,14 +30,6 @@ class KctlLogger:
     @staticmethod
     def timestamp():
         return strftime("%Y-%m-%d %H:%M:%S ")
-
-    @staticmethod
-    def stack():
-        code = _getframe(3).f_code
-        name = code.co_name
-        file = code.co_filename[-20:]
-        dots = '...' if len(file) == 20 else ''
-        return f'{dots}{file} → ️{name}(): '
 
     @staticmethod
     def stdout_wrap(record=''):
@@ -52,14 +41,19 @@ class KctlLogger:
 
     @classmethod
     def format_line(cls, record, err=False):
-        label = cls.stderr_label if err else cls.stdout_label
         write = cls.stderr_write if err else cls.stdout_write
-        stack = ''
-        import pdb; pdb.set_trace()
-        if not err:
-            stack = cls.stack()
+        func = ''
+        spec = ''
 
-        line = cls.timestamp() + label + stack
+        if err:
+            label = cls.label.format(BOLD, '', RED, 'STDERR: ', RESET, '')
+
+        else:
+            func = _getframe(3).f_code.name
+            spec = getattr(__spec__, 'name', '')
+            label = cls.label.format(BOLD, spec, GREEN, 'STDERR: ', RESET, func + '():')
+
+        line = cls.timestamp() + label
 
         if cls.newline:
             write(line)
