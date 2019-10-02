@@ -235,6 +235,7 @@ class Stub(ReprClassName):
 
         else:
             if returned is not None:
+                import pdb; pdb.set_trace()
                 self.raise_should_not_return()
         if method is not None:
             self.ack_callback(method.delivery_tag)
