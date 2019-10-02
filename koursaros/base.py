@@ -309,7 +309,9 @@ class Connector:
     def _connect(self):
         conn = self._pipe.active_connection
         credentials = pika.credentials.PlainCredentials(repr(self._pipe), conn.password)
+        print(credentials)
         params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
+        print(params)
 
         while True:
             try:
