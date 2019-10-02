@@ -36,7 +36,7 @@ def receive():
 @backend.Stubs.send
 def send_sentence(sentence):
     print('SENDING')
-    pipeline.services.pig.stubs.piggify(sentence)
+    Pipeline.Services.pig.Stubs.piggify(sentence)
     print('SENT')
 
 
