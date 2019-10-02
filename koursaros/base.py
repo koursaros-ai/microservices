@@ -88,6 +88,8 @@ class Pipeline(ReprClassName):
         pass
 
     def __init__(self, package, prefetch=1):
+        print(f'Initializing "{repr(self)}" pipeline...')
+        
         # predicts the active service from file path
         self.args = get_args()
         self.prefetch = prefetch
