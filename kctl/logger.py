@@ -19,6 +19,7 @@ class KctlLogger:
     stderr_write = stderr.write
     stdout_label = ''
     stderr_label = ''
+    newline = True
 
     @classmethod
     def init(cls, name='kctl'):
@@ -35,7 +36,7 @@ class KctlLogger:
 
     @staticmethod
     def stack():
-        code = _getframe(4).f_code
+        code = _getframe(3).f_code
         name = code.co_name
         file = code.co_filename[-20:]
         dots = '...' if len(file) == 20 else ''
@@ -59,6 +60,14 @@ class KctlLogger:
             stack = cls.stack()
 
         line = '\n' + cls.timestamp() + label + stack
+
+        if cls.newline:
+            write(line)
+            cls.newline = False
+
+        if record[-1] == '\n':
+            cls.newline = True
+            record.rstrip()
 
         write(record.replace('\n', line))
 
