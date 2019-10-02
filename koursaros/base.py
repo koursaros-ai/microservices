@@ -212,8 +212,7 @@ class Stub(ReprClassName):
         if self._out_stub is not None:
             for Service in self._pipe.Services:
                 for Stub in Service.Stubs:
-                    import pdb; pdb.set_trace()
-                    if repr(Stub) == repr(self._out_stub):
+                    if repr(Stub) == self._out_stub:
                         self._OutStub = Stub
 
             self._should_send = True
