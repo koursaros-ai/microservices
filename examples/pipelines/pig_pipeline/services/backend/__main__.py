@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from queue import Queue
 from threading import Thread
 import uuid
-
+import pdb; pdb.set_trace()
 pipeline = pigservice(__package__)
 app = Flask(__name__)
 sentences = dict()
