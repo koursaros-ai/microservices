@@ -49,7 +49,7 @@ class KctlLogger:
             s2 = stack()[3]
             func = s2.function
             lineno = s2.lineno
-            name = s2.frame.f_globals.get('__package__', '')
+            name = s2.frame.f_globals.get('__module__', '')
             label = f' {BOLD}[{name}.{func}({lineno})] {GREEN}STDOUT:{RESET} '
 
         line = cls.timestamp() + label

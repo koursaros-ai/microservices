@@ -254,7 +254,10 @@ class Stub(ReprClassName):
                 print(f'Sending ack callback: {tag}')
 
     def send(self, proto):
-        debug = self._pipe.args.debug
+
+        if self._pipe.args.debug:
+            not_ = 'not' if self.__active__ else ''
+            print(f'{self} if {not_} active...')
 
         if self.__active__:
             self.publish_callback(proto)
