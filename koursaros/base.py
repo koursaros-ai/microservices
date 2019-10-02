@@ -54,7 +54,7 @@ class ActivatingContainer:
         for name in self.__names__:
             attrs.append(getattr(self, name))
 
-        return attrs
+        return iter(attrs)
 
     def __len__(self):
         return len(self.__names__)
