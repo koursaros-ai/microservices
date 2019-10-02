@@ -5,7 +5,7 @@ from inspect import stack
 
 import logging
 import sys
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
 
 
 BOLD = '\033[1m'
