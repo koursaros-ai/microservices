@@ -61,13 +61,13 @@ class KctlLogger:
 
         line = '\n' + cls.timestamp() + label + stack
 
-        if cls.newline:
-            write(line)
-            cls.newline = False
-
-        if record[-1] == '\n':
-            cls.newline = True
-            record = record.rstrip()
+        # if cls.newline:
+        #     write(line)
+        #     cls.newline = False
+        #
+        # if record[-1] == '\n':
+        #     cls.newline = True
+        #     record = record.rstrip()
 
         write(record.replace('\n', line))
 
