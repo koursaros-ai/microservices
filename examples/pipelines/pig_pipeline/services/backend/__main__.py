@@ -25,9 +25,8 @@ def receive():
     sentence_id = str(uuid.uuid4())
     queue = Queue()
     sentences[sentence_id] = queue
-
     sentence = backend.stubs.send.Sentence(id=sentence_id, text=text)
-    send_sentence(sentence)
+    backend.stubs.send.process(sentence)
     return jsonify({
         "status": "success",
         "msg": queue.get()
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     a = Thread(target=app.run)
 
     s.start()
-    # a.start()
+    a.start()
     s.join()
     a.join()
 

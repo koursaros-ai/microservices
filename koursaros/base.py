@@ -66,8 +66,8 @@ class ActivatingContainer:
 
 
 class Pipeline:
-    """The pipeline object holds services (.services), connection
-    parameters (.connections), and command line arguments (.args)
+    """The pipeline object holds services (.Services), connection
+    parameters (.Connections), and command line arguments (.args)
 
     :param package: __package__ parameter
     :param prefetch: (from pika) Specifies a prefetch window in terms of whole
@@ -78,10 +78,10 @@ class Pipeline:
         who have enabled the no-ack option.
     """
 
-    class _Connections(ActivatingContainer):
+    class Connections(ActivatingContainer):
         pass
 
-    class _Services(ActivatingContainer):
+    class Services(ActivatingContainer):
         pass
 
     def __init__(self, package, prefetch=1):
@@ -90,7 +90,7 @@ class Pipeline:
         self.prefetch = prefetch
 
         active_connection_name = self.args.connection
-        self.connections = self._Connections([active_connection_name])
+        self.Connections = self.Connections([active_connection_name])
         self.active_connection = getattr(self.connections, active_connection_name)
 
         if package is None:
@@ -100,10 +100,10 @@ class Pipeline:
             active_service_name = package.split('.')[-1]
 
         # init services with reference to pipeline
-        self.services = self._Services([active_service_name], self)
+        self.Services = self.Services([active_service_name], self)
 
         if package is not None:
-            self.active_service = getattr(self.services, active_service_name)
+            self.active_service = getattr(self.Services, active_service_name)
             KctlLogger.init(active_connection_name + '.' + active_service_name)
 
 
@@ -112,7 +112,7 @@ class Connection:
 
 
 class Service:
-    """The pipeline object holds stubs (.stubs)
+    """The pipeline object holds stubs (.Stubs)
 
     :param _pipe: Pipeline object reference
     """
@@ -127,16 +127,16 @@ class Service:
         active_stub_names = self._Stubs.__names__ if self.__active__ else []
 
         # init stubs with reference to pipeline and service
-        self.stubs = self._Stubs(active_stub_names, _pipe, self)
+        self.Stubs = self._Stubs(active_stub_names, _pipe, self)
 
         # set stub with refs to each other
-        for stub in self.stubs:
+        for stub in self.Stubs:
             stub.set_out_stub()
 
     def run(self):
-        for stub in self.stubs:
+        for stub in self.Stubs:
             stub.run()
-        for stub in self.stubs:
+        for stub in self.Stubs:
             stub.join()
 
 
@@ -196,14 +196,14 @@ class Stub:
 
     def set_out_stub(self):
         if self._out_stub is not None:
-            for service in self._pipe.services:
-                for stub in service.stubs:
+            for service in self._pipe.Services:
+                for stub in service.Stubs:
                     if stub.__name__ == self._out_stub.__name__:
                         self._out_stub = stub
 
             self._should_send = True
 
-    def process(self, proto, method):
+    def process(self, proto, method=None):
         returned = self.func(proto)
 
         if self._should_send:
@@ -216,8 +216,8 @@ class Stub:
         else:
             if returned is not None:
                 self.raise_should_not_return()
-
-        self.ack_callback(method.delivery_tag)
+        if method is not None:
+            self.ack_callback(method.delivery_tag)
 
     def send(self, proto):
         if self.__active__:
@@ -226,7 +226,7 @@ class Stub:
         # if the stub is not in the current service then send to it
         else:
             # if stub is not active then find a random
-            stub = self._pipe.active_service.stubs.randomactive()
+            stub = self._pipe.active_service.Stubs.randomactive()
             stub.publish_callback(proto)
 
     def check_proto_type(self, proto):
@@ -252,8 +252,8 @@ class Stub:
         self.connection.add_callback_threadsafe(cb)
 
     def consume(self):
-        import pdb; pdb.set_trace()
-        conn = self._pipe.connections.randomactive()
+        print(dir(self._pipe.Connections))
+        conn = self._pipe.Connections.randomactive()
         service_cls = self._service.__class__.__name__
         pipe_cls = self._pipe.__class__.__name__
 

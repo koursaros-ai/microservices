@@ -104,7 +104,7 @@ def compile_connections(path):
         connections[name] = compile_connection(name, configs)
         connections['__names__'].append(name)
 
-    return CompiledClass('_Connections', connections, parent='ActivatingContainer')
+    return CompiledClass('Connections', connections, parent='ActivatingContainer')
 
 
 def compile_connection(name, configs):
@@ -139,7 +139,7 @@ def compile_services(path):
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
 
-    return CompiledClass('_Services', services, parent='ActivatingContainer')
+    return CompiledClass('Services', services, parent='ActivatingContainer')
 
 
 def compile_service(service_path, name, stubs):
@@ -161,7 +161,7 @@ def compile_stubs(stubs):
         names.append(stub_name)
     stubs['__names__'] = names
 
-    return CompiledClass('_Stubs', stubs, parent='ActivatingContainer')
+    return CompiledClass('Stubs', stubs, parent='ActivatingContainer')
 
 
 def compile_stub(name, string):
