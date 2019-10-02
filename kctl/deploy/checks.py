@@ -11,21 +11,27 @@ def check_stubs(args):
 
     for service in pipeline.services:
         for stub in service.stubs:
-            if stub._OutProto and not stub._InProto:
-                raise ValueError(f'"{stub.__name__}" is sending "{stub._InProto.__class__.__name__}" proto to nothing...')
+            stub_cls = stub.__class__.__name__
+            out_cls = stub._OutProto.__class__.__name__
+            in_cls = stub._InProto.__class__.__name__
+
+            if out_cls and not in_cls:
+                raise ValueError(f'"{stub_cls}" is sending "{in_cls}" proto to nothing...')
 
             receiving_stub = False if stub._out_stub else True
             for service2 in pipeline.services:
                 for stub2 in service2.stubs:
-                    if stub2.__name__ == stub._out_stub.__name__:
+                    stub2_cls = stub2.__class__.__name__
+                    if stub2_cls == stub._out_stub.__class__.__name__:
                         receiving_stub = True
-                        if stub2._InProto != stub._OutProto:
+                        in2_cls = stub2._InProto.__class__.__name__
+                        if in2_cls != out_cls:
                             raise ValueError(
-                                f'{stub.__name__} is sending "{stub._OutProto.__class__.__name__}" proto,'
-                                f'but {stub2.__name__} is receiving "{stub2._InProto.__class__.__name__}" proto')
+                                f'{stub_cls} is sending "{out_cls}" proto,'
+                                f'but {stub2_cls} is receiving "{in2_cls}" proto')
 
             if not receiving_stub:
-                raise ValueError(f'no receiving stub for "{stub.__name__}"')
+                raise ValueError(f'no receiving stub for "{stub_cls}"')
 
 
 def check_rabbitmq(args):
