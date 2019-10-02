@@ -353,8 +353,9 @@ class Publisher(Connector):
         if self._pipe.args.debug:
             print(f'"{self}" stub adding threadsafe publish callback for "{proto.__class__.__name__}"')
 
-        cb = functools.partial(self.publish, proto)
-        self._connection.add_callback_threadsafe(cb)
+        self.publish(proto)
+        # cb = functools.partial(self.publish, proto)
+        # self._connection.add_callback_threadsafe(cb)
 
 
 class Consumer(Connector):
