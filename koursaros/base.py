@@ -1,9 +1,7 @@
 from kctl.logger import KctlLogger
 from kctl.cli import get_args
 from threading import Thread
-from inspect import isclass
 from random import randint
-from inspect import stack
 import functools
 import pika
 import time
@@ -11,6 +9,11 @@ import time
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
+
+
+class ReprClassName:
+    def __repr__(self):
+        return self.__class__.__name__
 
 
 class ActivatingContainer:
@@ -65,7 +68,7 @@ class ActivatingContainer:
         return self.__activerefs__[rand_int]
 
 
-class Pipeline:
+class Pipeline(ReprClassName):
     """The pipeline object holds services (.Services), connection
     parameters (.Connections), and command line arguments (.args)
 
@@ -107,11 +110,11 @@ class Pipeline:
             KctlLogger.init(active_connection_name + '.' + active_service_name)
 
 
-class Connection:
+class Connection(ReprClassName):
     pass
 
 
-class Service:
+class Service(ReprClassName):
     """The pipeline object holds stubs (.Stubs)
 
     :param _pipe: Pipeline object reference
@@ -140,7 +143,7 @@ class Service:
             stub.join()
 
 
-class Stub:
+class Stub(ReprClassName):
     __active__ = False
     _out_stub = None
     _InProto = None
@@ -152,7 +155,7 @@ class Stub:
     process_thread = None
 
     def __init__(self, _pipe, _service):
-        self._name = self.__class__.__name__
+        self._name = repr(self)
         self._pipe = _pipe
         self._service = _service
 
@@ -175,19 +178,19 @@ class Stub:
         pass
 
     def raise_invalid_proto_out(self, correct_type, incorrect_type):
-        msg = (f'Attemped to send "{correct_type}" to "{self._out_stub.__name__}"'
+        msg = (f'Attemped to send "{correct_type}" to "{repr(self._out_stub)}"'
                f'... which expects "{incorrect_type}" message')
         raise self.WrongProtoTypeError(msg)
 
     def raise_not_active(self):
         # if the parent service is not active then crash
-        msg = (f'Cannot use stubs from "{self._service.__name__}"'
+        msg = (f'Cannot use stubs from "{repr(self._service)}"'
                f'service in "{self._pipe.active}" service')
         raise self.NotInActiveServiceError(msg)
 
     def raise_no_return(self):
         msg = (f'"{self._name}" stub did not return anything,'
-               f'but it should be sending to "{self._out_stub.__name__}" stub')
+               f'but it should be sending to "{repr(self._out_stub)}" stub')
         raise self.NoReturnError(msg)
 
     def raise_should_not_return(self):
@@ -198,7 +201,7 @@ class Stub:
         if self._out_stub is not None:
             for service in self._pipe.Services:
                 for stub in service.Stubs:
-                    if stub.__name__ == self._out_stub.__name__:
+                    if repr(stub) == repr(self._out_stub):
                         self._out_stub = stub
 
             self._should_send = True
@@ -242,7 +245,7 @@ class Stub:
 
         self.channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=self._out_stub.__name__,
+            routing_key=repr(self._out_stub),
             body=body,
             properties=PROPS
         )
@@ -255,11 +258,9 @@ class Stub:
         print(dir(self._pipe.Connections))
         conn = self._pipe.active_connection
         print(dir(conn))
-        service_cls = self._service.__class__.__name__
-        pipe_cls = self._pipe.__class__.__name__
 
-        credentials = pika.credentials.PlainCredentials(service_cls, conn.password)
-        params = pika.ConnectionParameters(conn.host, conn.port, pipe_cls, credentials)
+        credentials = pika.credentials.PlainCredentials(repr(self._service), conn.password)
+        params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
 
         while True:
             try:
@@ -271,7 +272,7 @@ class Stub:
                 time.sleep(RECONNECT_DELAY)
 
         self.channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        queue = service_cls + '.' + self.__class__.__name__
+        queue = repr(self._service) + '.' + repr(self)
         cb = functools.partial(self.consume_callback)
         self.channel.basic_consume(queue=queue, on_message_callback=cb)
         print(f'Listening on {queue}...')
@@ -290,13 +291,13 @@ class Stub:
 
     def run(self):
         t = Thread(target=self.consume)
-        print(f'Running stub "{self.__class__.__name__}" {t.getName()}')
+        print(f'Running stub "{repr(self)}" {t.getName()}')
         t.start()
         self.run_threads.append(t)
 
     def join(self):
         for t in self.run_threads:
-            print(f'Waiting for stub "{self.__class__.__name__}" to finish {t.getName()}')
+            print(f'Waiting for stub "{repr(self)}" to finish {t.getName()}')
             t.join()
             self.run_threads.clear()
 

@@ -16,7 +16,7 @@ def piggify(sentence):
         sentence=sentence,
         pig_latin=' '.join(pig_latin)
     )
-    backend.Stubs.receive(piggified)
+    return piggified
 
 
 if __name__ == "__main__":
