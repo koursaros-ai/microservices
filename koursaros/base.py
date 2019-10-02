@@ -184,7 +184,6 @@ class Stub(ReprClassName):
         self._pipe = _service._pipe
         self._debug = self._pipe.debug
         self._queue = repr(self._service) + '.' + repr(self)
-        tag_proto(self.OutProto)
 
         if self._debug:
             print(f'Initializing "{self}" stub...')
@@ -241,14 +240,15 @@ class Stub(ReprClassName):
                 for stub in service.Stubs:
                     if repr(stub) == self.out_stub:
                         self.OutStub = stub
+                        tag_proto(self.OutStub.OutProto)
 
             self._should_send = True
 
             if self.OutStub is None:
                 self.raise_stub_not_found()
 
-            if self._out_proto != self.OutStub._in_proto:
-                self.raise_wrong_msg_type(self._out_proto)
+            if self.out_proto != self.OutStub._in_proto:
+                self.raise_wrong_msg_type(self.out_proto)
 
     def process(self, proto, method=None):
         tag_proto(proto)
