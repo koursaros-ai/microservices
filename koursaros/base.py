@@ -128,7 +128,6 @@ class Service:
 
         # set stub with refs to each other
         for stub in self.stubs:
-            import pdb; pdb.set_trace()
             stub.set_out_stub()
 
     def run(self):
