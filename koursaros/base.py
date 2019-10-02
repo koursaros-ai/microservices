@@ -12,6 +12,10 @@ RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
+def tag_proto(proto):
+    proto.cls = proto.__class__.__name__
+
+
 class ReprClassName:
     def __repr__(self):
         return self.__class__.__name__
@@ -60,9 +64,19 @@ class ActivatingContainer:
     def __len__(self):
         return len(self.__names__)
 
+    def getactive(self):
+        """getactive() assumes that their is one __active__
+        subclass... will raise if there is not exactly one
+        """
+        if len(self.__activerefs__) != 1:
+            raise self.NotOneActiveError('Not exactly one __active__ subclass')
+
     def randomactive(self):
         rand_int = randint(0, len(self.__activerefs__) - 1)
         return self.__activerefs__[rand_int]
+
+    class NotOneActiveError(Exception):
+        pass
 
 
 class Pipeline(ReprClassName):
@@ -87,34 +101,30 @@ class Pipeline(ReprClassName):
     def __init__(self, package, prefetch=1):
         print(f'Initializing "{repr(self)}"...')
 
-        # predicts the active service from file path
+        # get command line arguments
         self.args = get_args()
+        self.debug = self.args.debug
         self.prefetch = prefetch
 
-        active_connection_name = self.args.connection
-        self.Connections = self.Connections([active_connection_name])
-        self.active_connection = getattr(self.Connections, active_connection_name)
+        self.Connections = self.Connections([self.args.connection])
 
         if package is None:
             active_service_name = None
             self.active_service = None
         else:
             active_service_name = package.split('.')[-1]
+            KctlLogger.init()
 
-        if self.args.debug:
+        if self.debug:
             print(f'Initializing {self}.Services')
 
         # init services with reference to pipeline
         self.Services = self.Services([active_service_name], self)
 
-        if package is not None:
-            self.active_service = getattr(self.Services, active_service_name)
-            KctlLogger.init()
-
         # set stub with refs to each other
-        for Service in self.Services:
-            for Stub in Service.Stubs:
-                Stub.set_out_stub()
+        for service in self.Services:
+            for stub in service.Stubs:
+                stub.set_out_stub()
 
 
 class Connection(ReprClassName):
@@ -132,10 +142,12 @@ class Service(ReprClassName):
         pass
 
     def __init__(self, _pipe):
-        if _pipe.args.debug:
+        self._pipe = _pipe
+        self._debug = _pipe.debug
+
+        if self._debug:
             print(f'Initializing "{self}" service...')
 
-        self._pipe = _pipe
         active_stub_names = self.Stubs.__names__ if self.__active__ else []
 
         # init stubs with reference to pipeline and service
@@ -150,12 +162,15 @@ class Service(ReprClassName):
 
 class Stub(ReprClassName):
     __active__ = False
-    _out_stub = None
-    _OutStub = None
-    _in_proto = None
-    _InProto = None
-    _out_proto = None
-    _OutProto = None
+
+    in_proto = None
+    out_proto = None
+    InProto = None
+    OutProto = None
+
+    out_stub = None
+    OutStub = None
+
     _should_send = False
 
     _consumer = None
@@ -165,12 +180,13 @@ class Stub(ReprClassName):
     _cthread = None
 
     def __init__(self, _service):
-
-        self._pipe = _service._pipe
         self._service = _service
-        self.queue = repr(self._service) + '.' + repr(self)
+        self._pipe = _service._pipe
+        self._debug = self._pipe.debug
+        self._queue = repr(self._service) + '.' + repr(self)
+        tag_proto(self.OutProto)
 
-        if self._pipe.args.debug:
+        if self._debug:
             print(f'Initializing "{self}" stub...')
 
     def __call__(self, func):
@@ -196,22 +212,22 @@ class Stub(ReprClassName):
 
     def raise_wrong_msg_type(self, incorrect_type):
         msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
-               f'but {repr(self._OutStub)} expects "{self._OutStub._in_proto}" message')
+               f'but {repr(self.OutStub)} expects "{self.OutStub.OutProto.cls}" message')
         raise self.WrongMessageTypeError(msg)
 
     def raise_stub_not_found(self):
-        msg = f'{repr(self)} could not find "{self._out_stub}" stub to send to'
+        msg = f'{repr(self)} could not find "{self.out_stub}" stub to send to'
         raise self.StubNotFoundError(msg)
 
     def raise_not_active(self):
         # if the parent service is not active then crash
         msg = (f'Cannot use stubs from "{self._service}"'
-               f'service in "{self._pipe.active}" service')
+               f'service in "{self._pipe.Services.getactive()}" service')
         raise self.NotInActiveServiceError(msg)
 
     def raise_no_return(self):
         msg = (f'"{self}" stub did not return anything,'
-               f'but it should be sending to "{self._out_stub}" stub')
+               f'but it should be sending to "{self.OutStub}" stub')
         raise self.NoReturnError(msg)
 
     def raise_should_not_return(self):
@@ -219,35 +235,36 @@ class Stub(ReprClassName):
         raise self.ShouldNotReturnError(msg)
 
     def set_out_stub(self):
-        if self._out_stub is not None:
+        if self.out_stub is not None:
 
-            for Service in self._pipe.Services:
-                for Stub in Service.Stubs:
-                    if repr(Stub) == self._out_stub:
-                        self._OutStub = Stub
+            for service in self._pipe.Services:
+                for stub in service.Stubs:
+                    if repr(stub) == self.out_stub:
+                        self.OutStub = stub
 
             self._should_send = True
 
-            if self._OutStub is None:
+            if self.OutStub is None:
                 self.raise_stub_not_found()
 
-            if self._out_proto != self._OutStub._in_proto:
+            if self._out_proto != self.OutStub._in_proto:
                 self.raise_wrong_msg_type(self._out_proto)
 
     def process(self, proto, method=None):
-        debug = self._pipe.args.debug
-        if debug:
-            print(f'"{self}" stub processing "{proto.__class__.__name__}"...')
+        tag_proto(proto)
+
+        if self._debug:
+            print(f'"{self}" stub processing "{proto.cls}"...')
 
         returned = self.func(proto)
+        tag_proto(proto)
 
-        if debug:
-            print(f'"{self.func.__name__}" returned "{returned.__class__.__name__}"...')
+        if self._debug:
+            print(f'"{self.func.__name__}" returned "{returned.cls}"...')
 
         if self._should_send:
             if returned is None:
                 self.raise_no_return()
-
             else:
                 self.send(returned)
 
@@ -256,24 +273,22 @@ class Stub(ReprClassName):
                 self.raise_should_not_return()
         if method is not None:
             tag = method.delivery_tag
-            if debug:
+            if self._debug:
                 print(f'"{self}" stub sending ack callback: {tag}')
+
             self._consumer.ack_callback(tag)
 
     def send(self, proto):
 
-        if self._pipe.args.debug:
+        if self._pipe.debug:
             not_ = '' if self.__active__ else 'not '
             print(f'"{self}" is {not_}active...')
 
         if self.__active__:
             self._publisher.publish(proto)
-
-        # if the stub is not in the current service then send to it
         else:
-            # if stub is not active then find a random
-            stub = self._pipe.active_service.Stubs.randomactive()
-            stub.send(proto)
+            # get active service then send from random active stub
+            self._pipe.Services.getactive().Stubs.randomactive().send(proto)
 
     def run(self):
         self._consumer = Consumer(self)
@@ -309,9 +324,10 @@ class Connector(ReprClassName):
         self._service = _stub._service
         self._stub = _stub
         self._connect()
+        import pdb; pdb.set_trace()
 
     def _connect(self):
-        conn = self._pipe.active_connection
+        conn = self._pipe.Connections.getactive()
         credentials = pika.credentials.PlainCredentials(repr(self._service), conn.password)
         print(credentials)
         params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
@@ -333,18 +349,18 @@ class Publisher(Connector):
         pass
 
     def publish(self, proto):
-        debug = self._pipe.args.debug
+        # tag outgoing protos with their class names
+        proto.cls = proto.__class__.__name__
 
         # check proto type against expected type
-        proto_cls = proto.__class__.__name__
-        if self._stub._OutStub._in_proto != proto_cls:
-            self._stub.raise_wrong_msg_type(proto_cls)
+        if self._stub._OutStub._in_proto != proto.cls:
+            self._stub.raise_wrong_msg_type(proto.cls)
 
         body = proto.SerializeToString()
 
         _out_queue = self._stub._OutStub.queue
 
-        if debug:
+        if self._debug:
             print(f'"{self._stub}" stub publishing "{proto_cls}" to {_out_queue}...')
 
         self._channel.basic_publish(
