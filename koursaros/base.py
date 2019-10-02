@@ -39,6 +39,7 @@ class ActivatingContainer:
             setattr(cls, '__active__', __active__)
 
             instance = cls(*args, **kwargs)
+            import pdb; pdb.set_trace()
             setattr(self, cls_name, instance)
 
             if __active__:
