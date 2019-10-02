@@ -332,6 +332,8 @@ class Publisher(Connector):
         pass
 
     def publish(self, proto):
+        debug = self._pipe.args.debug:
+
         # check proto type against expected type
         proto_cls = proto.__class__.__name__
         if self._stub._OutStub._in_proto != proto_cls:
@@ -339,7 +341,7 @@ class Publisher(Connector):
 
         body = proto.SerializeToString()
 
-        if self._pipe.args.debug:
+        if debug:
             print(f'"{self}" stub publishing "{proto_cls}" to {self._stub._out_stub}...')
 
         self._channel.basic_publish(
@@ -348,6 +350,10 @@ class Publisher(Connector):
             body=body,
             properties=PROPS
         )
+
+        if debug:
+            print(f'"{self}" stub published "{proto_cls}"')
+
 
     def publish_callback(self, proto):
         if self._pipe.args.debug:
