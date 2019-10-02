@@ -326,8 +326,9 @@ class Stub(ReprClassName):
         if self._pipe.args.debug:
             print(f'Received "{proto.__class__.__name__}" message on {channel}...')
 
-        process_thread = Thread(target=self.process, args=(proto, method))
-        process_thread.run()
+        self.process(proto, method)
+        # process_thread = Thread(target=self.process, args=(proto, method))
+        # process_thread.run()
 
     def run(self):
         t = Thread(target=self.consume)
