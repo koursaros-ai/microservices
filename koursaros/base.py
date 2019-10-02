@@ -274,7 +274,7 @@ class Stub(ReprClassName):
         body = proto.SerializeToString()
 
         if self._pipe.args.debug:
-            print(f'Publishing {proto_cls} to {self._out_stub}...')
+            print(f'Publishing "{proto_cls}" to {self._out_stub}...')
 
         self.channel.basic_publish(
             exchange=EXCHANGE,
@@ -285,7 +285,7 @@ class Stub(ReprClassName):
 
     def publish_callback(self, proto):
         if self._pipe.args.debug:
-            print(f'Adding threadsafe publish callback for {proto.__class__.__name__}')
+            print(f'Adding threadsafe publish callback for "{proto.__class__.__name__}"')
 
         cb = functools.partial(self.publish, proto)
         self.connection.add_callback_threadsafe(cb)
