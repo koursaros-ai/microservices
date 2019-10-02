@@ -253,11 +253,11 @@ class Stub:
 
     def consume(self):
         conn = self._pipe.connections.randomactive()
+        service_cls = self._service.__class__.__name__
+        pipe_cls = self._pipe.__class__.__name__
 
-        credentials = pika.credentials.PlainCredentials(
-            self._service.__name__, conn.password)
-        params = pika.ConnectionParameters(
-            conn.host, conn.port, self._pipe.__name__, credentials)
+        credentials = pika.credentials.PlainCredentials(service_cls, conn.password)
+        params = pika.ConnectionParameters(conn.host, conn.port, pipe_cls, credentials)
 
         while True:
             try:
@@ -269,7 +269,7 @@ class Stub:
                 time.sleep(RECONNECT_DELAY)
 
         self.channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        queue = self._service.__name__ + '.' + self.__name__
+        queue = service_cls + '.' + self.__class__.__name__
         cb = functools.partial(self.consume_callback)
         self.channel.basic_consume(queue=queue, on_message_callback=cb)
         print(f'Listening on {queue}...')
