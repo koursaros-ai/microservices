@@ -212,6 +212,7 @@ class Stub(ReprClassName):
         if self._out_stub is not None:
             for Service in self._pipe.Services:
                 for Stub in Service.Stubs:
+                    print(repr(Stub), repr(self._out_stub))
                     if repr(Stub) == repr(self._out_stub):
                         self._OutStub = Stub
 
