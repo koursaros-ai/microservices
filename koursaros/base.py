@@ -148,7 +148,7 @@ class Stub:
     _should_send = False
     connection = None
     channel = None
-    run_threads = None
+    run_threads = []
     process_thread = None
 
     def __init__(self, _pipe, _service):
@@ -296,3 +296,4 @@ class Stub:
         for t in self.run_threads:
             print(f'Waiting for stub "{self.__class__.__name__}" to finish {t.getName()}')
             t.join()
+            self.run_threads.clear()
