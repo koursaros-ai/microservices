@@ -290,8 +290,9 @@ class Stub(ReprClassName):
         if self._pipe.args.debug:
             print(f'Adding threadsafe publish callback for "{proto.__class__.__name__}"')
 
-        cb = functools.partial(self.publish, proto)
-        self.connection.add_callback_threadsafe(cb)
+        # cb = functools.partial(self.publish, proto)
+        # self.connection.add_callback_threadsafe(cb)
+        self.publish(proto)
 
     def consume(self):
         conn = self._pipe.active_connection
@@ -326,9 +327,9 @@ class Stub(ReprClassName):
         if self._pipe.args.debug:
             print(f'Received "{proto.__class__.__name__}" message on {channel}...')
 
-        self.process(proto, method)
-        # process_thread = Thread(target=self.process, args=(proto, method))
-        # process_thread.run()
+
+        process_thread = Thread(target=self.process, args=(proto, method))
+        process_thread.run()
 
     def run(self):
         t = Thread(target=self.consume)
