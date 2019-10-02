@@ -281,6 +281,9 @@ class Stub(ReprClassName):
     def _ioloop(self):
         while True:
             proto, out = self._queue.get()
+            if self._pipe.args.debug:
+                method = 'Sending' if out else 'Received'
+                print(f'{method} proto {proto.__class__.__name__}...')
             if out:
                 self._publisher._queue.put(proto)
             else:
