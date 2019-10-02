@@ -233,7 +233,7 @@ class Stub(ReprClassName):
     def process(self, proto, method=None):
         debug = self._pipe.args.debug
         if debug:
-            print(f'Processing "{proto.__class__.__name__}"...')
+            print(f'"{self}" stub processing "{proto.__class__.__name__}"...')
 
         returned = self.func(proto)
 
@@ -251,13 +251,13 @@ class Stub(ReprClassName):
             tag = method.delivery_tag
             self.ack_callback(tag)
             if debug:
-                print(f'Sending ack callback: {tag}')
+                print(f'"{self}" stub sending ack callback: {tag}')
 
     def send(self, proto):
 
         if self._pipe.args.debug:
             not_ = 'not' if self.__active__ else ''
-            print(f'{self} if {not_} active...')
+            print(f'"{self}" is {not_} active...')
 
         if self.__active__:
             self.publish_callback(proto)
@@ -277,7 +277,7 @@ class Stub(ReprClassName):
         body = proto.SerializeToString()
 
         if self._pipe.args.debug:
-            print(f'Publishing "{proto_cls}" to {self._out_stub}...')
+            print(f'"{self}" stub publishing "{proto_cls}" to {self._out_stub}...')
 
         self.channel.basic_publish(
             exchange=EXCHANGE,
@@ -288,7 +288,7 @@ class Stub(ReprClassName):
 
     def publish_callback(self, proto):
         if self._pipe.args.debug:
-            print(f'Adding threadsafe publish callback for "{proto.__class__.__name__}"')
+            print(f'"{self}" adding threadsafe publish callback for "{proto.__class__.__name__}"')
 
         cb = functools.partial(self.publish, proto)
         self.connection.add_callback_threadsafe(cb)
@@ -324,7 +324,7 @@ class Stub(ReprClassName):
         proto.ParseFromString(body)
 
         if self._pipe.args.debug:
-            print(f'Received "{proto.__class__.__name__}" message on {channel}...')
+            print(f'"{self}" stub received "{proto.__class__.__name__}" message on {channel}...')
 
         process_thread = Thread(target=self.process, args=(proto, method))
         process_thread.run()
