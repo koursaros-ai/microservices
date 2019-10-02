@@ -139,7 +139,7 @@ class Service(ReprClassName):
         active_stub_names = self.Stubs.__names__ if self.__active__ else []
 
         # init stubs with reference to pipeline and service
-        self.Stubs = self.Stubs(active_stub_names, _pipe, self)
+        self.Stubs = self.Stubs(active_stub_names, self)
 
     def run(self):
         for Stub in self.Stubs:
