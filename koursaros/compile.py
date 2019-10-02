@@ -5,7 +5,7 @@ import yaml as pyyaml
 import os
 
 INVALID_PREFIXES = ('_', '.')
-IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import Pipeline']
+IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import *']
 PROTECTED = ['from']
 
 
@@ -64,9 +64,8 @@ def compile_pipeline(pipe_path, save_path):
     pipeline = dict()
     name = pipe_path.split('/')[-2]
     print(f'Compiling pipeline "{name}"...')
-    pipeline['name'] = name
-    pipeline['connections'] = compile_connections(pipe_path)
-    pipeline['services'] = compile_services(pipe_path)
+    pipeline['Connections'] = compile_connections(pipe_path)
+    pipeline['Services'] = compile_services(pipe_path)
 
     pipeline = CompiledClass(name, pipeline, parent='Pipeline')
 
@@ -105,7 +104,7 @@ def compile_connections(path):
         connections[name] = compile_connection(name, configs)
         connections['__names__'].append(name)
 
-    return CompiledClass('connections', connections, parent='Pipeline.connections')
+    return CompiledClass('Connections', connections, parent='ActivatingContainer')
 
 
 def compile_connection(name, configs):
@@ -113,7 +112,7 @@ def compile_connection(name, configs):
     for key, value in configs.items():
         connection[key] = value
 
-    return CompiledClass(name, connection, parent='Pipeline.Connection')
+    return CompiledClass(name, connection, parent='Connection')
 
 
 def compile_services(path):
@@ -140,13 +139,12 @@ def compile_services(path):
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
 
-    return CompiledClass('services', services, parent='Pipeline.services')
+    return CompiledClass('Services', services, parent='ActivatingContainer')
 
 
 def compile_service(service_path, name, stubs):
     service = dict()
     service['stubs'] = compile_stubs(stubs)
-    service['name'] = name
 
     path = service_path
     yaml = pyyaml.safe_load(open(path + '/service.yaml'))
@@ -154,7 +152,7 @@ def compile_service(service_path, name, stubs):
     for key, value in yaml['service'].items():
         service[key] = value
 
-    return CompiledClass(name, service, parent='Pipeline.Service')
+    return CompiledClass(name, service, parent='Service')
 
 
 def compile_stubs(stubs):
@@ -163,7 +161,7 @@ def compile_stubs(stubs):
         names.append(stub_name)
     stubs['__names__'] = names
 
-    return CompiledClass('stubs', stubs, parent='Pipeline.Service.stubs')
+    return CompiledClass('Stubs', stubs, parent='ActivatingContainer')
 
 
 def compile_stub(name, string):
@@ -177,4 +175,4 @@ def compile_stub(name, string):
         vars()[proto_out] = CompiledClass.PlainString('messages_pb2.' + proto_out)
         proto_out = vars()[proto_out]
 
-    return service, CompiledClass(name, vars(), parent='Pipeline.Service.Stub')
+    return service, CompiledClass(name, vars(), parent='Stub')
