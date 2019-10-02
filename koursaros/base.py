@@ -284,9 +284,11 @@ class Stub(ReprClassName):
 
     def _init_publisher(self):
         self._publisher = Publisher(self)
+        self._publisher.run()
 
     def _init_consumer(self):
         self._consumer = Consumer(self)
+        self._consumer.run()
 
     def _ioloop(self):
         while True:
@@ -312,15 +314,16 @@ class Connector:
     _channel = None
     _closing = False
     _url = None
-    _queue = Queue()
 
     def __init__(self, _stub):
-        """Run the consumer by connecting to RabbitMQ and then
-        starting the IOLoop to block and allow the SelectConnection to operate.
-        """
         self._stub = _stub
         conn = _stub._pipe.active_connection
         self._url = f'amqp://{conn.username}:{conn.password}@{conn.host}:{conn.port}/{self._stub._pipe}'
+
+    def run(self):
+        """Run the example consumer by connecting to RabbitMQ and then
+        starting the IOLoop to block and allow the SelectConnection to operate.
+        """
         self._connection = self.connect()
         self._connection.ioloop.start()
 
@@ -571,6 +574,30 @@ class Publisher(Connector):
     _message_number = 0
     _acked = 0
     _nacked = 0
+    _queue = Queue()
+    _stopping = False
+
+    def run(self):
+        """Run the example code by connecting and then starting the IOLoop.
+        """
+        while not self._stopping:
+            self._connection = None
+            self._deliveries = []
+            self._acked = 0
+            self._nacked = 0
+            self._message_number = 0
+
+            try:
+                self._connection = self.connect()
+                self._connection.ioloop.start()
+            except KeyboardInterrupt:
+                self.stop()
+                if (self._connection is not None and
+                        not self._connection.is_closed):
+                    # Finish closing
+                    self._connection.ioloop.start()
+
+        print('Stopped')
 
     def publish_message(self):
         """If the class is not stopping, publish a message to RabbitMQ,
@@ -614,7 +641,6 @@ class Publisher(Connector):
         self._deliveries.append(self._message_number)
         if debug:
             print('Published message # %i', self._message_number)
-        self.schedule_next_message()
 
     def start_publishing(self):
         """This method will enable delivery confirmations and schedule the
