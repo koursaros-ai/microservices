@@ -112,7 +112,7 @@ class Pipeline(ReprClassName):
         # import pdb; pdb.set_trace()
         for Service in self.Services:
             for Stub in Service.Stubs:
-            #     Stub.set_out_stub()
+                Stub.set_out_stub()
 
                 print('AAAAAAA', Stub, dir(Stub), Stub._out_stub)
             print('BBBB', Service, dir(Service), Service.Stubs)
