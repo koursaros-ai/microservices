@@ -332,7 +332,7 @@ class Publisher(Connector):
         pass
 
     def publish(self, proto):
-        debug = self._pipe.args.debug:
+        debug = self._pipe.args.debug
 
         # check proto type against expected type
         proto_cls = proto.__class__.__name__
