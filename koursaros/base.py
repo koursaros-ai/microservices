@@ -267,7 +267,7 @@ class Stub(ReprClassName):
             print(f'"{self}" is {not_}active...')
 
         if self.__active__:
-            self._publisher.publish_callback(proto)
+            self._publisher.publish(proto)
 
         # if the stub is not in the current service then send to it
         else:
@@ -356,15 +356,6 @@ class Publisher(Connector):
 
         if debug:
             print(f'"{self._stub}" stub published "{proto_cls}"')
-
-
-    def publish_callback(self, proto):
-        if self._pipe.args.debug:
-            print(f'"{self}" stub publishing "{proto.__class__.__name__}"'
-                  f'to "{self._stub._OutStub.queue}"')
-
-        cb = functools.partial(self.publish, proto)
-        self._connection.add_callback_threadsafe(cb)
 
 
 class Consumer(Connector):
