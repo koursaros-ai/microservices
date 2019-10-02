@@ -199,6 +199,8 @@ class Stub(ReprClassName):
 
     def set_out_stub(self):
         if self._out_stub is not None:
+            print(self._pipe.Services)
+            print(dir(self._pipe.Services))
             for service in self._pipe.Services:
                 for stub in service.Stubs:
                     if repr(stub) == repr(self._out_stub):
