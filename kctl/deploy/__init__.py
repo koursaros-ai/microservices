@@ -17,7 +17,7 @@ def deploy_pipeline(pipe_path, args):
     pipeline = pipeline(None)
 
     try:
-        for service in pipeline.services:
+        for service in pipeline.Services:
             service_cls = service.__class__.__name__
             cmd = [sys.executable, '-m', f'{app_name}.services.{service_cls}'] + sys.argv[1:]
             print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
