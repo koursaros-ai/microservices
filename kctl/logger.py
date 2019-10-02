@@ -42,13 +42,14 @@ class KctlLogger:
     def format_line(cls, record, err=False):
         write = cls.stderr_write if err else cls.stdout_write
 
-        name = stack()[2].frame.f_globals.get('__name__', '')
         if err:
-            label = cls.label.format(BOLD, name, RED, 'STDERR:', RESET, '')
+            label = cls.label.format(BOLD, '', RED, 'STDERR:', RESET, '')
 
         else:
-            func = stack()[2].function
-            lineno = stack()[2].lineno
+            s2 = stack()[2]
+            func = s2.function
+            lineno = s2.lineno
+            name = s2.frame.f_globals.get('__name__', '')
             label = cls.label.format(BOLD, name, GREEN, 'STDOUT:', RESET, func + f'({lineno}):')
 
         line = cls.timestamp() + label
