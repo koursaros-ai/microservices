@@ -109,6 +109,11 @@ class Pipeline(ReprClassName):
             self.active_service = getattr(self.Services, active_service_name)
             KctlLogger.init(active_connection_name + '.' + active_service_name)
 
+        # set stub with refs to each other
+        for service in self.Services:
+            for stub in service.Stubs:
+                stub.set_out_stub()
+
 
 class Connection(ReprClassName):
     pass
@@ -131,10 +136,6 @@ class Service(ReprClassName):
 
         # init stubs with reference to pipeline and service
         self.Stubs = self.Stubs(active_stub_names, _pipe, self)
-
-        # set stub with refs to each other
-        for stub in self.Stubs:
-            stub.set_out_stub()
 
     def run(self):
         for stub in self.Stubs:
@@ -199,8 +200,6 @@ class Stub(ReprClassName):
 
     def set_out_stub(self):
         if self._out_stub is not None:
-            print(self._pipe.Services)
-            print(dir(self._pipe.Services))
             for service in self._pipe.Services:
                 for stub in service.Stubs:
                     if repr(stub) == repr(self._out_stub):
