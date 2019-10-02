@@ -46,7 +46,7 @@ class KctlLogger:
             label = cls.label.format(BOLD, '', RED, 'STDERR:', RESET, '')
 
         else:
-            func = stack()[0].function
+            func = stack()[1].function
             spec = getattr(__spec__, 'name', '')
             label = cls.label.format(BOLD, spec, GREEN, 'STDERR:', RESET, func + '():')
 
