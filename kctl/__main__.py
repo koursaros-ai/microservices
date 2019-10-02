@@ -4,6 +4,6 @@ from kctl.logger import KctlLogger
 
 
 def main():
-    KctlLogger.init('kctl')
+    KctlLogger.init()
     args = get_args()
     args.func(args)

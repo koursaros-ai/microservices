@@ -109,7 +109,7 @@ class Pipeline(ReprClassName):
 
         if package is not None:
             self.active_service = getattr(self.Services, active_service_name)
-            KctlLogger.init(active_connection_name + '.' + active_service_name)
+            KctlLogger.init()
 
         # set stub with refs to each other
         for Service in self.Services:
