@@ -233,7 +233,7 @@ class Stub(ReprClassName):
     def process(self, proto, method=None):
         debug = self._pipe.args.debug
         if debug:
-            print(f'Processing {proto.__class__.__name__}...')
+            print(f'Processing "{proto.__class__.__name__}"...')
 
         returned = self.func(proto)
 

@@ -46,7 +46,7 @@ class KctlLogger:
         if err:
             label = f' {BOLD}{RED}STDERR:{RESET} '
         else:
-            s2 = stack()[2]
+            s2 = stack()[3]
             func = s2.function
             lineno = s2.lineno
             name = s2.frame.f_globals.get('__package__', '')
