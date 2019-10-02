@@ -34,7 +34,7 @@ class ActivatingContainer:
 
     def __init__(self, active_names, *args, **kwargs):
         for cls in list(self):
-            cls_name = cls.__class__.__name__
+            cls_name = cls.__name__
             __active__ = True if cls_name in active_names else False
             setattr(cls, '__active__', __active__)
 
