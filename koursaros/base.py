@@ -334,6 +334,8 @@ class Publisher(Connector):
 
     def publish(self, proto):
         debug = self._pipe.args.debug
+        import pdb;
+        pdb.set_trace()
 
         # check proto type against expected type
         proto_cls = proto.__class__.__name__
