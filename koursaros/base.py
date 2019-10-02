@@ -333,6 +333,7 @@ class Publisher(Connector):
 
     def publish(self, proto):
         debug = self._pipe.args.debug
+        queue = repr(self._service) + '.' + repr(self._stub)
 
         # check proto type against expected type
         proto_cls = proto.__class__.__name__
@@ -342,11 +343,11 @@ class Publisher(Connector):
         body = proto.SerializeToString()
 
         if debug:
-            print(f'"{self._stub}" stub publishing "{proto_cls}" to {self._stub._out_stub}...')
+            print(f'"{self._stub}" stub publishing "{proto_cls}" to {queue}...')
 
         self._channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=repr(self._stub._out_stub),
+            routing_key=queue,
             body=body,
             properties=PROPS
         )
@@ -357,7 +358,8 @@ class Publisher(Connector):
 
     def publish_callback(self, proto):
         if self._pipe.args.debug:
-            print(f'"{self}" stub publishing "{proto.__class__.__name__}" to "{self._stub._out_stub}"')
+            print(f'"{self}" stub publishing "{proto.__class__.__name__}"'
+                  f'to "{self._stub._out_stub}"')
 
         self.publish(proto)
         # cb = functools.partial(self.publish, proto)
