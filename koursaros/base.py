@@ -342,7 +342,7 @@ class Publisher(Connector):
         body = proto.SerializeToString()
 
         if debug:
-            print(f'"{self}" stub publishing "{proto_cls}" to {self._stub._out_stub}...')
+            print(f'"{self._stub}" stub publishing "{proto_cls}" to {self._stub._out_stub}...')
 
         self._channel.basic_publish(
             exchange=EXCHANGE,
@@ -352,12 +352,12 @@ class Publisher(Connector):
         )
 
         if debug:
-            print(f'"{self}" stub published "{proto_cls}"')
+            print(f'"{self._stub}" stub published "{proto_cls}"')
 
 
     def publish_callback(self, proto):
         if self._pipe.args.debug:
-            print(f'"{self}" stub adding threadsafe publish callback for "{proto.__class__.__name__}"')
+            print(f'"{self}" stub publishing "{proto.__class__.__name__}" to "{self._stub._out_stub}"')
 
         self.publish(proto)
         # cb = functools.partial(self.publish, proto)
