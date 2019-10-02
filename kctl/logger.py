@@ -17,7 +17,7 @@ RESET = '\033[0m'
 class KctlLogger:
     stdout_write = stdout.write
     stderr_write = stderr.write
-    label = '{}[{}] {}{} {}'
+    label = '{} [{}] {} {} {} {}'
     newline = True
 
     @classmethod
@@ -28,7 +28,7 @@ class KctlLogger:
 
     @staticmethod
     def timestamp():
-        return strftime("%Y-%m-%d %H:%M:%S ")
+        return strftime("%Y-%m-%d %H:%M:%S")
 
     @staticmethod
     def stdout_wrap(record=''):
@@ -43,12 +43,12 @@ class KctlLogger:
         write = cls.stderr_write if err else cls.stdout_write
 
         if err:
-            label = cls.label.format(BOLD, '', RED, 'STDERR: ', RESET, '')
+            label = cls.label.format(BOLD, '', RED, 'STDERR:', RESET, '')
 
         else:
             func = stack()[0].function
             spec = getattr(__spec__, 'name', '')
-            label = cls.label.format(BOLD, spec, GREEN, 'STDERR: ', RESET, func + '():')
+            label = cls.label.format(BOLD, spec, GREEN, 'STDERR:', RESET, func + '():')
 
         line = cls.timestamp() + label
 
