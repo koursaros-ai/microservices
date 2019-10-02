@@ -49,6 +49,7 @@ class KctlLogger:
             s2 = stack()[3]
             func = s2.function
             lineno = s2.lineno
+            import pdb; pdb.set_trace()
             name = s2.frame.f_globals.get('__module__', '')
             label = f' {BOLD}[{name}.{func}({lineno})] {GREEN}STDOUT:{RESET} '
 
