@@ -114,6 +114,7 @@ class Pipeline(ReprClassName):
         # set stub with refs to each other
         for Service in self.Services:
             for Stub in Service.Stubs:
+                import pdb; pdb.set_trace()
                 Stub.set_out_stub()
 
 
@@ -142,9 +143,7 @@ class Service(ReprClassName):
     def run(self):
         for Stub in self.Stubs:
             Stub.run()
-            print('asdfjaosjfd: ', Stub)
         for Stub in self.Stubs:
-            print('asdfjaosjfd: ', Stub)
             Stub.join()
 
 
