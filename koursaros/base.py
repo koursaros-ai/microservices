@@ -1,41 +1,75 @@
-
+from kctl.logger import KctlLogger
+from kctl.cli import get_args
+from threading import Thread
+from inspect import isclass
+from random import randint
+from inspect import stack
+import functools
 import pika
 import time
-import functools
-from threading import Thread
-from random import randint
-from kctl.cli import get_args
-from inspect import isclass
 
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 
 
-class StubError(Exception):
-    pass
+class ActivatingContainer:
+    """Class that holds a number of other classes.
+    Class names are designated in __names__
 
+    When initialized, the container sets
+    __active__ (boolean) to each subclass depending on whether
+    the class is in active_names then initializes them
+    with *args and **kwargs.
 
-class IterableAttributesClass:
-    """Class that iterates over internal "names" attribute
-    and returns respective attribute
+    Also sets the container __active__ to true if any
+    children are active...
+
+    Also stores a reference to each active subclass.
     """
+
     __names__ = []
+    __active__ = False
+    __activerefs__ = []
+
+    def __init__(self, active_names, *args, **kwargs):
+        for cls in list(self):
+            cls_name = cls.__class__.__name__
+            __active__ = True if cls_name in active_names else False
+            setattr(cls, '__active__', __active__)
+
+            instance = cls(*args, **kwargs)
+            setattr(self, cls_name, instance)
+
+            if __active__:
+                self.__active__ = True
+                self.__activerefs__.append(instance)
 
     def __iter__(self):
-        self.iter = iter(self.__names__)
+        attrs = []
+
+        for name in self.__names__:
+            attrs.append(getattr(self, name))
+
+        self.iter = iter(attrs)
         return self
 
     def __next__(self):
-        name = next(self.iter)
-        return getattr(self, name)
+        return next(self.iter)
+
+    def __len__(self):
+        return len(self.__names__)
+
+    def randomactive(self):
+        rand_int = randint(0, len(self.__activerefs__) - 1)
+        return self.__activerefs__[rand_int]
 
 
 class Pipeline:
     """The pipeline object holds services (.services), connection
     parameters (.connections), and command line arguments (.args)
 
-    :param file: __file__ parameter
+    :param package: __package__ parameter
     :param prefetch: (from pika) Specifies a prefetch window in terms of whole
         messages. This field may be used in combination with the
         prefetch-size field; a message will only be sent in advance
@@ -43,26 +77,28 @@ class Pipeline:
         level) allow it. The prefetch-count is ignored by consumers
         who have enabled the no-ack option.
     """
-    class Services(IterableAttributesClass):
-        def __init__(self, _pipe_ref):
-            # hand pipeline reference to each service
-            for service in self:
-                service(_pipe_ref)
 
-    class Connections(IterableAttributesClass):
-        def __init__(self):
-            # hand pipeline reference to each service
-            for connection in self:
-                connection()
+    class _Connections(ActivatingContainer):
+        pass
 
-    def __init__(self, file, prefetch=1):
+    class _Services(ActivatingContainer):
+        pass
+
+    def __init__(self, package, prefetch=1):
         # predicts the active service from file path
-        self.active_service = file.split('/')[-2]
-        self.args = get_args(self.active_service)
+        self.args = get_args()
         self.prefetch = prefetch
 
+        active_service_name = package.split('.')[-1]
+        active_connection_name = self.args.connection
+
         # init services with reference to pipeline
-        self.Services(self)
+        self.services = self._Services([active_service_name], self, active_service_name)
+        self.connections = self._Connections([active_connection_name])
+        KctlLogger.init(active_service_name + '.' + active_connection_name)
+
+        self.active_service = getattr(self.services, active_service_name)
+        self.active_connection = getattr(self.services, active_service_name)
 
 
 class Connection:
@@ -70,70 +106,152 @@ class Connection:
 
 
 class Service:
-    class Stubs(IterableAttributesClass):
-        def __init__(self, _pipe_ref, _service_ref):
-            for stub in self:
-                stub(_pipe_ref, _service_ref)
+    """The pipeline object holds stubs (.stubs)
 
-    def __init__(self, _pipe_ref):
-        self._pipe_ref = _pipe_ref
-        # hand pipeline and service reference to each stub
-        self.Stubs(_pipe_ref, self)
+    :param _pipe: Pipeline object reference
+    """
+    __active__ = False
+
+    class _Stubs(ActivatingContainer):
+        pass
+
+    def __init__(self, _pipe):
+
+        self._pipe = _pipe
+        active_stub_names = self._Stubs.__names__ if self.__active__ else []
+
+        # init stubs with reference to pipeline and service
+        self.stubs = self._Stubs(active_stub_names, _pipe, self)
+
+        # set stub with refs to each other
+        for stub in self.stubs:
+            stub.set_out_stub()
 
     def run(self):
-        for stub in self.Stubs:
-            stub_thread = Thread(target=stub.run)
+        for stub in self.stubs:
+            stub.run()
+        for stub in self.stubs:
+            stub.join()
 
 
 class Stub:
-    def __init__(self, item):
-        if callable(item):
-            self.func = item
-            setattr(self.service.stubs, self.name, self)
+    __active__ = False
+    _out_stub = None
+    _InProto = None
+    _OutProto = None
+    _should_send = False
+    connection = None
+    channel = None
+    run_threads = None
+    process_thread = None
+
+    def __init__(self, _pipe, _service):
+        self._name = self.__class__.__name__
+        self._pipe = _pipe
+        self._service = _service
+
+    def __call__(self, func):
+        if not self.__active__:
+            self.raise_not_active()
+
+        self.func = func
+
+    class NotInActiveServiceError(Exception):
+        pass
+
+    class NoReturnError(Exception):
+        pass
+
+    class ShouldNotReturnError(Exception):
+        pass
+
+    class WrongProtoTypeError(Exception):
+        pass
+
+    def raise_invalid_proto_out(self, correct_type, incorrect_type):
+        msg = (f'Attemped to send "{correct_type}" to "{self._out_stub.__name__}"'
+               f'... which expects "{incorrect_type}" message')
+        raise self.WrongProtoTypeError(msg)
+
+    def raise_not_active(self):
+        # if the parent service is not active then crash
+        msg = (f'Cannot use stubs from "{self._service.__name__}"'
+               f'service in "{self._pipe.active}" service')
+        raise self.NotInActiveServiceError(msg)
+
+    def raise_no_return(self):
+        msg = (f'"{self._name}" stub did not return anything,'
+               f'but it should be sending to "{self._out_stub.__name__}" stub')
+        raise self.NoReturnError(msg)
+
+    def raise_should_not_return(self):
+        msg = f'"{self._name}" stub should not return anything...'
+        raise self.ShouldNotReturnError(msg)
+
+    def set_out_stub(self):
+        if self._out_stub is not None:
+            for service in self._pipe.services:
+                for stub in service.stubs:
+                    if stub.__name__ == self._out_stub.__name__:
+                        self._out_stub = stub
+
+            self._should_send = True
+
+    def process(self, proto, method):
+        returned = self.func(proto)
+
+        if self._should_send:
+            if returned is None:
+                self.raise_no_return()
+
+            else:
+                self.send(returned)
+
         else:
-            self.func = None
-            setattr(self.service.stubs, self.name, self)
-            self.__call__(item)
+            if returned is not None:
+                self.raise_should_not_return()
 
-    def __call__(self, proto):
-        if self.func is None:
-            active = self.pipeline.active_service
-            stubs = getattr(self.pipeline.services, active).stubs
-            random_choice = randint(0, len(stubs.names) - 1)
-            stub = getattr(stubs, stubs.names[random_choice])
-            stub.publish_callback(proto, self)
+        self.ack_callback(method.delivery_tag)
+
+    def send(self, proto):
+        if self.__active__:
+            self.publish_callback(proto)
+
+        # if the stub is not in the current service then send to it
         else:
-            self.func(proto)
+            # if stub is not active then find a random
+            stub = self._pipe.active_service.stubs.randomactive()
+            stub.publish_callback(proto)
 
-    def publish(self, proto, stub_out):
-        type_in = stub_out.proto_in.__name__
-        type_out = proto.__class__.__name__
+    def check_proto_type(self, proto):
+        correct_proto_type = self._OutProto.__name__
+        checking_proto_type = proto.__class__.__name__
 
-        if type_in != type_out:
-            raise StubError(f'Attemped to send "{type_out}" to "{stub_out.name}"'
-                            f'... which expects "{type_in}" message')
+        if correct_proto_type != checking_proto_type:
+            self.raise_invalid_proto_out(correct_proto_type, checking_proto_type)
+
+    def publish(self, proto):
+        self.check_proto_type(proto)
         body = proto.SerializeToString()
+
         self.channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=stub_out.name,
+            routing_key=self._out_stub.__name__,
             body=body,
             properties=PROPS
         )
 
-    def publish_callback(self, proto, stub_out):
-        print(self.name)
-        print(proto)
-        cb = functools.partial(self.publish, proto, stub_out)
+    def publish_callback(self, proto):
+        cb = functools.partial(self.publish, proto)
         self.connection.add_callback_threadsafe(cb)
 
     def consume(self):
-
-        conn = getattr(self.pipeline.connections, self.pipeline.args.connection)
+        conn = self._pipe.connections.randomactive()
 
         credentials = pika.credentials.PlainCredentials(
-            self.service.name, conn.password)
+            self._service.__name__, conn.password)
         params = pika.ConnectionParameters(
-            conn.host, conn.port, self.pipeline.name, credentials)
+            conn.host, conn.port, self._pipe.__name__, credentials)
 
         while True:
             try:
@@ -144,8 +262,8 @@ class Stub:
                 print(f'Failed pika connection...\n{exc.args}')
                 time.sleep(RECONNECT_DELAY)
 
-        self.channel.basic_qos(prefetch_count=self.pipeline.prefetch)
-        queue = self.service.name + '.' + self.name
+        self.channel.basic_qos(prefetch_count=self._pipe.prefetch)
+        queue = self._service.__name__ + '.' + self.__name__
         cb = functools.partial(self.consume_callback)
         self.channel.basic_consume(queue=queue, on_message_callback=cb)
         print(f'Listening on {queue}...')
@@ -156,25 +274,19 @@ class Stub:
         self.connection.add_callback_threadsafe(cb)
 
     def consume_callback(self, channel, method, properties, body):
-        proto = self.proto_in()
+        proto = self._InProto()
         proto.ParseFromString(body)
 
-        t = Thread(target=self.func, args=(proto,))
-        t.start()
-        self.ack_callback(method.delivery_tag)
+        self.process_thread = Thread(target=self.process, args=(proto, method))
+        self.process_thread.run()
 
     def run(self):
-        threads = []
-        for name in self.Stubs:
-            stub = getattr(self.stubs, name)
-            if not isclass(stub):
-                t = Thread(target=stub.consume)
-                print(f'Starting stub "{stub.name}" ({t.getName()})')
-                t.start()
-                threads.append((t, stub.name))
-            else:
-                setattr(self.stubs, name, stub(self.Stub.func))
+        t = Thread(target=self.consume)
+        print(f'Running stub "{self.__name__}" {t.getName()}')
+        t.start()
+        self.run_threads.append(t)
 
-        for t, name in threads:
-            print(f'Waiting for stub "{name}" to finish ({t.getName()})')
+    def join(self):
+        for t in self.run_threads:
+            print(f'Waiting for stub "{self.__name__}" to finish {t.getName()}')
             t.join()

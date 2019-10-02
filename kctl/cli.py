@@ -4,7 +4,6 @@ from kctl.deploy.rabbitmq import bind_rabbitmq
 from koursaros.compile import compile_pipeline
 from koursaros.utils import find_pipe_path
 from shutil import rmtree, copytree
-from kctl.logger import KctlLogger
 import koursaros.compile
 from subprocess import call
 import importlib
@@ -154,8 +153,7 @@ def pull_pipeline(args):
         rmtree(CACHE_DIR)
 
 
-def get_args(name):
-    KctlLogger.init(name)
+def get_args():
 
     parser = argparse.ArgumentParser(**KCTL_KWARGS)
     parser.set_defaults(pipeline_name=PIPE_NAME)

@@ -100,10 +100,10 @@ def compile_connections(path):
     yaml = pyyaml.safe_load(open(path))
     connections['yaml'] = yaml
 
-    connections['names'] = []
+    connections['__names__'] = []
     for name, configs in yaml['connections'].items():
         connections[name] = compile_connection(name, configs)
-        connections['names'].append(name)
+        connections['__names__'].append(name)
 
     return CompiledClass('connections', connections, parent='Pipeline.connections')
 
@@ -132,10 +132,10 @@ def compile_services(path):
     path = find_pipe_path(path) + 'services/'
     services['path'] = path
 
-    services['names'] = []
+    services['__names__'] = []
     for name in next(os.walk(path))[1]:
         if not name.startswith(INVALID_PREFIXES):
-            services['names'].append(name)
+            services['__names__'].append(name)
 
             stubs = unserviced_stubs.pop(name)
             services[name] = compile_service(path + name, name, stubs)
@@ -161,7 +161,7 @@ def compile_stubs(stubs):
     names = []
     for stub_name in stubs.keys():
         names.append(stub_name)
-    stubs['names'] = names
+    stubs['__names__'] = names
 
     return CompiledClass('stubs', stubs, parent='Pipeline.Service.stubs')
 
