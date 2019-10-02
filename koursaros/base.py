@@ -320,13 +320,6 @@ class Connector:
         conn = _stub._pipe.active_connection
         self._url = f'amqp://{conn.username}:{conn.password}@{conn.host}:{conn.port}/{self._stub._pipe}'
 
-    def run(self):
-        """Run the example consumer by connecting to RabbitMQ and then
-        starting the IOLoop to block and allow the SelectConnection to operate.
-        """
-        self._connection = self.connect()
-        self._connection.ioloop.start()
-
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
         When the connection is established, the on_connection_open method
@@ -404,9 +397,9 @@ class Connector:
 
         self._channel = channel
         self.add_on_channel_close_callback()
-        self.start()
+        self.run()
 
-    def start(self):
+    def run(self):
         raise NotImplementedError
 
     def add_on_channel_close_callback(self):
@@ -460,6 +453,13 @@ class Connector:
 class Consumer(Connector):
     _consumer_tag = None
     _consuming = False
+
+    def run(self):
+        """Run the example consumer by connecting to RabbitMQ and then
+        starting the IOLoop to block and allow the SelectConnection to operate.
+        """
+        self._connection = self.connect()
+        self._connection.ioloop.start()
 
     def set_qos(self):
         """This method sets up the consumer prefetch to only be delivered
@@ -647,9 +647,6 @@ class Publisher(Connector):
         self._deliveries.append(self._message_number)
         if debug:
             print('Published message # %i', self._message_number)
-
-    def start(self):
-        self.start_publishing()
 
     def start_publishing(self):
         """This method will enable delivery confirmations and schedule the
