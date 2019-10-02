@@ -288,11 +288,11 @@ class Stub:
 
     def run(self):
         t = Thread(target=self.consume)
-        print(f'Running stub "{self.__name__}" {t.getName()}')
+        print(f'Running stub "{self.__class__.__name__}" {t.getName()}')
         t.start()
         self.run_threads.append(t)
 
     def join(self):
         for t in self.run_threads:
-            print(f'Waiting for stub "{self.__name__}" to finish {t.getName()}')
+            print(f'Waiting for stub "{self.__class__.__name__}" to finish {t.getName()}')
             t.join()
