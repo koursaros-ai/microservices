@@ -109,13 +109,9 @@ class Pipeline(ReprClassName):
             KctlLogger.init()
 
         # set stub with refs to each other
-        # import pdb; pdb.set_trace()
         for Service in self.Services:
             for Stub in Service.Stubs:
                 Stub.set_out_stub()
-
-                print('AAAAAAA', Stub, dir(Stub), Stub._out_stub)
-            print('BBBB', Service, dir(Service), Service.Stubs)
 
 
 class Connection(ReprClassName):
@@ -255,12 +251,11 @@ class Stub(ReprClassName):
             stub = self._pipe.active_service.Stubs.randomactive()
             stub.publish_callback(proto)
 
-    def check_proto_type(self, proto):
-        if self._OutProto._proto_in != proto.__class__.__name__:
+    def publish(self, proto):
+        # check proto type against expected type
+        if self._OutStub._in_proto != proto.__class__.__name__:
             self.raise_wrong_msg_type(proto.__class__.__name__)
 
-    def publish(self, proto):
-        self.check_proto_type(proto)
         body = proto.SerializeToString()
 
         self.channel.basic_publish(
