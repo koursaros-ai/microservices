@@ -213,6 +213,7 @@ class Stub(ReprClassName):
 
     def set_out_stub(self):
         if self._out_stub is not None:
+            print('AAAAAAA', self, dir(self), self._out_stub)
             for Service in self._pipe.Services:
                 for Stub in Service.Stubs:
                     if repr(Stub) == self._out_stub:
@@ -238,8 +239,8 @@ class Stub(ReprClassName):
 
         else:
             if returned is not None:
-                import pdb;
-                pdb.set_trace()
+                # import pdb;
+                # pdb.set_trace()
                 self.raise_should_not_return()
         if method is not None:
             self.ack_callback(method.delivery_tag)
