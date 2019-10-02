@@ -50,8 +50,8 @@ class KctlLogger:
             func = s2.function
             lineno = s2.lineno
             pack = s2.frame.f_globals.get('__package__', '')
-            call = s2.frame.f_locals.get("self").__class__.__name__
-            call = f'.{call}.' if call else '.'
+            call = s2.frame.f_locals.get("self", None)
+            call = f'.{call.__class__.__name__}.' if call else '.'
             label = f' {BOLD}[{pack}{call}{func}({lineno})] {GREEN}STDOUT:{RESET} '
 
         line = cls.timestamp() + label
