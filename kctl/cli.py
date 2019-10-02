@@ -1,5 +1,5 @@
 
-from kctl.deploy.checks import check_stubs, check_rabbitmq
+from kctl.deploy.checks import check_rabbitmq
 from kctl.deploy.rabbitmq import bind_rabbitmq
 from koursaros.compile import compile_pipeline
 from koursaros.utils import find_pipe_path
@@ -86,7 +86,6 @@ def deploy_pipeline(args):
     save_pipeline(args)
     from koursaros import pipelines
     importlib.reload(pipelines)
-    check_stubs(args)
     check_rabbitmq(args)
     if args.rebind:
         bind_rabbitmq(args)
