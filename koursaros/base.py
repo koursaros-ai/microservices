@@ -144,6 +144,7 @@ class Service(ReprClassName):
     def __init__(self, _pipe):
         self._pipe = _pipe
         self._debug = _pipe.debug
+        import pdb; pdb.set_trace()
 
         if self._debug:
             print(f'Initializing "{self}" service...')
@@ -324,7 +325,6 @@ class Connector(ReprClassName):
         self._service = _stub._service
         self._stub = _stub
         self._connect()
-        import pdb; pdb.set_trace()
 
     def _connect(self):
         conn = self._pipe.Connections.getactive()
