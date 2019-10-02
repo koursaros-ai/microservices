@@ -165,14 +165,14 @@ def compile_stubs(stubs):
 
 
 def compile_stub(name, string):
-    service, _InProto, _OutProto, stub_out = parse_stub_string(string)
+    service, _in_proto, _out_proto, _out_stub = parse_stub_string(string)
 
-    if _InProto:
-        vars()[_InProto] = CompiledClass.PlainString('messages_pb2.' + _InProto)
-        proto_in = vars()[_InProto]
+    if _in_proto:
+        _InProto = CompiledClass.PlainString('messages_pb2.' + _in_proto)
+        vars()[_in_proto] = _InProto
 
-    if _OutProto:
-        vars()[_OutProto] = CompiledClass.PlainString('messages_pb2.' + _OutProto)
-        proto_out = vars()[_OutProto]
+    if _out_proto:
+        _OutProto = CompiledClass.PlainString('messages_pb2.' + _out_proto)
+        vars()[_out_proto] = _OutProto
 
     return service, CompiledClass(name, vars(), parent='Stub')
