@@ -67,7 +67,7 @@ class KctlLogger:
 
         if record[-1] == '\n':
             cls.newline = True
-            record = record.rstrip()
+            record = record[:-1]
 
         write(record.replace('\n', line))
 
