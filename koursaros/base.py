@@ -96,7 +96,7 @@ class Pipeline:
         active_service_name = None if package is None else package.split('.')[-1]
 
         # init services with reference to pipeline
-        self.services = self._Services([active_service_name], self, active_service_name)
+        self.services = self._Services([active_service_name], self)
         self.active_service = getattr(self.services, active_service_name)
         KctlLogger.init(active_connection_name + '.' + active_service_name)
 
