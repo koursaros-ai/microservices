@@ -113,10 +113,10 @@ class Pipeline(ReprClassName):
             KctlLogger.init()
 
         # set stub with refs to each other
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         for Service in self.Services:
             for Stub in Service.Stubs:
-                Stub.set_out_stub()
+            #     Stub.set_out_stub()
 
                 print('AAAAAAA', Stub, dir(Stub), Stub._out_stub)
             print('BBBB', Service, dir(Service), Service.Stubs)
