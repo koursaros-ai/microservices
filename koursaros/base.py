@@ -308,7 +308,7 @@ class Connector:
         """
         self._stub = _stub
         conn = _stub._pipe.active_connection
-        self._url = f'amqp://{conn.username}:{conn.password}@{conn.host}:{conn.port}/{self._pipe}'
+        self._url = f'amqp://{conn.username}:{conn.password}@{conn.host}:{conn.port}/{self._stub._pipe}'
         self._connection = self.connect()
         self._connection.ioloop.start()
 
