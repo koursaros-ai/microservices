@@ -2,7 +2,7 @@
 
 from koursaros.pipelines import pigservice
 
-pipeline = pigservice(__file__)
+pipeline = pigservice(__package__)
 
 backend = pipeline.services.backend
 pig = pipeline.services.pig
