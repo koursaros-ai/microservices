@@ -17,7 +17,7 @@ RESET = '\033[0m'
 class KctlLogger:
     stdout_write = stdout.write
     stderr_write = stderr.write
-    label = '{} [{}] {} {} {} {}'
+    label = '{} [{}] {} {} {} {} '
     newline = True
 
     @classmethod
@@ -49,6 +49,7 @@ class KctlLogger:
             func = stack()[2].function
             spec = getattr(__spec__, 'name', '')
             label = cls.label.format(BOLD, spec, GREEN, 'STDERR:', RESET, func + '():')
+            import pdb; pdb.set_trace()
 
         line = cls.timestamp() + label
 
