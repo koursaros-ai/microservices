@@ -263,7 +263,8 @@ class Stub(ReprClassName):
             print(f'"{self}" is {not_}active...')
 
         if self.__active__:
-            self.publish_callback(proto)
+            self.publish(proto)
+            # self.publish_callback(proto)
 
         # if the stub is not in the current service then send to it
         else:
