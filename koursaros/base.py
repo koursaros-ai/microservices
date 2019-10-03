@@ -1,8 +1,8 @@
 from threading import Thread, get_ident
 from kctl.logger import KctlLogger
 from kctl.cli import get_args
+from kctl.utils import cls
 from random import randint
-from queue import Queue
 import functools
 import pika
 
@@ -10,10 +10,6 @@ import pika
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
-
-
-def cls(obj):
-    return obj.__class__.__name__
 
 
 class ReprClassName:
