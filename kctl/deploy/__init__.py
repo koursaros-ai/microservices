@@ -19,6 +19,7 @@ def deploy_pipeline(pipe_path, args):
 
 
 def deploy_service(pipe_path, args):
+    os.chdir(pipe_path + '..')
     pipeline = get_pipeline(args.pipeline_name)
     service = getattr(pipeline.Services, args.service_name)
     deploy([service], args)
