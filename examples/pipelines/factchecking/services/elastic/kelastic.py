@@ -2,17 +2,9 @@
 import requests
 import json
 
-
-# Elasticsearch connection
-INDEX = 'titles'
-ES_HOST = '34.70.112.177'
-correct_fever_ids = dict()
-FILTER_PATH = 'hits.hits._source.fever_id,responses.hits.hits._score'
-BASE_URI =
-MSEARCH_URI = f'{BASE_URI}/_search?filter_path={FILTER_PATH}'
 HEADERS = {'Content-Type': 'application/json'}
-HEADINGS = {"Content-Type": "application/json"}
-MAPPINGS ='''
+
+MAPPINGS = '''
     {
         "mappings": {
             "properties": {
@@ -67,6 +59,18 @@ SETTINGS = '''
     }
 '''
 
+BODY = '''
+    {
+        "size": {size},
+        "query": {
+            "match": {
+                "title": {query}
+            }
+        }
+    }
+'''
+
+
 class RequestJsonFetcher:
 
     @classmethod
@@ -86,20 +90,29 @@ class RequestJsonFetcher:
         return json.loads(res.content)
 
 
-
 class Kelastic(RequestJsonFetcher):
 
     class KelasticError(Exception):
         pass
 
-    def __init__(self, host='localhost', port='9200', index=None, hypers=None):
+    def __init__(self,
+                 host='localhost',
+                 port='9200',
+                 results=None,
+                 filter_path=None,
+                 index=None,
+                 hypers=None
+                 ):
+
         self._index = index
         self._base_uri = f'http://{host}:{port}/{index}'
+        self._results = results
         self.hypers = hypers
+        self._msearch_uri = f'{self._base_uri}/_search?filter_path={filter_path}'
 
     @staticmethod
     def d(json_, i):
-        return json.dumps(json_, indent=4)
+        return json.dumps(json_, indent=i)
 
     def set_index(self):
         return self.d({'index': self._index}, 0) + '\n'
@@ -139,36 +152,31 @@ class Kelastic(RequestJsonFetcher):
         altered = self.request_status('put', *alter_index_args, **alter_index_kwargs)
         opened = self.request_status('post', *open_index_args)
 
+        print(closed)
+        print(altered)
+        print(opened)
+
     @staticmethod
     def list_is_in_dict(list_, dict_):
         return all(item in dict_ for item in list_)
 
-    def get_mapping(self):
-        if not self.list_is_in_dict(VARIABLES ,self.hypers):
-            raise self.KelasticError(f'Hypers {self.hypers} dont contain {VARIABLES}')
+    @staticmethod
+    def filter_dict(list_, dict_):
+        return {k: v for k, v in dict_ if k in list_}
 
-        return SETTINGS.format(weight_script=weight_script, script=script)
+    def get_settings(self):
 
+        try:
+            settings = SETTINGS.format(
+                weight_script=WEIGHT_SCRIPT.format_map(**self.hypers),
+                script=SCRIPT.format_map(**self.hypers)
+            )
+        except KeyError as exc:
+            raise self.KelasticError(f'{exc}\nHypers {self.hypers} dont contain "{VARIABLES}"')
 
-    def get_body(query):
-        return {
-            "size": ES_QUERY_RESULTS,
-            "query": {
-                "match": {
-                    "title": query
-                }
-            }
-        }
+        return settings
 
     def get_hits(self, query):
-        body = get_body(claim.text)
-
-        res = fetch('post', MSEARCH_URI, HEADERS, body)
-        print(res)
-
-        hits = json.loads(res)['hits']['hits']
-
-
-
-    # apply hyperparameters to elastic
-    apply_mapping(get_mapping())
+        body = BODY.format(self._results, query)
+        res = self.fetch('post', self._msearch_uri, HEADERS, body)
+        return res['hits']['hits']

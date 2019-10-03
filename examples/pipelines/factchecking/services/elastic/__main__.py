@@ -1,33 +1,14 @@
 from koursaros.pipelines import factchecking
+from .ksql import Ksql
+from .kelastic import Kelastic
 import os
-import sys
-sys.path.append(os.getcwd())
-from ...utils.database.psql import Conn
 
-import json
+pipeline = factchecking(__package__)
 
+elastic = pipeline.Services.elastic
+scorer = pipeline.Services.scorer
 
-pipeline = factchecking(__file__)
-elastic = pipeline.services.elastic
-scorer = pipeline.services.scorer
-
-DBNAME = 'fever'
-USER = 'postgres'
-HOST = 'localhost'
-PASSWORD = os.environ.get('PGPASS')
-SSLMODE = 'verify-ca'
-CERT_PATH = os.environ.get('CERT_PATH')
-POSTGRES_HOST = '54.196.150.193'
-
-# Static Hypers
-CLAIMS_PER_CHUNK = 30
-ES_QUERY_RESULTS = 9
-ES_THREADS = 5
-APPLY_FAILURE_RETRY_DELAY = 5
-SAMPLE_SIZE = 10000
-
-HYPERS = {
-    'type': 'scripted',
+ES_HYPERS = {
     'x': 4.954666662367618,
     'y': 1.5952138657439607,
     'z': 5.362376731750018,
@@ -35,32 +16,62 @@ HYPERS = {
     'k1': 3.615698435281512
 }
 
+QUERY_CLAIM_IDS = '''
+    SELECT l.text
+    FROM wiki.lines l
+    JOIN wiki.articles a
+        ON l.article_id = a.id 
+    WHERE a.fever_id IN ({ids})
+'''
 
-@elastic.stubs.retrieve
+# Elasticsearch connection
+kelastic = Kelastic(
+    host='34.70.112.177',
+    index='titles',
+    results=40,
+    filter_path='hits.hits._source.fever_id,responses.hits.hits._score'
+)
+
+# Postgres connection
+ksql = Ksql(
+    host='54.196.150.193',
+    user='postgres',
+    password=os.environ.get('PGPASS'),
+    dbname='fever',
+    sslmode='verify-ca',
+    cert_path=os.environ.get('CERT_PATH')
+)
+
+
+@elastic.Stubs.retrieve
 def get_articles(claim):
-
+    hits = kelastic.get_hits(claim)
     fever_ids = [hit['_source']['fever_id'] for hit in hits]
+    fever_ids = ','.join(["'" + fever_id.replace("'", "''") + "'" for fever_id in fever_ids])
 
-    conn = Conn(
-        host=POSTGRES_HOST,
-        user=USER,
-        password=PASSWORD,
-        dbname=DBNAME,
-        sslmode=SSLMODE,
-        cert_path=CERT_PATH
+    rows = ksql.query(
+        QUERY_CLAIM_IDS.format(fever_ids)
     )
 
-    rows = conn.query(f'''
-    select l.text from wiki.lines l join wiki.articles a on l.article_id = a.id 
-    where a.fever_id in ({','.join(["'"+ fever_id.replace("'","''") + "'" for fever_id in fever_ids])})
-    ''')
     lines = [row[0] for row in rows]
-    results = elastic.stubs.retrieve.ClaimWithLines(
+    results = elastic.Stubs.retrieve.ClaimWithLines(
         claim=claim,
         lines=lines
     )
-    scorer.stubs.rerank(results)
+    return results
+
+
+def send_claims():
+    query = '''
+        SELECT text
+        FROM sets.claims
+        LIMIT 10;
+    '''
+    claims = ksql.query(query)
+    print(claims)
 
 
 if __name__ == "__main__":
     elastic.run()
+    send_claims()
+    elastic.join()

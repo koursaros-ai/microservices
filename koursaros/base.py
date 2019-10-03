@@ -154,19 +154,19 @@ class Service(ReprClassName):
         self.Stubs = self.Stubs(active_stub_names, self)
 
     def run(self):
-        for Stub in self.Stubs:
-            Stub.run()
-        for Stub in self.Stubs:
-            Stub.join()
+        for stub in self.Stubs:
+            stub.run()
+        for stub in self.Stubs:
+            stub.join()
 
 
 class Stub(ReprClassName):
     __active__ = False
 
-    rcv_proto = None
-    send_proto = None
-    RcvProto = None
-    SendProto = None
+    _rcv_proto = None
+    _send_proto = None
+    _RcvProto = None
+    _SendProto = None
 
     _send_stub = None
 
@@ -209,11 +209,11 @@ class Stub(ReprClassName):
 
     def raise_wrong_msg_type(self, incorrect_type):
         msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
-               f'but {repr(self.RcvStub)} expects "{cls(self.RcvStub.RcvProto)}" message')
+               f'but expected "{cls(self._SendProto)}" message')
         raise self.WrongMessageTypeError(msg)
 
     def raise_stub_not_found(self):
-        msg = f'{repr(self)} could not find "{self.rcv_stub}" stub to send to'
+        msg = f'{repr(self)} could not find "{self._send_stub}" stub to send to'
         raise self.StubNotFoundError(msg)
 
     def raise_not_active(self):
@@ -224,7 +224,7 @@ class Stub(ReprClassName):
 
     def raise_no_return(self):
         msg = (f'"{self}" stub did not return anything,'
-               f'but it should be sending to "{self.RcvStub}" stub')
+               f'but it should be sending to "{self._send_stub}" stub')
         raise self.NoReturnError(msg)
 
     def raise_should_not_return(self):
@@ -342,17 +342,16 @@ class Publisher(Connector):
 
         self.check_send_proto(proto)
 
-
         body = proto.SerializeToString()
 
-        send_queue = self._stub.RcvStub.queue
+        send_queue = repr(self._stub._SendStub)
 
         if self._debug:
-            print(f'"{self._stub}" stub publishing "{cls(proto)}" to {out_queue}...')
+            print(f'"{self._stub}" stub publishing "{cls(proto)}" to {send_queue}...')
 
         self._channel.basic_publish(
             exchange=EXCHANGE,
-            routing_key=out_queue,
+            routing_key=send_queue,
             body=body,
             properties=PROPS
         )
