@@ -360,9 +360,9 @@ class Publisher(Connector):
 
     def check_send_proto(self, proto):
         """Checks an outgoing proto against the
-        type that the receiving stub expects
+        type that is expected by the stub
         """
-        if cls(self._stub.RcvStub.InProto) != cls(proto):
+        if cls(self._stub._SendProto) != cls(proto):
             self._stub.raise_wrong_msg_type(cls(proto))
 
     def publish(self, proto):
@@ -372,7 +372,7 @@ class Publisher(Connector):
 
         body = proto.SerializeToString()
 
-        send_queue = repr(self._stub._SendStub)
+        send_queue = repr(self._stub._send_stub)
 
         if self._debug:
             print(f'"{self._stub}" stub publishing "{cls(proto)}" to {send_queue}...')
