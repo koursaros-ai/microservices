@@ -41,51 +41,52 @@ SCRIPT = (
 
 VARIABLES = ['z', 'k1', 'x', 'b', 'y']
 
-SETTINGS = '''
-    {
+
+def SETTINGS(weight_script=None, script=None):
+    return {
         "settings": {
             "similarity": {
                 "default": {
                     "type": "scripted",
                     "weight_script": {
-                        "source": '{weight_script}'
+                        "source": weight_script
                     },
                     "script": {
-                        "source": '{script}'
+                        "source": script
                     }
                 }
             },
         },
     }
-'''
 
-BODY = '''
-    {
-        "size": {size},
+
+def BODY(size=None,query=None):
+    return {
+        "size": size,
         "query": {
             "match": {
-                "title": {query}
+                "title": query
             }
         }
     }
-'''
 
 
 class RequestJsonFetcher:
 
-    @classmethod
-    def fetch(cls, method, uri, headers, body):
+    @staticmethod
+    def fetch(method, uri, headers=None, body=None):
         request_func = getattr(requests, method, None)
 
         if request_func is None:
             raise AttributeError(f'requests has no attribute "{method}"')
 
-        res = request_func(
-            uri,
-            headers=headers,
-            data=json.dumps(body),
-            stream=True
-        )
+        req = {'stream': True}
+        if headers:
+            req['headers'] = headers
+        if body:
+            req['data'] = body
+
+        res = request_func(uri, **req)
         res.raise_for_status()
         return json.loads(res.content)
 
@@ -108,11 +109,11 @@ class Kelastic(RequestJsonFetcher):
         self._base_uri = f'http://{host}:{port}/{index}'
         self._results = results
         self.hypers = hypers
-        self._msearch_uri = f'{self._base_uri}/_search?filter_path={filter_path}'
+        self._msearch_uri = f'{self._base_uri}/_msearch?filter_path={filter_path}'
 
     @staticmethod
     def d(json_, i):
-        return json.dumps(json_, indent=i)
+        return json.dumps(json_)
 
     def set_index(self):
         return self.d({'index': self._index}, 0) + '\n'
@@ -122,9 +123,9 @@ class Kelastic(RequestJsonFetcher):
 
         json_ids = []
         body = self.set_index()
-        for i, (json_id, json_body) in enumerate(jsons):
-            json_ids.append(json_id)
-            body += json.dumps(json_body) + '\n\n'
+        for i, (id_, json_) in enumerate(jsons):
+            json_ids.append(id_)
+            body += json.dumps(json_) + '\n\n'
 
         res = self.fetch('post', uri, HEADERS, body)
 
@@ -142,12 +143,12 @@ class Kelastic(RequestJsonFetcher):
             print(self.d(res['error']['reason'], 4))
             return False
 
-    def apply_mapping(self, mapping):
+    def apply_settings(self, mapping):
         close_index_args = (f'{self._base_uri}/_close',)
         alter_index_args = (f'{self._base_uri}/_settings',)
-        alter_index_kwargs = {'headers': HEADERS, 'data': self.d(mapping, 0)}
+        alter_index_kwargs = {'headers': HEADERS, 'body': self.d(mapping, 0)}
         open_index_args = (f'{self._base_uri}/_open',)
-
+        print('post', *close_index_args)
         closed = self.request_status('post', *close_index_args)
         altered = self.request_status('put', *alter_index_args, **alter_index_kwargs)
         opened = self.request_status('post', *open_index_args)
@@ -167,16 +168,20 @@ class Kelastic(RequestJsonFetcher):
     def get_settings(self):
 
         try:
-            settings = SETTINGS.format(
-                weight_script=WEIGHT_SCRIPT.format_map(**self.hypers),
-                script=SCRIPT.format_map(**self.hypers)
+            settings = SETTINGS(
+                weight_script=WEIGHT_SCRIPT.format_map(self.hypers),
+                script=SCRIPT.format_map(self.hypers)
             )
         except KeyError as exc:
             raise self.KelasticError(f'{exc}\nHypers {self.hypers} dont contain "{VARIABLES}"')
 
         return settings
 
-    def get_hits(self, query):
-        body = BODY.format(self._results, query)
-        res = self.fetch('post', self._msearch_uri, HEADERS, body)
-        return res['hits']['hits']
+    def get_hits(self, queries):
+        # self.apply_settings(self.get_settings())
+        bodies = [[id_, BODY(size=self._results, query=query)] for id_, query in queries]
+
+        ids, res = self.multisearch(self._msearch_uri, bodies)
+        return ids, res
+
+
