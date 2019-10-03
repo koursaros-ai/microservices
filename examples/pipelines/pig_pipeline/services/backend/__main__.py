@@ -53,7 +53,9 @@ if __name__ == "__main__":
     s = Thread(target=backend.run)
     a = Thread(target=app.run)
 
+    print('Starting backend stubs...')
     s.start()
+    print('Starting flask...')
     a.start()
     s.join()
     a.join()
