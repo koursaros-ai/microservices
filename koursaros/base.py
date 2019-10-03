@@ -363,7 +363,7 @@ class Publisher(Connector):
 
         body = proto.SerializeToString()
 
-        send_queue = repr(self._service) + '.' + self._stub._send_stub
+        send_queue = self._stub._send_stub
 
         if self._debug:
             print(f'"Publishing "{cls(proto)}" to "{send_queue}" queue...')
@@ -390,7 +390,7 @@ class Consumer(Connector):
 
     def consume(self):
         # queue is stub name
-        rcv_queue = repr(self._service) + '.' + repr(self._stub)
+        rcv_queue = repr(self._stub)
 
         self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
         self._channel.basic_consume(queue=rcv_queue, on_message_callback=self.consume_callback)
