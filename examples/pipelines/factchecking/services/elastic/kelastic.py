@@ -12,26 +12,60 @@ BASE_URI =
 MSEARCH_URI = f'{BASE_URI}/_search?filter_path={FILTER_PATH}'
 HEADERS = {'Content-Type': 'application/json'}
 HEADINGS = {"Content-Type": "application/json"}
-MAPPINGS = {
-    "mappings": {
-        "properties": {
-            "fever_id": {
-                "type": "keyword"
-            },
-            "title": {
-                "type": "text",
-                "analyzer": "english"
+MAPPINGS ='''
+    {
+        "mappings": {
+            "properties": {
+                "fever_id": {
+                    "type": "keyword"
+                },
+                "title": {
+                    "type": "text",
+                    "analyzer": "english"
+                }
+            }
+        },
+        "settings": {
+            "index": {
+                "number_of_shards": 5,
+                "mapping.total_fields.limit": 100000
             }
         }
-    },
-    "settings": {
-        "index": {
-            "number_of_shards": 5,
-            "mapping.total_fields.limit": 100000
-        }
     }
-}
+'''
 
+WEIGHT_SCRIPT = (
+    ' double idf = (field.docCount - term.docFreq + 0.5) / (term.docFreq + 0.5);'
+    ' double idfl = Math.log(idf) / Math.log({z});'
+    ' return query.boost * idfl;'
+)
+
+SCRIPT = (
+    ' double tf = Math.pow(doc.freq, 1 / {x});'
+    ' double avgLen = field.sumTotalTermFreq / field.docCount;'
+    ' double norm = Math.pow(1 - {b} + {b} * doc.length / avgLen, 1 / {y});'
+    ' return weight * tf * ({k1} + 1) / (tf + {k1} * norm);'
+)
+
+VARIABLES = ['z', 'k1', 'x', 'b', 'y']
+
+SETTINGS = '''
+    {
+        "settings": {
+            "similarity": {
+                "default": {
+                    "type": "scripted",
+                    "weight_script": {
+                        "source": '{weight_script}'
+                    },
+                    "script": {
+                        "source": '{script}'
+                    }
+                }
+            },
+        },
+    }
+'''
 
 class RequestJsonFetcher:
 
@@ -55,19 +89,22 @@ class RequestJsonFetcher:
 
 class Kelastic(RequestJsonFetcher):
 
+    class KelasticError(Exception):
+        pass
+
     def __init__(self, host='localhost', port='9200', index=None, hypers=None):
         self._index = index
         self._base_uri = f'http://{host}:{port}/{index}'
         self.hypers = hypers
 
     @staticmethod
-    def dump(json_, i):
+    def d(json_, i):
         return json.dumps(json_, indent=4)
 
     def set_index(self):
-        return json.dumps({'index': self._index}) + '\n'
+        return self.d({'index': self._index}, 0) + '\n'
 
-    def multisearch(self, uri, index, headers, jsons):
+    def multisearch(self, uri, jsons):
         # jsons => json_id, json_body
 
         json_ids = []
@@ -76,9 +113,9 @@ class Kelastic(RequestJsonFetcher):
             json_ids.append(json_id)
             body += json.dumps(json_body) + '\n\n'
 
-        res = self.fetch('post', uri, headers, body)
+        res = self.fetch('post', uri, HEADERS, body)
 
-        return json_ids, json.loads(res).get('responses', [None])
+        return json_ids, res.get('responses', [None])
 
     def request_status(self, method, *args, **kwargs):
         res = self.fetch(method, *args, **kwargs)
@@ -86,58 +123,31 @@ class Kelastic(RequestJsonFetcher):
         no_errors = res.get('error', True)
 
         if acked and no_errors:
-            print(self.dump(res, 4))
+            print(self.d(res, 4))
             return True
         else:
-            print(self.dump(res['error']['reason'], 4))
+            print(self.d(res['error']['reason'], 4))
             return False
 
     def apply_mapping(self, mapping):
         close_index_args = (f'{self._base_uri}/_close',)
         alter_index_args = (f'{self._base_uri}/_settings',)
-        alter_index_kwargs = {'headers': HEADERS, 'data': self.dump(mapping, 0)}
+        alter_index_kwargs = {'headers': HEADERS, 'data': self.d(mapping, 0)}
         open_index_args = (f'{self._base_uri}/_open',)
 
         closed = self.request_status('post', *close_index_args)
         altered = self.request_status('put', *alter_index_args, **alter_index_kwargs)
         opened = self.request_status('post', *open_index_args)
 
-
-    def check_dict(self, dict_, list_):
-        if all(item in dict_ for item in list_):
-
+    @staticmethod
+    def list_is_in_dict(list_, dict_):
+        return all(item in dict_ for item in list_)
 
     def get_mapping(self):
-        vars().update(self.hypers)
+        if not self.list_is_in_dict(VARIABLES ,self.hypers):
+            raise self.KelasticError(f'Hypers {self.hypers} dont contain {VARIABLES}')
 
-        weight_script = [
-            f' double idf = (field.docCount - term.docFreq + 0.5) / (term.docFreq + 0.5);',
-            f' double idfl = Math.log(idf) / Math.log({z});',
-            f' return query.boost * idfl;'
-        ]
-
-        script = [
-            f' double tf = Math.pow(doc.freq, 1 / {x});',
-            f' double avgLen = field.sumTotalTermFreq / field.docCount;',
-            f' double norm = Math.pow(1 - {b} + {b} * doc.length / avgLen, 1 / {y});',
-            f' return weight * tf * ({k1} + 1) / (tf + {k1} * norm);'
-        ]
-
-        return {
-            "settings": {
-                "similarity": {
-                    "default": {
-                        "type": "scripted",
-                        "weight_script": {
-                            "source": ' '.join(weight_script)
-                        },
-                        "script": {
-                            "source": ' '.join(script)
-                        }
-                    }
-                },
-            },
-        }
+        return SETTINGS.format(weight_script=weight_script, script=script)
 
 
     def get_body(query):
@@ -149,6 +159,15 @@ class Kelastic(RequestJsonFetcher):
                 }
             }
         }
+
+    def get_hits(self, query):
+        body = get_body(claim.text)
+
+        res = fetch('post', MSEARCH_URI, HEADERS, body)
+        print(res)
+
+        hits = json.loads(res)['hits']['hits']
+
 
 
     # apply hyperparameters to elastic

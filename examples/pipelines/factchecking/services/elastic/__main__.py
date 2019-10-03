@@ -39,12 +39,6 @@ HYPERS = {
 @elastic.stubs.retrieve
 def get_articles(claim):
 
-    body = get_body(claim.text)
-
-    res = fetch('post', MSEARCH_URI, HEADERS, body)
-    print(res)
-
-    hits = json.loads(res)['hits']['hits']
     fever_ids = [hit['_source']['fever_id'] for hit in hits]
 
     conn = Conn(
