@@ -44,6 +44,7 @@ class ActivatingContainer:
         for clas in list(self):
             cls_name = clas.__name__
             __active__ = True if cls_name in active_names else False
+            print(clas, cls_name, __active__)
             setattr(clas, '__active__', __active__)
 
             instance = clas(*args, **kwargs)
