@@ -26,7 +26,8 @@ def receive():
     queue = Queue()
     sentences[sentence_id] = queue
     sentence = backend.Stubs.send.Sentence(id=sentence_id, text=text)
-    backend.Stubs.send.process(sentence)
+    send_sentence(sentence)
+    # backend.Stubs.send.process(sentence)
     piggified = queue.get()
     sentences.pop(sentence_id)
 
