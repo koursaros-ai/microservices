@@ -323,7 +323,7 @@ class Connector(ReprClassName):
         # get the active connection in the pipeline
         conn = self._pipe.Connections.getactive()
 
-        user = repr(self._stub)
+        user = repr(self._service) + '.' + repr(self._stub)
         vhost = repr(self._pipe)
 
         credentials = pika.credentials.PlainCredentials(user, conn.password)
