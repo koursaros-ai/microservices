@@ -363,7 +363,7 @@ class Publisher(Connector):
 
         body = proto.SerializeToString()
 
-        send_queue = repr(self._service) + '.' + repr(self._stub._send_stub)
+        send_queue = repr(self._service) + '.' + self._stub._send_stub
 
         if self._debug:
             print(f'"Publishing "{cls(proto)}" to "{send_queue}" queue...')
