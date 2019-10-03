@@ -69,7 +69,8 @@ class ActivatingContainer:
         subclass... will raise if there is not exactly one
         """
         if len(self.__activerefs__) != 1:
-            raise self.NotOneActiveError('Not exactly one __active__ subclass')
+            raise self.NotOneActiveError('Not exactly one __active__ subclass'
+                                         f'{self.__activerefs__}')
 
         return self.__activerefs__[0]
 
