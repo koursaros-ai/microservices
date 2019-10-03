@@ -362,7 +362,7 @@ class Publisher(Connector):
         """Checks an outgoing proto against the
         type that is expected by the stub
         """
-        if cls(self._stub._SendProto) != cls(proto):
+        if self._stub._send_proto != cls(proto):
             self._stub.raise_wrong_msg_type(cls(proto))
 
     def publish(self, proto):
