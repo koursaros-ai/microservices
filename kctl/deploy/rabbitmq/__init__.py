@@ -47,7 +47,8 @@ def bind_rabbitmq(args):
 
     for service in pipeline.Services:
         for stub in service.Stubs:
-            user = queue = vhost = cls(service) + '.' + cls(stub)
+            user = queue = cls(service) + '.' + cls(stub)
+            vhost = cls(pipeline)
 
             print(f'Creating user "{user}" on {http_string}')
             api.create_user(user, password)
