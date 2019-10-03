@@ -10,9 +10,9 @@ def check_rabbitmq(args):
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
     pipeline = pipeline(None)
-    
-    connection = pipeline.Connections.getactive()
 
+    connection = pipeline.Connections.getactive()
+    import pdb; pdb.set_trace()
     host = connection.host
     port = connection.port
     username = connection.username
