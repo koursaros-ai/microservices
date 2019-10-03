@@ -41,6 +41,7 @@ class ActivatingContainer:
     __activerefs__ = []
 
     def __init__(self, active_names, *args, **kwargs):
+        print(self.__activerefs__)
         for clas in list(self):
             cls_name = clas.__name__
             __active__ = True if cls_name in active_names else False
@@ -52,7 +53,7 @@ class ActivatingContainer:
 
             if __active__:
                 self.__active__ = True
-                print(self.__activerefs__)
+
                 self.__activerefs__.append(instance)
 
     def __iter__(self):
