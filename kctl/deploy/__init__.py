@@ -16,6 +16,8 @@ def deploy_pipeline(pipe_path, args):
     os.chdir(pipe_path + '..')
     pipeline = get_pipeline(args.pipeline_name)
     deploy(pipeline.Services, args)
+    print(pipeline.Services)
+    raise SystemExit
 
 
 def deploy_service(pipe_path, args):
