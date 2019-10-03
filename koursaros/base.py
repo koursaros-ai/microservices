@@ -41,12 +41,12 @@ class ActivatingContainer:
     __activerefs__ = []
 
     def __init__(self, active_names, *args, **kwargs):
-        for cls in list(self):
-            cls_name = cls.__name__
+        for clas in list(self):
+            cls_name = clas.__name__
             __active__ = True if cls_name in active_names else False
-            setattr(cls, '__active__', __active__)
+            setattr(clas, '__active__', __active__)
 
-            instance = cls(*args, **kwargs)
+            instance = clas(*args, **kwargs)
             setattr(self, cls_name, instance)
 
             if __active__:
@@ -69,7 +69,7 @@ class ActivatingContainer:
         subclass... will raise if there is not exactly one
         """
         if len(self.__activerefs__) != 1:
-            raise self.NotOneActiveError('Not exactly one __active__ subclass'
+            raise self.NotOneActiveError('Not exactly one __active__ subclass: '
                                          f'{self.__activerefs__}')
 
         return self.__activerefs__[0]
