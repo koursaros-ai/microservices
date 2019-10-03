@@ -75,6 +75,7 @@ class ActivatingContainer:
 
     def randomactive(self):
         rand_int = randint(0, len(self.__activerefs__) - 1)
+        print(self.__activerefs__[rand_int], type(self.__activerefs__[rand_int]))
         return self.__activerefs__[rand_int]
 
     class NotOneActiveError(Exception):
