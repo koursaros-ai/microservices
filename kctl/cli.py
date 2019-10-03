@@ -81,7 +81,7 @@ def save_pipeline(args):
     compile_pipeline(PIPE_PATH, SAVE_PATH)
 
 
-def deploy_pipeline(args):
+def predeploy(args):
     must_be_pipe_path()
     save_pipeline(args)
     from koursaros import pipelines
@@ -89,20 +89,18 @@ def deploy_pipeline(args):
     check_rabbitmq(args)
     if args.rebind:
         bind_rabbitmq(args)
+
+
+def deploy_pipeline(args):
+    predeploy(args)
     from .deploy import deploy_pipeline
     deploy_pipeline(PIPE_PATH, args)
 
 
 def deploy_service(args):
-    must_be_pipe_path()
-    save_pipeline(args)
-    from koursaros import pipelines
-    importlib.reload(pipelines)
-    check_rabbitmq(args)
-    if args.rebind:
-        bind_rabbitmq(args)
-    from .deploy import deploy_pipeline
-    deploy_pipeline(PIPE_PATH, args)
+    predeploy(args)
+    from .deploy import deploy_service
+    deploy_service(PIPE_PATH, args)
 
     # else:
     #     from .create import build_trigger
