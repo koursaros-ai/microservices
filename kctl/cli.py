@@ -93,6 +93,17 @@ def deploy_pipeline(args):
     deploy_pipeline(PIPE_PATH, args)
 
 
+def deploy_service(args):
+    must_be_pipe_path()
+    save_pipeline(args)
+    from koursaros import pipelines
+    importlib.reload(pipelines)
+    check_rabbitmq(args)
+    if args.rebind:
+        bind_rabbitmq(args)
+    from .deploy import deploy_pipeline
+    deploy_pipeline(PIPE_PATH, args)
+
     # else:
     #     from .create import build_trigger
     #     from .create import build_cloudbuild
@@ -192,6 +203,12 @@ def get_args():
     # deploy pipeline
     deploy_pipeline_parser = deploy_subparsers.add_parser('pipeline')
     deploy_pipeline_parser.set_defaults(func=deploy_pipeline)
+    deploy_pipeline_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
+    deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
+    deploy_pipeline_parser.add_argument('-d', '--debug', action='store_true')
+    # deploy service
+    deploy_pipeline_parser = deploy_subparsers.add_parser('service')
+    deploy_pipeline_parser.set_defaults(func=deploy_service)
     deploy_pipeline_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
     deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
     deploy_pipeline_parser.add_argument('-d', '--debug', action='store_true')
