@@ -10,6 +10,7 @@ def check_rabbitmq(args):
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
     pipeline = pipeline(None)
+    
     connection = pipeline.Connections.getactive()
 
     host = connection.host

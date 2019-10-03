@@ -12,7 +12,7 @@ def bind_rabbitmq(args):
     pipeline = pipeline(None)
 
     connection = pipeline.Connections.getactive()
-    import pdb; pdb.set_trace()
+
     host = connection.host
     http_port = connection.http_port
     port = connection.port
