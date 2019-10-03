@@ -2,8 +2,9 @@
 from time import strftime
 from sys import stdout, stderr
 from inspect import stack
-import logging
-logging.basicConfig(stream=stderr, level=logging.ERROR)
+from logging import basicConfig, ERROR
+
+basicConfig(stream=stderr, level=ERROR)
 
 
 BOLD = '\033[1m'

@@ -4,8 +4,8 @@ CHECK_TIMEOUT = 10
 
 
 def check_rabbitmq(args):
-    import pika
     from ..utils import BOLD
+    import pika
 
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)

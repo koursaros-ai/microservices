@@ -124,11 +124,6 @@ class Pipeline(ReprClassName):
         # init services with reference to pipeline
         self.Services = self.Services([active_service_name], self)
 
-        # set stub with refs to each other
-        # for service in self.Services:
-        #     for stub in service.Stubs:
-        #         stub.bind_send_stub()
-
 
 class Connection(ReprClassName):
     pass
@@ -161,22 +156,6 @@ class Service(ReprClassName):
             stub.run()
         for stub in self.Stubs:
             stub.join()
-
-    # def bind_send_stub(self):
-    #     if self.send_stub is not None:
-    #
-    #         for service in self._pipe.Services:
-    #             for stub in service.Stubs:
-    #                 if repr(stub) == self.send_stub:
-    #                     self.OutStub = stub
-    #
-    #         self._should_send = True
-    #
-    #         if self.RcvStub is None:
-    #             self.raise_stub_not_found()
-    #
-    #         if self.send_proto != self.OutStub.InProto:
-    #             self.raise_wrong_msg_type(self.send_proto)
 
 
 class Stub(ReprClassName):
@@ -308,6 +287,12 @@ class Stub(ReprClassName):
 
 
 class Connector(ReprClassName):
+    """An abstract class that serves as the connection creator
+    for the publisher and consumer
+
+    :param _stub: reference to parent stub
+    """
+
     _connection = None
     _channel = None
     _debug = False
@@ -343,7 +328,7 @@ class Connector(ReprClassName):
 
 class Publisher(Connector):
     """A simple rabbitmq producer that receives connection from base class
-    and sends messages on the queue (name of the referenced _SendStub)
+    and sends messages on the queue (name of the referenced _send_stub)
     """
 
     def run(self):
