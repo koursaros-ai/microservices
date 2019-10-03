@@ -188,6 +188,7 @@ class Stub(ReprClassName):
             self.raise_not_active()
 
         self.func = func
+        import pdb; pdb.set_trace()
 
     class NotInActiveServiceError(Exception):
         pass
