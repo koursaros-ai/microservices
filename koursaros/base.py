@@ -70,12 +70,12 @@ class ActivatingContainer:
         """
         if len(self.__activerefs__) != 1:
             raise self.NotOneActiveError('Not exactly one __active__ subclass')
-
+        print(self.__activerefs__[0], type(self.__activerefs__[0]))
         return getattr(self, self.__activerefs__[0])
 
     def randomactive(self):
         rand_int = randint(0, len(self.__activerefs__) - 1)
-        print(self.__activerefs__[rand_int], type(self.__activerefs__[rand_int]))
+
         return self.__activerefs__[rand_int]
 
     class NotOneActiveError(Exception):
