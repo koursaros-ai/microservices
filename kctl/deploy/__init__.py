@@ -15,8 +15,6 @@ def get_pipeline(name):
 def deploy_pipeline(pipe_path, args):
     os.chdir(pipe_path + '..')
     pipeline = get_pipeline(args.pipeline_name)
-    print([x for x in pipeline.Services])
-    raise SystemExit
     deploy(pipeline.Services, args)
 
 
@@ -44,8 +42,8 @@ def deploy(services, args):
 
             processes.append((p, service_cls))
 
-            for p, service_cls in processes:
-                p.communicate()
+        for p, service_cls in processes:
+            p.communicate()
 
     except KeyboardInterrupt:
         pass
