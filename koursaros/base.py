@@ -52,6 +52,7 @@ class ActivatingContainer:
 
             if __active__:
                 self.__active__ = True
+                print(self.__activerefs__)
                 self.__activerefs__.append(instance)
 
     def __iter__(self):
