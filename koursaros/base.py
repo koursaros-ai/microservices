@@ -37,11 +37,11 @@ class ActivatingContainer:
     """
 
     __names__ = []
-    __active__ = False
-    __activerefs__ = []
 
     def __init__(self, active_names, *args, **kwargs):
-        print(self.__activerefs__)
+        self.__active__ = False
+        self.__activerefs__ = []
+        
         for clas in list(self):
             cls_name = clas.__name__
             __active__ = True if cls_name in active_names else False
