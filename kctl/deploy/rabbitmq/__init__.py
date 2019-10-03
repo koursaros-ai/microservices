@@ -7,7 +7,6 @@ def bind_rabbitmq(args):
     import requests
     import pika
 
-
     import koursaros.pipelines
     pipeline = getattr(koursaros.pipelines, args.pipeline_name)
     pipeline = pipeline(None)
@@ -48,13 +47,15 @@ def bind_rabbitmq(args):
 
     for service in pipeline.Services:
         for stub in service.Stubs:
-            print(f'Creating user "{cls(service)}" on {http_string}')
-            api.create_user(cls(service), password)
-            api.create_user_permission(cls(service), cls(pipeline))
+            user = queue = vhost = cls(service) + '.' + cls(stub)
 
-            print(f'Creating queue "{cls(stub)}" on {pika_string}')
-            channel.queue_declare(queue=cls(stub), durable=True)
+            print(f'Creating user "{user}" on {http_string}')
+            api.create_user(user, password)
+            api.create_user_permission(user, vhost)
 
-            print(f'Binding "{cls(stub)}" stub to "{cls(stub)}" queue on {pika_string}')
-            channel.queue_bind(exchange='nyse', queue=cls(stub), routing_key=cls(stub))
+            print(f'Creating queue "{queue}" on {pika_string}')
+            channel.queue_declare(queue=queue, durable=True)
+
+            print(f'Binding "{queue}" stub to "{queue}" queue on {pika_string}')
+            channel.queue_bind(exchange='nyse', queue=queue, routing_key=queue)
 

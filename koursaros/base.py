@@ -276,10 +276,6 @@ class Stub(ReprClassName):
 
     def send(self, proto):
 
-        if self._pipe.debug:
-            not_ = '' if self.__active__ else 'not '
-            print(f'"{self}" is {not_}active...')
-
         if self.__active__:
             self._publisher.publish(proto)
         else:
@@ -327,17 +323,12 @@ class Connector(ReprClassName):
         # get the active connection in the pipeline
         conn = self._pipe.Connections.getactive()
 
-        credentials = pika.credentials.PlainCredentials(
-            repr(self._service),
-            conn.password
-        )
+        user = repr(self._stub)
+        vhost = repr(self._pipe)
 
-        params = pika.ConnectionParameters(
-            conn.host,
-            conn.port,
-            repr(self._pipe),
-            credentials
-        )
+        credentials = pika.credentials.PlainCredentials(user, conn.password)
+
+        params = pika.ConnectionParameters(conn.host, conn.port, vhost, credentials)
 
         while True:
             try:
@@ -372,10 +363,10 @@ class Publisher(Connector):
 
         body = proto.SerializeToString()
 
-        send_queue = repr(self._stub._send_stub)
+        send_queue = repr(self._service) + '.' + repr(self._stub._send_stub)
 
         if self._debug:
-            print(f'"{self._stub}" stub publishing "{cls(proto)}" to {send_queue}...')
+            print(f'"Publishing "{cls(proto)}" to "{send_queue}" queue...')
 
         self._channel.basic_publish(
             exchange=EXCHANGE,
@@ -385,7 +376,7 @@ class Publisher(Connector):
         )
 
         if self._debug:
-            print(f'"{self._stub}" stub published "{cls(proto)}"')
+            print(f'"Published "{cls(proto)}" to "{send_queue}" queue...')
 
 
 class Consumer(Connector):
@@ -399,11 +390,11 @@ class Consumer(Connector):
 
     def consume(self):
         # queue is stub name
-        queue = repr(self._stub)
+        rcv_queue = repr(self._service) + '.' + repr(self._stub)
 
         self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        self._channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
-        print(f'Consuming messages on {queue}...')
+        self._channel.basic_consume(queue=rcv_queue, on_message_callback=self.consume_callback)
+        print(f'Consuming messages on "{rcv_queue}" queue...')
         self._channel.start_consuming()
 
     def ack_callback(self, delivery_tag):
@@ -415,7 +406,7 @@ class Consumer(Connector):
         proto.ParseFromString(body)
 
         if self._pipe.args.debug:
-            print(f'"{self}" stub received "{cls(proto)}" message on {channel}...')
+            print(f'"Received "{cls(proto)}" message on {channel}...')
 
         process_thread = Thread(target=self._stub.process, args=(proto, method))
         process_thread.run()

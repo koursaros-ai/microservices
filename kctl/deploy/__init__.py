@@ -1,6 +1,6 @@
 
+from kctl.utils import BOLD, cls
 from subprocess import Popen
-from kctl.utils import BOLD
 import signal
 import sys
 import os
@@ -30,17 +30,16 @@ def deploy(services, args):
 
     try:
         for service in services:
-            service_cls = service.__class__.__name__
             cmd = [
                 sys.executable,
                 '-m',
-                f'{args.pipeline_name}.services.{service_cls}'
+                f'{args.pipeline_name}.services.{cls(service)}'
             ] + sys.argv[1:]
 
             print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
             p = Popen(cmd)
 
-            processes.append((p, service_cls))
+            processes.append((p, cls(service)))
 
         for p, service_cls in processes:
             p.communicate()
