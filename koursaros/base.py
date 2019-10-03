@@ -402,7 +402,7 @@ class Consumer(Connector):
         self._connection.add_callback_threadsafe(cb)
 
     def consume_callback(self, channel, method, properties, body):
-        proto = self._stub.InProto()
+        proto = self._stub._RcvProto()
         proto.ParseFromString(body)
 
         if self._pipe.args.debug:
