@@ -205,11 +205,12 @@ def get_args():
     deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
     deploy_pipeline_parser.add_argument('-d', '--debug', action='store_true')
     # deploy service
-    deploy_pipeline_parser = deploy_subparsers.add_parser('service')
-    deploy_pipeline_parser.set_defaults(func=deploy_service)
-    deploy_pipeline_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
-    deploy_pipeline_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
-    deploy_pipeline_parser.add_argument('-d', '--debug', action='store_true')
+    deploy_service_parser = deploy_subparsers.add_parser('service')
+    deploy_service_parser.add_argument('service_name')
+    deploy_service_parser.set_defaults(func=deploy_service)
+    deploy_service_parser.add_argument(*CONNECTION_ARGS, **CONNECTION_KWARGS)
+    deploy_service_parser.add_argument(*REBIND_ARGS, **REBIND_KWARGS)
+    deploy_service_parser.add_argument('-d', '--debug', action='store_true')
 
     # kctl pull
     pull_parser = subparsers.add_parser(*PULL_ARGS, **PULL_KWARGS)
