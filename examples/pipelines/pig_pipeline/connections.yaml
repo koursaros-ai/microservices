@@ -2,7 +2,7 @@ version: '3.7'
 
 connections:
   dev_local:
-    host: localhost
+    host: 127.0.0.1
     port: 5672
     http_port: 15672
     username: guest
