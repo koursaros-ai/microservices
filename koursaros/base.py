@@ -43,7 +43,6 @@ class ActivatingContainer:
         self.__activerefs__ = []
 
         for clas in list(self):
-            print(self.__activerefs__)
             cls_name = clas.__name__
             __active__ = True if cls_name in active_names else False
 
@@ -328,14 +327,23 @@ class Connector(ReprClassName):
         self._debug = self._pipe.debug
         self._service = _stub._service
         self._stub = _stub
-        self._connect()
 
     def _connect(self):
+
+        # get the active connection in the pipeline
         conn = self._pipe.Connections.getactive()
-        credentials = pika.credentials.PlainCredentials(repr(self._service), conn.password)
-        print(credentials)
-        params = pika.ConnectionParameters(conn.host, conn.port, repr(self._pipe), credentials)
-        print(params)
+
+        credentials = pika.credentials.PlainCredentials(
+            repr(self._service),
+            conn.password
+        )
+
+        params = pika.ConnectionParameters(
+            conn.host,
+            conn.port,
+            repr(self._pipe),
+            credentials
+        )
 
         while True:
             try:
@@ -349,9 +357,12 @@ class Connector(ReprClassName):
 
 
 class Publisher(Connector):
+    """A simple rabbitmq producer that receives connection from base class
+    and sends messages on the queue (name of the referenced _SendStub)
+    """
 
     def run(self):
-        pass
+        self._connect()
 
     def check_send_proto(self, proto):
         """Checks an outgoing proto against the
@@ -362,7 +373,6 @@ class Publisher(Connector):
 
     def publish(self, proto):
         # tag outgoing protos with their class names
-        proto.cls = proto.__class__.__name__
 
         self.check_send_proto(proto)
 
@@ -385,13 +395,19 @@ class Publisher(Connector):
 
 
 class Consumer(Connector):
+    """A simple rabbitmq consumer that receives connection from base class
+    and listens on the queue (name of the referenced _stub)
+    """
+
     def run(self):
+        self._connect()
         self.consume()
 
     def consume(self):
+        # queue is stub name
+        queue = repr(self._stub)
 
         self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        queue = self._stub.queue
         self._channel.basic_consume(queue=queue, on_message_callback=self.consume_callback)
         print(f'Consuming messages on {queue}...')
         self._channel.start_consuming()
@@ -405,7 +421,7 @@ class Consumer(Connector):
         proto.ParseFromString(body)
 
         if self._pipe.args.debug:
-            print(f'"{self}" stub received "{proto.__class__.__name__}" message on {channel}...')
+            print(f'"{self}" stub received "{cls(proto)}" message on {channel}...')
 
         process_thread = Thread(target=self._stub.process, args=(proto, method))
         process_thread.run()
