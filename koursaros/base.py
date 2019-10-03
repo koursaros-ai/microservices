@@ -189,8 +189,6 @@ class Stub(ReprClassName):
 
     _send_stub = None
 
-    _should_send = False
-
     _consumer = None
     _publisher = None
 
@@ -201,6 +199,7 @@ class Stub(ReprClassName):
         self._service = _service
         self._pipe = _service._pipe
         self._debug = self._pipe.debug
+        self._should_send = True if self._send_stub else False
 
         if self._debug:
             print(f'Initializing "{self}" stub...')
@@ -270,11 +269,10 @@ class Stub(ReprClassName):
             if returned is not None:
                 self.raise_should_not_return()
         if method is not None:
-            tag = method.delivery_tag
             if self._debug:
-                print(f'"{self}" stub sending ack callback: {tag}')
+                print(f'"{self}" stub sending ack callback')
 
-            self._consumer.ack_callback(tag)
+            self._consumer.ack_callback(method.delivery_tag)
 
     def send(self, proto):
 
