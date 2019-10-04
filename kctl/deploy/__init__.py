@@ -36,9 +36,9 @@ def pipeline(path_manager, *rmq):
 @click.option('-c', '--connection', required=True)
 @click.option('-r', '--rebind', is_flag=True)
 @click.pass_obj
-def service(path_manager, service, *rmq):
-    rmq_setup(*rmq)
-    subproc_servs(path_manager, [service])
+def service(path_manager, service, connection, rebind):
+    rmq_setup(connection, rebind)
+    subproc_servs(path_manager, [service], connection)
 
 
 def rmq_setup(connection, rebind):
@@ -46,21 +46,30 @@ def rmq_setup(connection, rebind):
     if rebind:
         bind_rabbitmq(connection)
 
-def suproc_servs(pm, services):
+
+def suproc_servs(pm, services, connection):
     for service in services:
-        cmd = [sys.executable, '-m', f'{pm.pipe_name}.services.{service}']
+        directory = path_manager.pipe_root + '..'
+        cmd = [sys.executable, '-m', f'{pm.pipe_name}.services.{service}', connection]
         cmd += sys.argv[1:]
 
+
 def subproc(cmds):
+    """Subprocess a list of commands from specified
+     directories and cleanup procs when done
+
+    :param cmds: iterable list of tuples (directory: cmd)
+    """
     processes = []
 
     try:
+        for cmd in cmds:
             print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
             p = Popen(cmd)
 
-            processes.append((p, service))
+            processes.append((p, cmd))
 
-        for p, service in processes:
+        for p, cmd in processes:
             p.communicate()
 
     except KeyboardInterrupt:
