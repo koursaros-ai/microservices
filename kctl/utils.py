@@ -70,6 +70,10 @@ class PathManager:
 
     def load_pipe(self):
         pipe = getattr(pipelines, self.pipe_name, None)
+
+        if pipe is None:
+            raise ModuleNotFoundError(f'"{self.pipe_name}" pipeline not found...')
+
         return pipe() if pipe is not None else None
 
     def find_pipe_root(self):
