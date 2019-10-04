@@ -147,7 +147,6 @@ class PipelineBottle(ClassBottle):
     def get_serv_yamls(self):
         serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
         serv_paths, self.serv_names = serv_dirs
-        import pdb; pdb.set_trace()
         yamls = [self.get_yaml(path + '/stubs.yaml', 'stubs') for path in serv_paths]
         return dict(zip(self.serv_names, yamls))
 
