@@ -9,6 +9,18 @@ import os
 import click
 from ..save import save
 
+deploy_options = [
+    click.option('-c', '--connection', required=True),
+    click.option('-r', '--rebind', is_flag=True),
+    click.option('-d', '--debug', is_flag=True),
+]
+
+
+def deploy_opts(f):
+    for option in deploy_options:
+        f = option(f)
+    return f
+
 
 @click.group()
 @click.pass_context
@@ -27,9 +39,7 @@ def deploy(ctx):
 
 
 @deploy.command()
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
-@click.option('-d', '--debug', is_flag=True)
+@deploy_opts
 @click.pass_obj
 def pipeline(pm, connection, rebind):
     rmq_setup(pm, connection, rebind)
@@ -39,9 +49,7 @@ def pipeline(pm, connection, rebind):
 
 @deploy.command()
 @click.argument('service')
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
-@click.option('-d', '--debug', is_flag=True)
+@deploy_opts
 @click.pass_obj
 def service(pm, service, connection, rebind):
     rmq_setup(pm, connection, rebind)
