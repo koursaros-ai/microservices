@@ -24,7 +24,7 @@ class PathManager:
         self.base = base
         self.pipe_root = self.find_pipe_root()
         self.pipe_name = self.pipe_root.split('/')[-2] if self.pipe_root else None
-        self.pipe = self.get_pipe()
+        self.pipe = self.load_pipe()
         self.pipelines = pipelines
         self.compile_path = pipelines.__path__[0] + '/'
         self.existing_pipes = self.get_dirs(self.compile_path)
@@ -42,11 +42,11 @@ class PathManager:
             [self.serv_paths[name] for name in sorted(self.serv_paths)]
         )
 
-    def reload_pipe(self):
+    def reload_pipelines(self):
         reload(self.pipelines)
-        self.pipe = self.get_pipe()
+        self.pipe = self.load_pipe()
 
-    def get_pipe(self):
+    def load_pipe(self):
         return getattr(pipelines, self.pipe_name)() if self.pipe_name else None
 
     def find_pipe_root(self):

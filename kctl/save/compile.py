@@ -149,6 +149,7 @@ class PipelineBottler(ClassBottler):
 
         with open(f'{self.pm.compile_path}/__init__.py', 'w') as fh:
             fh.write(imports)
+            import pdb;pdb.set_trace()
 
     def save(self):
         print(f'Writing to {self.pm.pipe_save_dir}...')

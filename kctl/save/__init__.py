@@ -21,7 +21,7 @@ def save(path_manager):
         bottle.compile_services()
         bottle.compile_messages()
         bottle.save()
-        path_manager.reload_pipe()
+        path_manager.reload_pipelines()
         bottle.add_headers(IMPORTS)
 
 
