@@ -57,7 +57,7 @@ class PipelineBottler(ClassBottler):
         self.out_file = f'{self.save_path}/__init__.py'
         self.conn_yaml = self.get_yaml(self.pipe_root + '/connections.yaml', 'connections')
         self.stubs_yaml = self.get_yaml(self.pipe_root + '/stubs.yaml', 'stubs')
-        self.serv_yamls = self.get_serv_yamls()
+        self.serv_paths, self.serv_yamls = self.get_serv_yamls()
 
         super().__init__(self.pipe_name, parent_class='Pipeline')
 
@@ -65,7 +65,6 @@ class PipelineBottler(ClassBottler):
     def md5_dict(dict_):
         """Sorts a dict by keys and returns a concat md5 hash of the key and values"""
         tuples = sorted(dict_.items(), key=itemgetter(0))
-        import pdb; pdb.set_trace()
         hashed_list = [key + md5(value).hexdigest() for key, value in tuples]
         print(hashed_list)
         raise SystemExit
@@ -76,18 +75,21 @@ class PipelineBottler(ClassBottler):
             with open(self.out_file) as f:
                 line = f.readline()
                 print(line)
-                hashed = self.md5_dict(self.serv_yamls)
+                plaintext = {name: open(path).read() for name, path in self.serv_paths}
+                hashed = self.md5_dict(plaintext)
                 print(hashed)
                 raise SystemExit
 
         except FileNotFoundError:
             return False
 
+
+
     def get_serv_yamls(self):
         serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
         serv_paths, serv_names = serv_dirs
         yamls = [self.get_yaml(path + '/service.yaml', 'service') for path in serv_paths]
-        return dict(zip(serv_names, yamls))
+        return dict(zip(serv_names, serv_paths)), dict(zip(serv_names, yamls))
 
     @staticmethod
     def get_yaml(path, head):
