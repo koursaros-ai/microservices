@@ -130,9 +130,7 @@ class PipelineBottle(ClassBottle):
         self.stubs_yaml = self.get_yaml(self.pipe_root + '/stubs.yaml', 'stubs')
         self.serv_names, self.serv_yamls = self.get_serv_yamls()
 
-
         super().__init__(self.pipe_name, parent_class='Pipeline')
-
 
     def cached(self):
         try:
@@ -147,7 +145,7 @@ class PipelineBottle(ClassBottle):
     def get_serv_yamls(self):
         serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
         serv_paths, self.serv_names = serv_dirs
-        yamls = [self.get_yaml(path + '/stubs.yaml', 'stubs') for path in serv_paths]
+        yamls = [self.get_yaml(path + '/service.yaml', 'service') for path in serv_paths]
         return dict(zip(self.serv_names, yamls))
 
     @staticmethod
