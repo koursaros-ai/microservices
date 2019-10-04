@@ -72,7 +72,7 @@ class ClassBottler:
             self.lines += cls.lines
 
     def add_headers(self, headers):
-        self.headers.append(headers)
+        self.headers += headers
 
     def to_string(self):
         self.bottle()
