@@ -69,7 +69,7 @@ class PathManager:
         self.pipe = self.load_pipe()
 
     def load_pipe(self):
-        pipe = getattr(pipelines, self.pipe_name, None)
+        pipe = getattr(self.pipelines, self.pipe_name, None)
 
         if pipe is None:
             raise ModuleNotFoundError(f'"{self.pipe_name}" pipeline not found...')
