@@ -65,7 +65,12 @@ class PathManager:
             )
 
     def load_pipe(self):
-        pipe = getattr(self.pipelines, self.pipe_name)
+        try:
+            pipe = getattr(self.pipelines, self.pipe_name)
+        except AttributeError:
+            self.reload()
+            pipe = getattr(self.pipelines, self.pipe_name)
+
         return pipe() if pipe is not None else None
 
     def reload(self):
