@@ -61,8 +61,7 @@ class PathManager:
 
     @staticmethod
     def hash_files(paths):
-        import pdb; pdb.set_trace()
-        return [md5(open(path, 'rb')).hexdigest() for path in paths]
+        return [md5(open(path, 'rb').read()).hexdigest() for path in paths]
 
     def raise_if_pipe_root(self):
         if self.pipe_root is not None:
