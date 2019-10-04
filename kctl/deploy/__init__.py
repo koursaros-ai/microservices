@@ -57,7 +57,7 @@ def subproc_servs(pm, services, connection):
             connection, service
         ]
         directory = pm.pipe_root + '..'
-        cmds += (directory, cmd)
+        cmds.append((directory, cmd))
 
     subproc(cmds)
 
