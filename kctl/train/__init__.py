@@ -1,4 +1,3 @@
-
 import click
 
 
@@ -7,3 +6,4 @@ import click
 @click.pass_context
 def train(path_manager, ):
     """Save current directory's pipeline"""
+    pass
