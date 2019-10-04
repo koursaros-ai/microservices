@@ -167,7 +167,7 @@ class Stub(ReprClassName):
     def __init__(self, _service):
         self._service = _service
         print(dir(_service))
-        print(service)
+        print(_service)
         self._pipe = _service._pipe
         self._debug = self._pipe.debug
         self._should_send = True if self._send_stub else False
