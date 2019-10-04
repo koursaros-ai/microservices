@@ -46,16 +46,15 @@ def rmq_setup(connection, rebind):
     if rebind:
         bind_rabbitmq(connection)
 
-def suproc_servs()
+def suproc_servs(pm, services):
+    for service in services:
+        cmd = [sys.executable, '-m', f'{pm.pipe_name}.services.{service}']
+        cmd += sys.argv[1:]
 
-def subproc(pm, services):
+def subproc(cmds):
     processes = []
 
     try:
-        for service in services:
-            cmd = [sys.executable, '-m', f'{pm.pipe_name}.services.{service}']
-            cmd += sys.argv[1:]
-
             print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
             p = Popen(cmd)
 
