@@ -19,10 +19,10 @@ class ClassBottler:
 
     invalid_names = ['from']
     plain_types = (list, int, Plain, type(None))
-    lines = []
-    classes = []
 
     def __init__(self, name, parent_class=None):
+        self.lines = []
+        self.classes = []
         self.name = name
         self.parent = f'({parent_class})' if parent_class else ''
 
