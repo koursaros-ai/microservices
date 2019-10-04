@@ -66,16 +66,19 @@ class PipelineBottler(ClassBottler):
         """Sorts a dict by keys and returns a concat md5 hash of the key and values"""
         tuples = sorted(dict_.items(), key=itemgetter(0))
         hashed_list = [key + md5(value).hexdigest() for key, value in tuples]
-        print(hashed_list)
-        raise SystemExit
+        return ''.join(hashed_list)
+
+    @staticmethod
+    def open_dict(dict_):
+        """open a dictionary of filepaths to bytes (paths are the values)"""
+        return {key: open(path, 'rb').read() for key, path in dict_.items()}
 
     def cached(self):
         try:
             print(self.out_file)
             with open(self.out_file) as f:
                 line = f.readline()
-                print(line)
-                plaintext = {name: open(path, 'rb').read() for name, path in self.serv_paths.items()}
+                plaintext = self.open_dict(self.serv_paths)
                 hashed = self.md5_dict(plaintext)
                 print(hashed)
                 raise SystemExit
