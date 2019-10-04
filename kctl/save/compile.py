@@ -144,6 +144,7 @@ class PipelineBottler(ClassBottler):
 
     def reset_imports(self):
         imports = ''
+        import pdb; pdb.set_trace()
         for pipe in self.pm.existing_pipes:
             imports += f'from .{pipe} import {pipe}\n'
 
