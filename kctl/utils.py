@@ -28,6 +28,7 @@ class PathManager:
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
         self.pipelines = koursaros.pipelines
         self.pipe_save_dir = self.compile_path + self.pipe_name
+        self.existing_pipes = self.get_dirs(self.pipe_save_dir)
         self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
         self.conn_path = self.pipe_root + '/connections.yaml'
         self.stubs_path = self.pipe_root + '/stubs.yaml'

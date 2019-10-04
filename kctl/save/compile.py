@@ -7,8 +7,6 @@ import os
 import re
 from collections import OrderedDict
 
-INVALID_PREFIXES = ('_', '.')
-IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import *']
 
 # stub parsing
 s = r'\s*'
@@ -146,10 +144,8 @@ class PipelineBottler(ClassBottler):
 
     def reset_imports(self):
         imports = ''
-        all_pipes = next(os.walk(self.pm.pipe_save_dir))[1]
-        for pipe in all_pipes:
-            if not pipe.startswith(INVALID_PREFIXES):
-                imports += f'from .{pipe} import {pipe}\n'
+        for pipe in self.pm.existing_pipes:
+            imports += f'from .{pipe} import {pipe}\n'
 
         with open(f'{self.pm.compile_path}/__init__.py', 'w') as fh:
             fh.write(imports)

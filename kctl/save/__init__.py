@@ -4,6 +4,8 @@ import click
 from .compile import PipelineBottler
 from importlib import reload
 
+IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import *']
+
 
 @click.command()
 @click.pass_obj
@@ -19,6 +21,7 @@ def save(path_manager):
         bottle.compile_services()
         bottle.compile_messages()
         bottle.save()
+        bottle.add_headers(IMPORTS)
         reload(path_manager.pipelines)
 
 
