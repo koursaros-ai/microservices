@@ -34,9 +34,8 @@ class PathManager:
         self.serv_paths = self.get_dirs(self.pipe_root + '/services/')
         self.conn_hash = self.hash_files([self.conn_path])
         self.stubs_hash = self.hash_files([self.stubs_path])
-        import pdb; pdb.set_trace()
         self.serv_hashes = self.hash_files(
-            sorted(self.serv_paths.values(), key=self.serv_paths.get)
+            [self.serv_paths[name] for name in sorted(self.serv_paths)]
         )
 
     def find_pipe_root(self):
