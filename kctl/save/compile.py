@@ -77,11 +77,10 @@ class PipelineBottler(ClassBottler):
         try:
             print(self.out_file)
             with open(self.out_file) as f:
-                line = f.readline()
+                firstline = f.readline()
                 plaintext = self.open_dict(self.serv_paths)
                 hashed = self.md5_dict(plaintext)
-                print(hashed)
-                raise SystemExit
+                return True if firstline == hashed else False
 
         except FileNotFoundError:
             return False
