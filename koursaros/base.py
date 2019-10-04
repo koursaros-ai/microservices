@@ -103,9 +103,7 @@ class Pipeline(ReprClassName):
 
     def __init__(self, package, prefetch=1, logger=True):
         self.prefetch = prefetch
-
-        if 'debug' in argv:
-            self.debug = True
+        self.debug = True if 'debug' in argv else False
 
         if logger:
             KctlLogger.init()
