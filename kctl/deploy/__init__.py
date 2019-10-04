@@ -14,7 +14,6 @@ from ..save import save
 @click.pass_context
 def deploy(ctx):
     """Check configuration yamls, bind rabbitmq, and deploy"""
-    import pdb; pdb.set_trace()
     ctx.invoke(save)
 
 
