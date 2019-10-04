@@ -60,7 +60,7 @@ class PathManager:
 
         return None
 
-    @ staticmethod
+    @staticmethod
     def get_dirs(path):
         """Returns directories for a path
 
