@@ -29,7 +29,7 @@ def pipeline(pm, connection, rebind, debug):
     """Deploy a pipeline"""
     rmq_setup(pm, connection, rebind)
     services = [cls(service) for service in pm.pipe.Services]
-    subproc_servs(pm, services, connection)
+    subproc_servs(pm, services, connection, debug)
 
 
 @deploy.command()
