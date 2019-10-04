@@ -168,7 +168,6 @@ class PipelineBottler(ClassBottler):
             services.digest(service)
 
         self.digest(services)
-        import pdb; pdb.set_trace()
 
     def compile_messages(self):
         print(f'Compiling messages for {self.pipe_root}')
