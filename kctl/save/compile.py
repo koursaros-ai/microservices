@@ -197,7 +197,7 @@ class PipelineBottle(ClassBottle):
 
             stubb = ClassBottle(name, parent_class='Stub')
             stubb.digest(stub)
-            stubs[service] = stubs.get(service, []) + stubb
+            stubs[service] = stubs.get(service, []) + [stubb]
 
         return stubs
 
