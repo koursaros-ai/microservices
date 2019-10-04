@@ -31,11 +31,12 @@ class PathManager:
         self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
         self.conn_path = self.pipe_root + '/connections.yaml'
         self.stubs_path = self.pipe_root + '/stubs.yaml'
-        self.serv_paths = self.get_dirs(self.pipe_root + 'services/')
+        self.serv_dirs = self.get_dirs(self.pipe_root + 'services/')
+        self.serv_paths = {name: path + '/service.yaml' for name, path in self.serv_dirs.itmes()}
         self.conn_hash = self.hash_files([self.conn_path])
         self.stubs_hash = self.hash_files([self.stubs_path])
         self.serv_hashes = self.hash_files(
-            [self.serv_paths[name] + '/service.yaml' for name in sorted(self.serv_paths)]
+            [self.serv_paths[name] for name in sorted(self.serv_paths)]
         )
 
     def find_pipe_root(self):
@@ -61,7 +62,6 @@ class PathManager:
 
     @staticmethod
     def hash_files(paths):
-        print(paths)
         return [md5(open(path, 'rb').read()).hexdigest() for path in paths]
 
     def raise_if_pipe_root(self):
