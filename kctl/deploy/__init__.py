@@ -34,9 +34,7 @@ def deploy(ctx):
 @click.pass_obj
 def pipeline(pm, connection, rebind):
     rmq_setup(pm, connection, rebind)
-    from koursaros import pipelines
-    pipe = getattr(pipelines, pm.pipe_name)
-    services = [cls(service) for service in pipe.Services]
+    services = [cls(service) for service in pm.pipe.Services]
     subproc_servs(pm, services, connection)
 
 
