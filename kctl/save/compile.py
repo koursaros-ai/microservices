@@ -48,7 +48,7 @@ class PipelineBottler(ClassBottler):
         self.conn_yaml = self.get_yamls([pm.conn_path], 'connections')[0]
         self.stubs_yaml = self.get_yamls([pm.stubs_path], 'stubs')[0]
         serv_paths = OrderedDict(pm.serv_paths)
-        self.serv_yamls = self.get_yamls([serv_paths.values()], 'service')
+        self.serv_yamls = self.get_yamls(serv_paths.values(), 'service')
         self.serv_names = serv_paths.keys()
 
         self.hashed_yamls = '#' + pm.conn_hash + pm.stubs_hash + ''.join(pm.serv_hashes) + '\n'
