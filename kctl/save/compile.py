@@ -151,7 +151,8 @@ class PipelineBottle(ClassBottle):
         yamls = [self.get_yaml(path + '/stubs.yaml', 'stubs') for path in serv_paths]
         return dict(zip(self.serv_names, yamls))
 
-    def get_yaml(self, path, head):
+    @staticmethod
+    def get_yaml(path, head):
         yaml = pyyaml.safe_load(open(path))
         return yaml[head]
 
