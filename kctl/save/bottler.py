@@ -62,14 +62,13 @@ class ClassBottler:
         cap = [f'{indent}class {self.name}{self.parent}:']
         indent = '    ' * (indents + 1)
         lines = [indent + line for line in self.lines]
-        self.lines = cap  + lines
+        self.lines = cap + lines
 
         indents += 1
 
         for cls in self.classes:
             cls.bottle(indents=indents)
             self.lines += cls.lines
-
 
     def add_headers(self, headers):
         self.lines = headers + self.lines

@@ -1,6 +1,6 @@
 
-
 import koursaros.pipelines
+from hashlib import md5
 import kctl
 import os
 
@@ -27,6 +27,16 @@ class PathManager:
         self.kctl_path = kctl.__path__[0] + '/'
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
         self.pipelines = koursaros.pipelines
+        self.pipe_save_dir = self.compile_path + self.pipe_name
+        self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
+        self.conn_path = self.pipe_root + '/connections.yaml'
+        self.stubs_path = self.pipe_root + '/stubs.yaml'
+        self.serv_paths = self.get_dirs(self.pipe_root + '/services/')
+        self.conn_hash = self.hash_files([self.conn_path])
+        self.stubs_hash = self.hash_files([self.stubs_path])
+        self.serv_hashes = self.hash_files(
+            sorted(self.serv_paths, key=self.serv_paths.get)
+        )
 
     def find_pipe_root(self):
         current_path = ''
@@ -37,6 +47,21 @@ class PathManager:
                 return current_path
 
         return None
+
+    @ staticmethod
+    def get_dirs(path):
+        """Returns directories for a path
+
+        :param path: filepath
+        :return: (dir names, dir paths)
+        """
+        dir_names = next(os.walk(path))[1]
+        filtered = [name for name in dir_names if name[0] not in '_.']
+        return dict(zip(filtered, [path + name for name in filtered]))
+
+    @staticmethod
+    def hash_files(paths):
+        return [md5(open(path, 'rb')).hexdigest() for path in paths]
 
     def raise_if_pipe_root(self):
         if self.pipe_root is not None:

@@ -1,11 +1,11 @@
 
 from .bottler import ClassBottler
-from operator import itemgetter
+
 from grpc_tools import protoc
-from hashlib import md5
 import yaml as pyyaml
 import os
 import re
+from collections import OrderedDict
 
 INVALID_PREFIXES = ('_', '.')
 IMPORTS = ['from .messages_pb2 import *', 'from koursaros.base import *']
@@ -34,11 +34,6 @@ def parse_stub_string(stub_string):
     return dict(zip(STUB_LABELS, groups))
 
 
-def get_valid_dirs(path):
-    dir_names = [x for x in next(os.walk(path))[1] if not x.startswith(INVALID_PREFIXES)]
-    return [path + x for x in dir_names], dir_names
-
-
 class PipelineBottler(ClassBottler):
     """Subclass of ClassCompiler that compiles Koursaros pipeline
 
@@ -48,58 +43,31 @@ class PipelineBottler(ClassBottler):
     def __init__(self, path_manager):
 
         path_manager.raise_if_no_pipe_root()
-        self.path_manager = path_manager
-        self.pipe_name = path_manager.pipe_name
-        self.pipe_root = path_manager.pipe_root
-        self.compile_path = path_manager.compile_path
-        self.save_path = self.compile_path + self.pipe_name
-        self.name = self.pipe_name
-        self.out_file = f'{self.save_path}/__init__.py'
-        self.conn_yaml = self.get_yaml(self.pipe_root + '/connections.yaml', 'connections')
-        self.stubs_yaml = self.get_yaml(self.pipe_root + '/stubs.yaml', 'stubs')
-        self.serv_paths, self.serv_yamls = self.get_serv_yamls()
-        self.hashed = self.hash_yamls()
+        pm = path_manager
 
-        super().__init__(self.pipe_name, parent_class='Pipeline')
+        self.conn_yaml = self.get_yamls([pm.conn_path], 'connections')[0]
+        self.stubs_yaml = self.get_yamls([pm.stubs_path], 'stubs')[0]
+        serv_paths = OrderedDict(pm.serv_paths)
+        self.serv_yamls = self.get_yamls([serv_paths.values()], 'service')
+        self.serv_names = serv_paths.keys()
 
-    @staticmethod
-    def md5_dict(dict_):
-        """Sorts a dict by keys and returns a concat md5 hash of the key and values"""
-        tuples = sorted(dict_.items(), key=itemgetter(0))
-        hashed_list = [key + md5(value).hexdigest() for key, value in tuples]
-        return ''.join(hashed_list)
+        self.hashed_yamls = '#' + pm.conn_hash + pm.stubs_hash + ''.join(pm.serv_hashes) + '\n'
+        self.pm = pm
+
+        super().__init__(pm.pipe_name, parent_class='Pipeline')
 
     @staticmethod
-    def open_dict(dict_):
-        """open a dictionary of filepaths to bytes (paths are the values)"""
-        return {key: open(path, 'rb').read() for key, path in dict_.items()}
-
-    def hash_yamls(self):
-        plaintext = self.open_dict(self.serv_paths)
-        return '#' + self.md5_dict(plaintext) + '\n'
+    def get_yamls(paths, head):
+        return [pyyaml.safe_load(open(path))[head] for path in paths]
 
     def cached(self):
         try:
-            print(self.out_file)
-            with open(self.out_file) as f:
+            with open(self.pm.pipe_save_file) as f:
                 firstline = f.readline()
-                return True if firstline == self.hashed else False
+                return True if firstline == self.hashed_yamls else False
 
         except FileNotFoundError:
             return False
-
-    def get_serv_yamls(self):
-        serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
-        serv_paths, serv_names = serv_dirs
-        serv_paths = [path + '/service.yaml' for path in serv_paths]
-
-        yamls = [self.get_yaml(path, 'service') for path in serv_paths]
-        return dict(zip(serv_names, serv_paths)), dict(zip(serv_names, yamls))
-
-    @staticmethod
-    def get_yaml(path, head):
-        yaml = pyyaml.safe_load(open(path))
-        return yaml[head]
 
     def compile_connections(self):
 
@@ -153,12 +121,11 @@ class PipelineBottler(ClassBottler):
 
         services = ClassBottler('Services', parent_class='ActivatingContainer')
         all_stubs = self.compile_stubs()
-        services.digest(list(self.serv_yamls.keys()), name='__names__')
+        services.digest(list(self.serv_names), name='__names__')
 
-        for name in self.serv_yamls.keys():
+        for name, yaml in zip(self.serv_names, self.serv_yamls):
             service = ClassBottler(name, parent_class='Service')
             stubs = ClassBottler('Stubs', parent_class='ActivatingContainer')
-            yaml = self.serv_yamls[name]
             service.digest(yaml)
 
             for stub in all_stubs.pop(name):
@@ -169,29 +136,29 @@ class PipelineBottler(ClassBottler):
         self.digest(services)
 
     def compile_messages(self):
-        print(f'Compiling messages for {self.pipe_root}')
+        print(f'Compiling messages for {self.pm.pipe_root}')
         protoc.main((
             '',
-            f'-I={self.pipe_root}',
-            f'--python_out={self.save_path}',
-            f'{self.pipe_root}/messages.proto',
+            f'-I={self.pm.pipe_root}',
+            f'--python_out={self.pm.pipe_save_dir}',
+            f'{self.pm.pipe_root}/messages.proto',
         ))
 
     def reset_imports(self):
         imports = ''
-        all_pipes = next(os.walk(self.save_path))[1]
+        all_pipes = next(os.walk(self.pm.pipe_save_dir))[1]
         for pipe in all_pipes:
             if not pipe.startswith(INVALID_PREFIXES):
                 imports += f'from .{pipe} import {pipe}\n'
 
-        with open(f'{self.compile_path}/__init__.py', 'w') as fh:
+        with open(f'{self.pm.compile_path}/__init__.py', 'w') as fh:
             fh.write(imports)
 
     def save(self):
-        print(f'Writing to {self.save_path}...')
-        os.makedirs(self.save_path, exist_ok=True)
+        print(f'Writing to {self.pm.pipe_save_dir}...')
+        os.makedirs(self.pm.pipe_save_dir, exist_ok=True)
         compiled = self.to_string()
-        with open(self.out_file, 'w') as fh:
-            fh.write(self.hashed + compiled)
+        with open(self.pm.pipe_save_file, 'w') as fh:
+            fh.write(self.hashed_yamls + compiled)
 
         self.reset_imports()
