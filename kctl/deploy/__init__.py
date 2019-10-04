@@ -26,7 +26,9 @@ def deploy(path_manager, connection, rebind):
 @click.pass_obj
 def pipeline(path_manager):
     pm = path_manager
-    services = [cls(service) for service in pm.pipe.Services]
+    from koursaros import pipelines
+    pipe = getattr(pipelines, pm.pipe_name)
+    services = [cls(service) for service in pipe.Services]
     subproc_servs(path_manager, services)
 
 
