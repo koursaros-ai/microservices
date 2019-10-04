@@ -65,6 +65,7 @@ class PipelineBottler(ClassBottler):
     def md5_dict(dict_):
         """Sorts a dict by keys and returns a concat md5 hash of the key and values"""
         tuples = sorted(dict_.items(), key=itemgetter(0))
+        import pdb; pdb.set_trace()
         hashed_list = [key + md5(value).hexdigest() for key, value in tuples]
         print(hashed_list)
         raise SystemExit
