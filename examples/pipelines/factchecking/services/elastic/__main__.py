@@ -1,4 +1,4 @@
-# from koursaros.pipelines import factchecking
+from koursaros.pipelines import factchecking
 from .ksql import Ksql
 from .kelastic import Kelastic
 import os
