@@ -195,8 +195,9 @@ class PipelineBottle(ClassBottle):
 
             service = parsed['service']
 
-            stub = ClassBottle(name, parent_class='Stub').digest(stub)
-            stubs[service] = stubs.get(service, []) + stub
+            stubb = ClassBottle(name, parent_class='Stub')
+            stubb.digest(stub)
+            stubs[service] = stubs.get(service, []) + stubb
 
         return stubs
 
