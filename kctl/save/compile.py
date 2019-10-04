@@ -76,7 +76,7 @@ class PipelineBottler(ClassBottler):
                 line = f.readline()
                 print(line)
                 import pdb; pdb.set_trace()
-                plaintext = {name: open(path).read() for name, path in self.serv_paths}
+                plaintext = {name: open(path).read() for name, path in self.serv_paths.items()}
                 hashed = self.md5_dict(plaintext)
                 print(hashed)
                 raise SystemExit
