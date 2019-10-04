@@ -76,7 +76,7 @@ class PipelineBottler(ClassBottler):
 
     def hash_yamls(self):
         plaintext = self.open_dict(self.serv_paths)
-        return self.md5_dict(plaintext)
+        return '#' + self.md5_dict(plaintext)
 
     def cached(self):
         try:
