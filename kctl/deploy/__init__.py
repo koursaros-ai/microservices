@@ -39,7 +39,7 @@ def service(pm, service, connection, rebind, debug):
     """Deploy a service or group of services"""
     import pdb; pdb.set_trace()
     rmq_setup(pm, connection, rebind)
-    subproc_servs(pm, [service], connection)
+    subproc_servs(pm, [service], connection, debug)
 
 
 def rmq_setup(pm, connection, rebind):
@@ -48,13 +48,14 @@ def rmq_setup(pm, connection, rebind):
         bind_rabbitmq(pm, connection)
 
 
-def subproc_servs(pm, services, connection):
+def subproc_servs(pm, services, connection, debug):
     cmds = []
     for service in services:
         cmd = [
             sys.executable, '-m',
             f'{pm.pipe_name}.services.{service}',
-            connection, service
+            connection, service,
+            'debug' if debug else ''
         ]
         directory = pm.pipe_root + '..'
         cmds.append((directory, cmd))
@@ -73,25 +74,27 @@ def subproc(cmds):
     try:
         for directory, cmd in cmds:
             os.chdir(directory)
-            print(f'''Running "{BOLD.format(' '.join(cmd))}" from "{directory}"...''')
+            formatted = BOLD.format(' '.join(cmd))
+
+            print(f'''Running "{formatted}" from "{directory}"...''')
             p = Popen(cmd)
 
-            procs.append((p, cmd))
+            procs.append((p, formatted))
 
-        for p, cmd in procs:
+        for p, formatted in procs:
             p.communicate()
 
     except KeyboardInterrupt:
         pass
 
     finally:
-        for p, cmd in procs:
+        for p, formatted in procs:
 
             if p.poll() is None:
                 os.kill(p.pid, signal.SIGTERM)
-                print(f'Killing pid {p.pid}: {cmd}')
+                print(f'Killing pid {p.pid}: {formatted}')
             else:
-                print(f'Process {p.pid}: "{cmd}" ended...')
+                print(f'Process {p.pid}: "{formatted}" ended...')
 
 
 # else:
