@@ -81,7 +81,7 @@ class ClassBottle:
             self.lines += getsource(obj).split('\n')
 
         # append in order to bottle later
-        elif isinstance(obj, self.__class__):
+        elif isinstance(obj, ClassBottle):
             self.classes.append(obj)
 
         else:
