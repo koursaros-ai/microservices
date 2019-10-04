@@ -18,15 +18,21 @@ import click
 
 @click.group()
 @click.pass_context
-def cli(ctx):
+def kctl(ctx):
     KctlLogger.init()
     ctx.obj = PathManager()
 
 
-cli.add_command(create)
-cli.add_command(deploy)
-cli.add_command(train)
-cli.add_command(pull)
-cli.add_command(save)
+kctl.add_command(create)
+kctl.add_command(deploy)
+kctl.add_command(train)
+kctl.add_command(pull)
+kctl.add_command(save)
 
-cli(prog_name=__package__)
+
+def cli():
+    kctl(prog_name=__package__)
+
+
+if __name__ == "__main__":
+    cli()
