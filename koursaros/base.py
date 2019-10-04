@@ -113,6 +113,7 @@ class Pipeline(ReprClassName):
         print(f'Initializing "{self}.{active_service}"')
         self.Connections = self.Connections([argv[1]])
         self.Services = self.Services([active_service], self)
+        import pdb; pdb.set_trace()
 
 
 class Connection(ReprClassName):
@@ -136,10 +137,10 @@ class Service(ReprClassName):
         if self._debug:
             print(f'Initializing "{self}" service...')
 
-        active_stub_names = self.Stubs.__names__ if self.__active__ else []
+        active_stubs = self.Stubs.__names__ if self.__active__ else []
 
         # init stubs with reference to pipeline and service
-        self.Stubs = self.Stubs(active_stub_names, self)
+        self.Stubs = self.Stubs(active_stubs, self)
 
     def run(self):
         for stub in self.Stubs:
