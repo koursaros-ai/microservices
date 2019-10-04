@@ -75,7 +75,7 @@ class PipelineBottler(ClassBottler):
             with open(self.out_file) as f:
                 line = f.readline()
                 print(line)
-                plaintext = {name: open(path).read() for name, path in self.serv_paths.items()}
+                plaintext = {name: open(path, 'rb').read() for name, path in self.serv_paths.items()}
                 hashed = self.md5_dict(plaintext)
                 print(hashed)
                 raise SystemExit
