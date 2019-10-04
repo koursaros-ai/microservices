@@ -63,11 +63,11 @@ class ClassBottler:
         self.lines += [f'class {self.name}{self.parent}:'] + indented
 
         indents += 1
-        print(indents)
 
         for cls in self.classes:
             cls.bottle(indents=indents)
             self.lines += cls.lines
+            print(self.lines.__sizeof__)
 
     def add_headers(self, headers):
         self.lines = headers + self.lines
