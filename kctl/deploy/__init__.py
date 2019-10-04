@@ -16,10 +16,15 @@ deploy_options = [
 ]
 
 
-def deploy_opts(f):
-    for option in deploy_options:
-        f = option(f)
-    return f
+def option_group(options):
+    def option_decorator(f):
+        for option in options:
+            f = option(f)
+        return f
+    return option_decorator
+
+
+deploy_opts = option_group(deploy_options)
 
 
 @click.group()
