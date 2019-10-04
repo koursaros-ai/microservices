@@ -1,5 +1,4 @@
 
-from koursaros import pipelines
 from importlib import reload
 from hashlib import md5
 import kctl
@@ -10,6 +9,26 @@ BOLD = '\033[1m{}\033[0m'
 
 def cls(obj):
     return obj.__class__.__name__
+
+
+def decorator_group(options):
+    """returns a decorator which bundles the given decorators
+
+    :param options: iterable of decorators
+    :return: single decorator
+
+    Example:
+        deploy_options = option_group([
+            click.option('-c', '--connection', required=True),
+            click.option('-r', '--rebind', is_flag=True),
+            click.option('-d', '--debug', is_flag=True),
+        ])
+    """
+    def option_decorator(f):
+        for option in options:
+            f = option(f)
+        return f
+    return option_decorator
 
 
 class PathManager:
@@ -23,6 +42,7 @@ class PathManager:
     def __init__(self, base=os.getcwd()):
         self.base = base
         self.pipe_root = self.find_pipe_root()
+        from koursaros import pipelines
         self.pipelines = pipelines
         self.compile_path = pipelines.__path__[0] + '/'
         self.existing_pipes = self.get_dirs(self.compile_path)
@@ -44,13 +64,27 @@ class PathManager:
                 [self.serv_paths[name] for name in sorted(self.serv_paths)]
             )
 
-    def reload_pipelines(self):
-        reload(self.pipelines)
-        self.pipe = self.load_pipe()
-
     def load_pipe(self):
-        pipe = getattr(pipelines, self.pipe_name, None)
-        return pipe() if pipe is not None else None
+        try:
+            pipe = getattr(self.pipelines, self.pipe_name)
+        except AttributeError:
+            self.reload()
+            pipe = getattr(self.pipelines, self.pipe_name)
+
+        return pipe(__package__) if pipe is not None else None
+
+    def reload(self):
+        self.reset_imports()
+        reload(self.pipelines)
+        self.__init__()
+
+    def reset_imports(self):
+        imports = ''
+        for pipe in self.existing_pipes:
+            imports += f'from .{pipe} import {pipe}\n'
+
+        with open(f'{self.compile_path}/__init__.py', 'w') as fh:
+            fh.write(imports)
 
     def find_pipe_root(self):
         current_path = ''
@@ -61,6 +95,8 @@ class PathManager:
                 return current_path
 
         return None
+
+
 
     @staticmethod
     def get_dirs(path):

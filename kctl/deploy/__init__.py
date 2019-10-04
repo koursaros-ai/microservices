@@ -1,6 +1,6 @@
 from .checks import check_rabbitmq
 from .rabbitmq import bind_rabbitmq
-from kctl.utils import BOLD, cls
+from ..utils import BOLD, cls, decorator_group
 from subprocess import Popen
 import signal
 import sys
@@ -8,49 +8,58 @@ import os
 import click
 from ..save import save
 
+deploy_options = decorator_group([
+    click.option('-c', '--connection', required=True),
+    click.option('-r', '--rebind', is_flag=True),
+    click.option('-d', '--debug', is_flag=True),
+    click.pass_obj
+])
+
 
 @click.group()
 @click.pass_context
 def deploy(ctx):
     """Check configuration yamls, bind rabbitmq, and deploy"""
-    path_manager = ctx.obj
     ctx.invoke(save)
-    os.chdir(path_manager.pipe_root + '..')
 
 
 @deploy.command()
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
-@click.pass_obj
-def pipeline(path_manager, *rmq):
-    rmq_setup(*rmq)
-    pm = path_manager
-    from koursaros import pipelines
-    pipe = getattr(pipelines, pm.pipe_name)
-    services = [cls(service) for service in pipe.Services]
-    subproc_servs(path_manager, services)
+@deploy_options
+def pipeline(pm, connection, rebind, debug):
+    """Deploy a pipeline"""
+    rmq_setup(pm, connection, rebind)
+    services = [cls(service) for service in pm.pipe.Services]
+    subproc_servs(pm, services, connection, debug)
 
 @deploy.command()
 @click.argument('service')
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
-@click.pass_obj
-def service(path_manager, service, connection, rebind):
-    rmq_setup(connection, rebind)
-    subproc_servs(path_manager, [service], connection)
+@deploy_options
+def service(pm, service, connection, rebind, debug):
+    """Deploy a service or group of services"""
+    import pdb; pdb.set_trace()
+    rmq_setup(pm, connection, rebind)
+    subproc_servs(pm, [service], connection, debug)
 
 
-def rmq_setup(connection, rebind):
-    check_rabbitmq(connection)
+def rmq_setup(pm, connection, rebind):
+    check_rabbitmq(pm, connection)
     if rebind:
-        bind_rabbitmq(connection)
+        bind_rabbitmq(pm, connection)
 
 
-def suproc_servs(pm, services, connection):
+def subproc_servs(pm, services, connection, debug):
+    cmds = []
     for service in services:
-        directory = path_manager.pipe_root + '..'
-        cmd = [sys.executable, '-m', f'{pm.pipe_name}.services.{service}', connection]
-        cmd += sys.argv[1:]
+        cmd = [
+            sys.executable, '-m',
+            f'{pm.pipe_name}.services.{service}',
+            connection, service,
+            'debug' if debug else ''
+        ]
+        directory = pm.pipe_root + '..'
+        cmds.append((directory, cmd))
+
+    subproc(cmds)
 
 
 def subproc(cmds):
@@ -59,29 +68,32 @@ def subproc(cmds):
 
     :param cmds: iterable list of tuples (directory: cmd)
     """
-    processes = []
+    procs = []
 
     try:
-        for cmd in cmds:
-            print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
+        for directory, cmd in cmds:
+            os.chdir(directory)
+            formatted = BOLD.format(' '.join(cmd))
+
+            print(f'''Running "{formatted}" from "{directory}"...''')
             p = Popen(cmd)
 
-            processes.append((p, cmd))
+            procs.append((p, formatted))
 
-        for p, cmd in processes:
+        for p, formatted in procs:
             p.communicate()
 
     except KeyboardInterrupt:
         pass
 
     finally:
-        for p, service in processes:
+        for p, formatted in procs:
 
             if p.poll() is None:
                 os.kill(p.pid, signal.SIGTERM)
-                print(f'Killing pid {p.pid}: {service}')
+                print(f'Killing pid {p.pid}: {formatted}')
             else:
-                print(f'Process {p.pid}: "{service}" ended...')
+                print(f'Process {p.pid}: "{formatted}" ended...')
 
 
 # else:

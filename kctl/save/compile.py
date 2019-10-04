@@ -93,10 +93,10 @@ class PipelineBottler(ClassBottler):
         for name, string in self.stubs_yaml.items():
             stub = dict()
 
-            parsed = parse_stub_string(string)
+            stub.update(parse_stub_string(string))
 
-            _RcvProto = parsed['_rcv_proto']
-            _SendProto = parsed['_send_proto']
+            _RcvProto = stub['_rcv_proto']
+            _SendProto = stub['_send_proto']
 
             if _RcvProto is not None:
                 stub[_RcvProto] = wrap(_RcvProto)
@@ -107,11 +107,9 @@ class PipelineBottler(ClassBottler):
             stub['_RcvProto'] = wrap(_RcvProto)
             stub['_SendProto'] = wrap(_RcvProto)
 
-            service = parsed['service']
-
             stubb = ClassBottler(name, parent_class='Stub')
             stubb.digest(stub)
-            stubs[service] = stubs.get(service, []) + [stubb]
+            stubs[stub['service']] = stubs.get(stub['service'], []) + [stubb]
 
         return stubs
 
@@ -126,11 +124,16 @@ class PipelineBottler(ClassBottler):
             stubs = ClassBottler('Stubs', parent_class='ActivatingContainer')
             service.digest(yaml)
 
+            names = []
             for stub in all_stubs.pop(name):
 
                 stubs.digest(stub)
-            services.digest(service)
+                names.append(stub.name)
 
+            stubs.digest(names, name='__names__')
+
+            service.digest(stubs)
+            services.digest(service)
         self.digest(services)
 
     def compile_messages(self):
@@ -142,20 +145,9 @@ class PipelineBottler(ClassBottler):
             f'{self.pm.pipe_root}/messages.proto',
         ))
 
-    def reset_imports(self):
-        imports = ''
-        for pipe in self.pm.existing_pipes:
-            imports += f'from .{pipe} import {pipe}\n'
-
-        with open(f'{self.pm.compile_path}/__init__.py', 'w') as fh:
-            fh.write(imports)
-            # import pdb;pdb.set_trace()
-
     def save(self):
         print(f'Writing to {self.pm.pipe_save_dir}...')
         os.makedirs(self.pm.pipe_save_dir, exist_ok=True)
         compiled = self.to_string()
         with open(self.pm.pipe_save_file, 'w') as fh:
             fh.write(self.hashed_yamls + compiled)
-
-        self.reset_imports()

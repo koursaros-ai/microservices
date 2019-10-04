@@ -11,7 +11,6 @@ sentences = dict()
 backend = Pipeline.Services.backend
 pig = Pipeline.Services.pig
 
-
 @app.route('/')
 def receive():
     text = request.args.get('q')
@@ -27,7 +26,6 @@ def receive():
     sentences[sentence_id] = queue
     sentence = backend.Stubs.send.Sentence(id=sentence_id, text=text)
     send_sentence(sentence)
-    # backend.Stubs.send.process(sentence)
     piggified = queue.get()
     sentences.pop(sentence_id)
 
@@ -51,9 +49,6 @@ def receive(piggified):
 
 
 if __name__ == "__main__":
-    import pdb
-
-    pdb.set_trace()
     s = Thread(target=backend.run)
     a = Thread(target=app.run)
 

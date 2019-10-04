@@ -2,10 +2,9 @@ from threading import Thread
 from kctl.logger import KctlLogger
 from kctl.utils import cls
 from random import randint
+from sys import argv
 import functools
-import argparse
 import pika
-
 
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
@@ -15,6 +14,14 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 class ReprClassName:
     def __repr__(self):
         return self.__class__.__name__
+
+
+class ActivatingContainerErrors(Exception):
+    pass
+
+
+class NotOneActiveError(ActivatingContainerErrors):
+    pass
 
 
 class ActivatingContainer:
@@ -68,8 +75,8 @@ class ActivatingContainer:
         subclass... will raise if there is not exactly one
         """
         if len(self.__activerefs__) != 1:
-            raise self.NotOneActiveError('Not exactly one __active__ subclass: '
-                                         f'{self.__activerefs__}')
+            raise NotOneActiveError('Not exactly one __active__ subclass: '
+                                    f'{self.__activerefs__}')
 
         return self.__activerefs__[0]
 
@@ -77,9 +84,6 @@ class ActivatingContainer:
         rand_int = randint(0, len(self.__activerefs__) - 1)
 
         return self.__activerefs__[rand_int]
-
-    class NotOneActiveError(Exception):
-        pass
 
 
 class Pipeline(ReprClassName):
@@ -101,32 +105,18 @@ class Pipeline(ReprClassName):
     class Services(ActivatingContainer):
         pass
 
-    def __init__(self, package, prefetch=1):
-        print(f'Initializing "{repr(self)}"...')
-
-        # get command line arguments
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-c', '--connection')
-        parser.add_argument('-d', '--debug', action='store_true')
-        self.args = parser.parse_args()
-
-        self.debug = self.args.debug
+    def __init__(self, package, prefetch=1, logger=True):
         self.prefetch = prefetch
+        self.debug = True if 'debug' in argv else False
 
-        self.Connections = self.Connections([self.args.connection])
-
-        if package is None:
-            active_service_name = None
-            self.active_service = None
-        else:
-            active_service_name = package.split('.')[-1]
+        if logger:
             KctlLogger.init()
 
-        if self.debug:
-            print(f'Initializing {self}.Services')
+        active_service = package.split('.')[-1]
 
-        # init services with reference to pipeline
-        self.Services = self.Services([active_service_name], self)
+        print(f'Initializing "{self}.{active_service}"')
+        self.Connections = self.Connections([argv[1]])
+        self.Services = self.Services([active_service], self)
 
 
 class Connection(ReprClassName):
@@ -150,16 +140,40 @@ class Service(ReprClassName):
         if self._debug:
             print(f'Initializing "{self}" service...')
 
-        active_stub_names = self.Stubs.__names__ if self.__active__ else []
+        active_stubs = self.Stubs.__names__ if self.__active__ else []
 
         # init stubs with reference to pipeline and service
-        self.Stubs = self.Stubs(active_stub_names, self)
+        self.Stubs = self.Stubs(active_stubs, self)
 
     def run(self):
         for stub in self.Stubs:
             stub.run()
         for stub in self.Stubs:
             stub.join()
+
+
+class StubErrors(Exception):
+    pass
+
+
+class NotInActiveServiceError(StubErrors):
+    pass
+
+
+class NoReturnError(StubErrors):
+    pass
+
+
+class ShouldNotReturnError(StubErrors):
+    pass
+
+
+class WrongMessageTypeError(StubErrors):
+    pass
+
+
+class StubNotFoundError(StubErrors):
+    pass
 
 
 class Stub(ReprClassName):
@@ -189,81 +203,66 @@ class Stub(ReprClassName):
 
     def __call__(self, func):
         if not self.__active__:
-            self.raise_not_active()
+            self._raise_not_active()
+        self._func = func
+        return self._process
 
-        self.func = func
-
-    class NotInActiveServiceError(Exception):
-        pass
-
-    class NoReturnError(Exception):
-        pass
-
-    class ShouldNotReturnError(Exception):
-        pass
-
-    class WrongMessageTypeError(Exception):
-        pass
-
-    class StubNotFoundError(Exception):
-        pass
-
-    def raise_wrong_msg_type(self, incorrect_type):
+    def _raise_wrong_msg_type(self, incorrect_type):
         msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
                f'but expected "{cls(self._SendProto)}" message')
-        raise self.WrongMessageTypeError(msg)
+        raise WrongMessageTypeError(msg)
 
-    def raise_stub_not_found(self):
+    def _raise_stub_not_found(self):
         msg = f'{repr(self)} could not find "{self._send_stub}" stub to send to'
-        raise self.StubNotFoundError(msg)
+        raise StubNotFoundError(msg)
 
-    def raise_not_active(self):
+    def _raise_not_active(self):
         # if the parent service is not active then crash
         msg = (f'Cannot use stubs from "{self._service}"'
                f'service in "{self._pipe.Services.getactive()}" service')
-        raise self.NotInActiveServiceError(msg)
+        raise NotInActiveServiceError(msg)
 
-    def raise_no_return(self):
+    def _raise_no_return(self):
         msg = (f'"{self}" stub did not return anything,'
                f'but it should be sending to "{self._send_stub}" stub')
-        raise self.NoReturnError(msg)
+        raise NoReturnError(msg)
 
-    def raise_should_not_return(self):
+    def _raise_should_not_return(self):
         msg = f'"{self}" stub should not return anything...'
-        raise self.ShouldNotReturnError(msg)
+        raise ShouldNotReturnError(msg)
 
-    def process(self, proto, method=None):
+    def _process(self, proto, method=None):
 
         if self._debug:
             print(f'"{self}" stub processing "{cls(proto)}"...')
 
-        returned = self.func(proto)
+        returned = self._func(proto)
 
         if self._debug:
-            print(f'"{self.func.__name__}" returned "{cls(returned)}"...')
+            print(f'"{self._func.__name__}" returned "{cls(returned)}"...')
 
         if self._should_send:
             if returned is None:
-                self.raise_no_return()
+                self._raise_no_return()
             else:
-                self.send(returned)
+                self._send(returned)
 
         else:
             if returned is not None:
-                self.raise_should_not_return()
+                self._raise_should_not_return()
         if method is not None:
             if self._debug:
                 print(f'"{self}" stub sending ack callback')
 
             self._consumer.ack_callback(method.delivery_tag)
 
-    def send(self, proto):
+    def _send(self, proto):
 
         if self.__active__:
             self._publisher.publish(proto)
         else:
             # get active service then send from random active stub
-            self._pipe.Services.getactive().Stubs.randomactive().send(proto)
+            self._pipe.Services.getactive().Stubs.randomactive()._send(proto)
 
     def run(self):
         self._consumer = Consumer(self)
@@ -343,7 +342,7 @@ class Publisher(Connector):
         type that is expected by the stub
         """
         if self._stub._send_proto != cls(proto):
-            self._stub.raise_wrong_msg_type(cls(proto))
+            self._stub._raise_wrong_msg_type(cls(proto))
 
     def publish(self, proto):
         # tag outgoing protos with their class names
@@ -394,8 +393,8 @@ class Consumer(Connector):
         proto = self._stub._RcvProto()
         proto.ParseFromString(body)
 
-        if self._pipe.args.debug:
+        if self._pipe.debug:
             print(f'"Received "{cls(proto)}" message on {channel}...')
 
-        process_thread = Thread(target=self._stub.process, args=(proto, method))
+        process_thread = Thread(target=self._stub._process, args=(proto, method))
         process_thread.run()

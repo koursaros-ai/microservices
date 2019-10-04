@@ -3,20 +3,16 @@
 CHECK_TIMEOUT = 10
 
 
-def check_rabbitmq(args):
+def check_rabbitmq(pm, connection):
     from ..utils import BOLD
     import pika
 
-    import koursaros.pipelines
-    pipeline = getattr(koursaros.pipelines, args.pipeline_name)
-    pipeline = pipeline(None)
+    conn = getattr(pm.pipe.Connections, connection)
 
-    connection = pipeline.Connections.getactive()
-
-    host = connection.host
-    port = connection.port
-    username = connection.username
-    password = connection.password
+    host = conn.host
+    port = conn.port
+    username = conn.username
+    password = conn.password
 
     bold_ip = BOLD.format(f'{host}:{port}')
 
