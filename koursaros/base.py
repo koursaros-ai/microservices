@@ -148,6 +148,30 @@ class Service(ReprClassName):
             stub.join()
 
 
+class StubErrors(Exception):
+    pass
+
+
+class NotInActiveServiceError(StubErrors):
+    pass
+
+
+class NoReturnError(StubErrors):
+    pass
+
+
+class ShouldNotReturnError(StubErrors):
+    pass
+
+
+class WrongMessageTypeError(StubErrors):
+    pass
+
+
+class StubNotFoundError(StubErrors):
+    pass
+
+
 class Stub(ReprClassName):
     __active__ = False
 
@@ -175,81 +199,66 @@ class Stub(ReprClassName):
 
     def __call__(self, func):
         if not self.__active__:
-            self.raise_not_active()
-        self.func = func
-        return self.process
+            self._raise_not_active()
+        self._func = func
+        return self._process
 
-    class NotInActiveServiceError(Exception):
-        pass
-
-    class NoReturnError(Exception):
-        pass
-
-    class ShouldNotReturnError(Exception):
-        pass
-
-    class WrongMessageTypeError(Exception):
-        pass
-
-    class StubNotFoundError(Exception):
-        pass
-
-    def raise_wrong_msg_type(self, incorrect_type):
+    def _raise_wrong_msg_type(self, incorrect_type):
         msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
                f'but expected "{cls(self._SendProto)}" message')
-        raise self.WrongMessageTypeError(msg)
+        raise WrongMessageTypeError(msg)
 
-    def raise_stub_not_found(self):
+    def _raise_stub_not_found(self):
         msg = f'{repr(self)} could not find "{self._send_stub}" stub to send to'
-        raise self.StubNotFoundError(msg)
+        raise StubNotFoundError(msg)
 
-    def raise_not_active(self):
+    def _raise_not_active(self):
         # if the parent service is not active then crash
         msg = (f'Cannot use stubs from "{self._service}"'
                f'service in "{self._pipe.Services.getactive()}" service')
-        raise self.NotInActiveServiceError(msg)
+        raise NotInActiveServiceError(msg)
 
-    def raise_no_return(self):
+    def _raise_no_return(self):
         msg = (f'"{self}" stub did not return anything,'
                f'but it should be sending to "{self._send_stub}" stub')
-        raise self.NoReturnError(msg)
+        raise NoReturnError(msg)
 
-    def raise_should_not_return(self):
+    def _raise_should_not_return(self):
         msg = f'"{self}" stub should not return anything...'
-        raise self.ShouldNotReturnError(msg)
+        raise ShouldNotReturnError(msg)
 
-    def process(self, proto, method=None):
+    def _process(self, proto, method=None):
 
         if self._debug:
             print(f'"{self}" stub processing "{cls(proto)}"...')
 
-        returned = self.func(proto)
+        returned = self._func(proto)
 
         if self._debug:
-            print(f'"{self.func.__name__}" returned "{cls(returned)}"...')
+            print(f'"{self._func.__name__}" returned "{cls(returned)}"...')
 
         if self._should_send:
             if returned is None:
-                self.raise_no_return()
+                self._raise_no_return()
             else:
-                self.send(returned)
+                self._send(returned)
 
         else:
             if returned is not None:
-                self.raise_should_not_return()
+                self._raise_should_not_return()
         if method is not None:
             if self._debug:
                 print(f'"{self}" stub sending ack callback')
 
             self._consumer.ack_callback(method.delivery_tag)
 
-    def send(self, proto):
+    def _send(self, proto):
 
         if self.__active__:
             self._publisher.publish(proto)
         else:
             # get active service then send from random active stub
-            self._pipe.Services.getactive().Stubs.randomactive().send(proto)
+            self._pipe.Services.getactive().Stubs.randomactive()._send(proto)
 
     def run(self):
         self._consumer = Consumer(self)
@@ -329,7 +338,7 @@ class Publisher(Connector):
         type that is expected by the stub
         """
         if self._stub._send_proto != cls(proto):
-            self._stub.raise_wrong_msg_type(cls(proto))
+            self._stub._raise_wrong_msg_type(cls(proto))
 
     def publish(self, proto):
         # tag outgoing protos with their class names
