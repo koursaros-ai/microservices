@@ -13,11 +13,10 @@ from ..save import save
 @click.option('-c', '--connection', required=True)
 @click.option('-r', '--rebind', is_flag=True)
 @click.pass_context
-def deploy(path_manager, connection, rebind):
+def deploy(ctx, connection, rebind):
     """Check configuration yamls, bind rabbitmq, and deploy"""
-
-    import pdb; pdb.set_trace()
-    save(path_manager)
+    path_manager = ctx.obj
+    ctx.forward(save)
     check_rabbitmq(connection)
     if rebind:
         bind_rabbitmq(connection)
