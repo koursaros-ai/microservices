@@ -142,20 +142,9 @@ class PipelineBottler(ClassBottler):
             f'{self.pm.pipe_root}/messages.proto',
         ))
 
-    def reset_imports(self):
-        imports = ''
-        for pipe in self.pm.existing_pipes:
-            imports += f'from .{pipe} import {pipe}\n'
-
-        with open(f'{self.pm.compile_path}/__init__.py', 'w') as fh:
-            fh.write(imports)
-            # import pdb;pdb.set_trace()
-
     def save(self):
         print(f'Writing to {self.pm.pipe_save_dir}...')
         os.makedirs(self.pm.pipe_save_dir, exist_ok=True)
         compiled = self.to_string()
         with open(self.pm.pipe_save_file, 'w') as fh:
             fh.write(self.hashed_yamls + compiled)
-
-        self.reset_imports()

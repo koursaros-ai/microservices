@@ -48,7 +48,7 @@ class PathManager:
         self.existing_pipes = self.get_dirs(self.compile_path)
         self.kctl_path = kctl.__path__[0] + '/'
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
-        import pdb; pdb.set_trace()
+
         if self.pipe_root is not None:
             self.pipe_name = self.pipe_root.split('/')[-2]
             self.pipe = self.load_pipe()
@@ -64,18 +64,22 @@ class PathManager:
                 [self.serv_paths[name] for name in sorted(self.serv_paths)]
             )
 
-    def reload_pipelines(self):
-        reload(self.pipelines)
-        self.pipe = self.load_pipe()
-
     def load_pipe(self):
-        pipe = getattr(self.pipelines, self.pipe_name, None)
-
-        if pipe is None:
-            raise ModuleNotFoundError(f'"{self.pipe_name}" pipeline not'
-                                      f'found in {self.pipe_save_dir}...')
-
+        pipe = getattr(self.pipelines, self.pipe_name)
         return pipe() if pipe is not None else None
+
+    def reload(self):
+        self.reset_imports()
+        reload(self.pipelines)
+        self.__init__()
+
+    def reset_imports(self):
+        imports = ''
+        for pipe in self.existing_pipes:
+            imports += f'from .{pipe} import {pipe}\n'
+
+        with open(f'{self.compile_path}/__init__.py', 'w') as fh:
+            fh.write(imports)
 
     def find_pipe_root(self):
         current_path = ''
@@ -86,6 +90,8 @@ class PathManager:
                 return current_path
 
         return None
+
+
 
     @staticmethod
     def get_dirs(path):
