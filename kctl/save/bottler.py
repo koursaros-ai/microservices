@@ -23,6 +23,7 @@ class ClassBottler:
     def __init__(self, name, parent_class=None):
         self.lines = []
         self.classes = []
+        self.headers = []
         self.name = name
         self.parent = f'({parent_class})' if parent_class else ''
 
@@ -59,7 +60,7 @@ class ClassBottler:
         within a ClassCompiler.Class
         """
         indent = '    ' * indents
-        cap = [f'{indent}class {self.name}{self.parent}:']
+        cap = self.headers + [f'{indent}class {self.name}{self.parent}:']
         indent = '    ' * (indents + 1)
         lines = [indent + line for line in self.lines]
         self.lines = cap + lines
@@ -71,7 +72,7 @@ class ClassBottler:
             self.lines += cls.lines
 
     def add_headers(self, headers):
-        self.lines = headers + self.lines
+        self.headers.append(headers)
 
     def to_string(self):
         self.bottle()
