@@ -76,14 +76,13 @@ class PipelineBottler(ClassBottler):
 
     def hash_yamls(self):
         plaintext = self.open_dict(self.serv_paths)
-        return '#' + self.md5_dict(plaintext)
+        return '#' + self.md5_dict(plaintext) + '\n'
 
     def cached(self):
         try:
             print(self.out_file)
             with open(self.out_file) as f:
                 firstline = f.readline()
-                import pdb; pdb.set_trace()
                 return True if firstline == self.hashed else False
 
         except FileNotFoundError:
@@ -193,6 +192,6 @@ class PipelineBottler(ClassBottler):
         os.makedirs(self.save_path, exist_ok=True)
         compiled = self.to_string()
         with open(self.out_file, 'w') as fh:
-            fh.write(self.hashed + '\n' + compiled)
+            fh.write(self.hashed + compiled)
 
         self.reset_imports()
