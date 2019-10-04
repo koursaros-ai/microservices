@@ -1,6 +1,6 @@
 from .checks import check_rabbitmq
 from .rabbitmq import bind_rabbitmq
-from ..utils import BOLD, cls, option_group
+from ..utils import BOLD, cls, decorator_group
 from subprocess import Popen
 import signal
 import sys
@@ -8,7 +8,7 @@ import os
 import click
 from ..save import save
 
-deploy_options = option_group([
+deploy_options = decorator_group([
     click.option('-c', '--connection', required=True),
     click.option('-r', '--rebind', is_flag=True),
     click.option('-d', '--debug', is_flag=True),
@@ -26,6 +26,7 @@ def deploy(ctx):
 @deploy.command()
 @deploy_options
 def pipeline(pm, connection, rebind, debug):
+    """Deploy a pipeline"""
     rmq_setup(pm, connection, rebind)
     services = [cls(service) for service in pm.pipe.Services]
     subproc_servs(pm, services, connection)
@@ -35,6 +36,7 @@ def pipeline(pm, connection, rebind, debug):
 @click.argument('service')
 @deploy_options
 def service(pm, service, connection, rebind, debug):
+    """Deploy a service or group of services"""
     import pdb; pdb.set_trace()
     rmq_setup(pm, connection, rebind)
     subproc_servs(pm, [service], connection)

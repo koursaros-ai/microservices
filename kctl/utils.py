@@ -12,11 +12,11 @@ def cls(obj):
     return obj.__class__.__name__
 
 
-def option_group(options):
-    """returns a decorator which bundles the given click options
+def decorator_group(options):
+    """returns a decorator which bundles the given decorators
 
-    :param options: iterable of click.options
-    :return: click option decorator
+    :param options: iterable of decorators
+    :return: single decorator
 
     Example:
         deploy_options = option_group([
