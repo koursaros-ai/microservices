@@ -192,8 +192,6 @@ class PipelineBottler(ClassBottler):
         print(f'Writing to {self.save_path}...')
         os.makedirs(self.save_path, exist_ok=True)
         compiled = self.to_string()
-        print(compiled)
-        raise SystemExit
         with open(self.out_file, 'w') as fh:
             fh.write(compiled)
 
