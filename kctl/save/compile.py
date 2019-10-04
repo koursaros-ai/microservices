@@ -83,12 +83,12 @@ class PipelineBottler(ClassBottler):
         except FileNotFoundError:
             return False
 
-
-
     def get_serv_yamls(self):
         serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
         serv_paths, serv_names = serv_dirs
-        yamls = [self.get_yaml(path + '/service.yaml', 'service') for path in serv_paths]
+        serv_paths = [path + '/service.yaml' for path in serv_paths]
+
+        yamls = [self.get_yaml(path, 'service') for path in serv_paths]
         return dict(zip(serv_names, serv_paths)), dict(zip(serv_names, yamls))
 
     @staticmethod
