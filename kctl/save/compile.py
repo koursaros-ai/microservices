@@ -1,5 +1,8 @@
-from inspect import getsource
+
+from .bottler import ClassBottler
+from operator import itemgetter
 from grpc_tools import protoc
+from hashlib import md5
 import yaml as pyyaml
 import os
 import re
@@ -36,81 +39,7 @@ def get_valid_dirs(path):
     return [path + x for x in dir_names], dir_names
 
 
-class ClassBottle:
-    """Class that formats a python class by being
-    given a set of attributes and formatting them
-    based on what type of object they are
-    """
-    @staticmethod
-    def check_name(name, obj):
-        if name is None:
-            raise NameError(f'"None" as name for obj: {obj}')
-
-    class Plain(str):
-        """Wrap to indicate that the variable should not
-        have quotes around the value
-        """
-
-    invalid_names = ['from']
-    plain_types = (list, int, Plain, type(None))
-    lines = []
-    classes = []
-
-    def __init__(self, name, parent_class=None):
-        self.name = name
-        self.parent = f'({parent_class})' if parent_class else ''
-
-    def digest(self, obj, name=None):
-        if name in self.invalid_names:
-            raise ValueError(f'Invalid Attribute Name: "{name}"')
-
-        if isinstance(obj, self.plain_types):
-            self.check_name(name, obj)
-            self.lines.append(f'{name} = {obj}')
-
-        elif isinstance(obj, str):
-            self.check_name(name, obj)
-            self.lines.append(f'{name} = "{obj}"')
-
-        elif isinstance(obj, dict):
-            for key, value in obj.items():
-                self.digest(key, value)
-
-        # class or function
-        elif callable(obj):
-            self.lines += getsource(obj).split('\n')
-
-        # append in order to bottle later
-        elif isinstance(obj, ClassBottle):
-            self.classes.append(obj)
-
-        else:
-            raise NotImplementedError(f'var "{name}" of type '
-                                      f'{type(obj)} not supported')
-
-    def bottle(self, indents=0):
-        """recursive function to indent each subclass nested
-        within a ClassCompiler.Class
-        """
-        indent = '    ' * indents
-        indented = [indent + line for line in self.lines]
-        self.lines += [f'class {self.name}{self.parent}:'] + indented
-
-        indents += 1
-
-        for cls in self.classes:
-            cls.bottle(indents=indents)
-            self.lines += cls.lines
-
-    def add_headers(self, headers):
-        self.lines = headers + self.lines
-
-    def to_string(self):
-        self.bottle()
-        return '\n'.join(self.lines)
-
-
-class PipelineBottle(ClassBottle):
+class PipelineBottler(ClassBottler):
     """Subclass of ClassCompiler that compiles Koursaros pipeline
 
     :param path_manager: Kctl.PathManager object
@@ -128,9 +57,17 @@ class PipelineBottle(ClassBottle):
         self.out_file = f'{self.save_path}/__init__.py'
         self.conn_yaml = self.get_yaml(self.pipe_root + '/connections.yaml', 'connections')
         self.stubs_yaml = self.get_yaml(self.pipe_root + '/stubs.yaml', 'stubs')
-        self.serv_names, self.serv_yamls = self.get_serv_yamls()
+        self.serv_yamls = self.get_serv_yamls()
 
         super().__init__(self.pipe_name, parent_class='Pipeline')
+
+    @staticmethod
+    def md5_dict(dict_):
+        """Sorts a dict by keys and returns a concat md5 hash of the key and values"""
+        tuples = sorted(dict_.items(), key=itemgetter(0))
+        hashed_list = [key + md5(value).hexdigest() for key, value in tuples]
+        print(hashed_list)
+        raise SystemExit
 
     def cached(self):
         try:
@@ -138,6 +75,8 @@ class PipelineBottle(ClassBottle):
             with open(self.out_file) as f:
                 line = f.readline()
                 print(line)
+                hashed = self.md5_dict(self.serv_yamls)
+                print(hashed)
                 raise SystemExit
 
         except FileNotFoundError:
@@ -145,9 +84,9 @@ class PipelineBottle(ClassBottle):
 
     def get_serv_yamls(self):
         serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
-        serv_paths, self.serv_names = serv_dirs
+        serv_paths, serv_names = serv_dirs
         yamls = [self.get_yaml(path + '/service.yaml', 'service') for path in serv_paths]
-        return dict(zip(self.serv_names, yamls))
+        return dict(zip(serv_names, yamls))
 
     @staticmethod
     def get_yaml(path, head):
@@ -156,7 +95,7 @@ class PipelineBottle(ClassBottle):
 
     def compile_connections(self):
 
-        conns = ClassBottle(
+        conns = ClassBottler(
             'Connections',
             parent_class='ActivatingContainer'
         )
@@ -164,7 +103,7 @@ class PipelineBottle(ClassBottle):
         conns.digest(list(self.conn_yaml.keys()), name='__name__')
 
         for name, configs in self.conn_yaml.items():
-            conn = ClassBottle(name, parent_class='Connection')
+            conn = ClassBottler(name, parent_class='Connection')
             conn.digest(configs)
             conns.digest(conn)
 
@@ -173,7 +112,7 @@ class PipelineBottle(ClassBottle):
     def compile_stubs(self):
 
         def wrap(proto):
-            return ClassBottle.Plain('messages_pb2.' + proto)
+            return ClassBottler.Plain('messages_pb2.' + proto)
 
         # keep stubs in list so services can eat them
         stubs = dict()
@@ -196,7 +135,7 @@ class PipelineBottle(ClassBottle):
 
             service = parsed['service']
 
-            stubb = ClassBottle(name, parent_class='Stub')
+            stubb = ClassBottler(name, parent_class='Stub')
             stubb.digest(stub)
             stubs[service] = stubs.get(service, []) + [stubb]
 
@@ -206,15 +145,15 @@ class PipelineBottle(ClassBottle):
 
         path = self.pipe_root + 'services/'
 
-        services = ClassBottle('Services', parent_class='ActivatingContainer')
+        services = ClassBottler('Services', parent_class='ActivatingContainer')
         services.digest(path, name='path')
 
         all_stubs = self.compile_stubs()
         services.digest(self.serv_names, name='__names__')
 
         for name in self.serv_names:
-            service = ClassBottle(name, parent_class='Service')
-            stubs = ClassBottle('Stubs', parent_class='ActivatingContainer')
+            service = ClassBottler(name, parent_class='Service')
+            stubs = ClassBottler('Stubs', parent_class='ActivatingContainer')
             yaml = self.serv_yamls[name]
             service.digest(yaml)
 

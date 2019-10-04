@@ -1,7 +1,7 @@
 
 
 import click
-from .compile import PipelineBottle
+from .compile import PipelineBottler
 from importlib import reload
 
 
@@ -9,7 +9,7 @@ from importlib import reload
 @click.pass_obj
 def save(path_manager):
     """Save current directory's pipeline"""
-    bottle = PipelineBottle(path_manager)
+    bottle = PipelineBottler(path_manager)
 
     if bottle.cached():
         print(f'No changes to "{bottle.pipe_name}", skipping compile...')
