@@ -19,8 +19,8 @@ import click
 @click.group()
 @click.pass_context
 def cli(ctx):
-    ctx.obj = PathManager()
     KctlLogger.init()
+    ctx.obj = PathManager()
 
 
 cli.add_command(create)
