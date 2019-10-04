@@ -72,7 +72,8 @@ class PathManager:
         pipe = getattr(self.pipelines, self.pipe_name, None)
 
         if pipe is None:
-            raise ModuleNotFoundError(f'"{self.pipe_name}" pipeline not found...')
+            raise ModuleNotFoundError(f'"{self.pipe_name}" pipeline not'
+                                      f'found in {self.pipe_save_dir}...')
 
         return pipe() if pipe is not None else None
 
