@@ -16,7 +16,7 @@ from ..save import save
 def deploy(ctx, connection, rebind):
     """Check configuration yamls, bind rabbitmq, and deploy"""
     path_manager = ctx.obj
-    ctx.forward(save)
+    ctx.invoke(save)
     check_rabbitmq(connection)
     if rebind:
         bind_rabbitmq(connection)
