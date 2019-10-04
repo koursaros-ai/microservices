@@ -35,7 +35,7 @@ class PathManager:
         self.conn_hash = self.hash_files([self.conn_path])
         self.stubs_hash = self.hash_files([self.stubs_path])
         self.serv_hashes = self.hash_files(
-            sorted(self.serv_paths, key=self.serv_paths.get)
+            sorted(self.serv_paths.values(), key=self.serv_paths.get)
         )
 
     def find_pipe_root(self):
