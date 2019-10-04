@@ -1,30 +1,18 @@
 from .checks import check_rabbitmq
 from .rabbitmq import bind_rabbitmq
-from kctl.utils import BOLD, cls
+from ..utils import BOLD, cls, option_group
 from subprocess import Popen
-from functools import wraps
 import signal
 import sys
 import os
 import click
 from ..save import save
 
-deploy_options = [
+deploy_options = option_group([
     click.option('-c', '--connection', required=True),
     click.option('-r', '--rebind', is_flag=True),
     click.option('-d', '--debug', is_flag=True),
-]
-
-
-def option_group(options):
-    def option_decorator(f):
-        for option in options:
-            f = option(f)
-        return f
-    return option_decorator
-
-
-deploy_opts = option_group(deploy_options)
+])
 
 
 @click.group()
@@ -34,17 +22,8 @@ def deploy(ctx):
     ctx.invoke(save)
 
 
-# def deploy_options(f):
-#     @wraps(f)
-#     @click.option('-c', '--connection', required=True)
-#     @click.option('-r', '--rebind', is_flag=True)
-#     @click.option('-d', '--debug', is_flag=True)
-#     def wrapper(*args, **kwargs):
-#         return f(*args, **kwargs)
-
-
 @deploy.command()
-@deploy_opts
+@deploy_options
 @click.pass_obj
 def pipeline(pm, connection, rebind):
     rmq_setup(pm, connection, rebind)
@@ -54,7 +33,7 @@ def pipeline(pm, connection, rebind):
 
 @deploy.command()
 @click.argument('service')
-@deploy_opts
+@deploy_options
 @click.pass_obj
 def service(pm, service, connection, rebind):
     rmq_setup(pm, connection, rebind)

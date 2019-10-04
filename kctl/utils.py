@@ -12,6 +12,26 @@ def cls(obj):
     return obj.__class__.__name__
 
 
+def option_group(options):
+    """returns a decorator which bundles the given click options
+
+    :param options: iterable of click.options
+    :return: click option decorator
+
+    Example:
+        deploy_options = option_group([
+            click.option('-c', '--connection', required=True),
+            click.option('-r', '--rebind', is_flag=True),
+            click.option('-d', '--debug', is_flag=True),
+        ])
+    """
+    def option_decorator(f):
+        for option in options:
+            f = option(f)
+        return f
+    return option_decorator
+
+
 class PathManager:
     """Manager that keeps track of all of the koursaros
     paths and packages. Passed around at runtime to make
