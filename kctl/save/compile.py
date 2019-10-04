@@ -160,7 +160,7 @@ class PipelineBottle(ClassBottle):
             parent_class='ActivatingContainer'
         )
 
-        conns.digest(self.conn_yaml.keys(), name='__name__')
+        conns.digest(list(self.conn_yaml.keys()), name='__name__')
 
         for name, configs in self.conn_yaml.items():
             conn = ClassBottle(name, parent_class='Connection')
