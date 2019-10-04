@@ -47,7 +47,8 @@ class PathManager:
         self.pipe = self.load_pipe()
 
     def load_pipe(self):
-        return getattr(pipelines, self.pipe_name)() if self.pipe_name else None
+        pipe = getattr(pipelines, self.pipe_name, None)
+        return pipe() if pipe is not None else None
 
     def find_pipe_root(self):
         current_path = ''
