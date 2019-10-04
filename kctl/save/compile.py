@@ -93,10 +93,10 @@ class PipelineBottler(ClassBottler):
         for name, string in self.stubs_yaml.items():
             stub = dict()
 
-            parsed = parse_stub_string(string)
+            stub.update(parse_stub_string(string))
 
-            _RcvProto = parsed['_rcv_proto']
-            _SendProto = parsed['_send_proto']
+            _RcvProto = stub['_rcv_proto']
+            _SendProto = stub['_send_proto']
 
             if _RcvProto is not None:
                 stub[_RcvProto] = wrap(_RcvProto)
@@ -107,11 +107,9 @@ class PipelineBottler(ClassBottler):
             stub['_RcvProto'] = wrap(_RcvProto)
             stub['_SendProto'] = wrap(_RcvProto)
 
-            service = parsed['service']
-
             stubb = ClassBottler(name, parent_class='Stub')
             stubb.digest(stub)
-            stubs[service] = stubs.get(service, []) + [stubb]
+            stubs[stub['service']] = stubs.get(stub['service'], []) + [stubb]
 
         return stubs
 

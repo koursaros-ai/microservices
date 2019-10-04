@@ -2,3 +2,4 @@ stubs:
  send: backend(Sentence) -> Sentence                | piggify
  piggify: pig(Sentence) -> Piggified                | receive
  receive: backend(Piggified)                      ->|
+ 
