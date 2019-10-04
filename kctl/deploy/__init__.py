@@ -35,6 +35,7 @@ def pipeline(pm, connection, rebind):
 @click.argument('service')
 @deploy_options
 def service(pm, service, connection, rebind):
+    import pdb; pdb.set_trace()
     rmq_setup(pm, connection, rebind)
     subproc_servs(pm, [service], connection)
 
