@@ -181,11 +181,15 @@ class PipelineBottle(ClassBottle):
 
             parsed = parse_stub_string(string)
 
-            _RcvProto = stub['_rcv_proto']
-            _SendProto = stub['_send_proto']
+            _RcvProto = parsed['_rcv_proto']
+            _SendProto = parsed['_send_proto']
 
-            stub[_RcvProto] = wrap(_RcvProto)
-            stub[_SendProto] = wrap(_SendProto)
+            if _RcvProto is not None:
+                stub[_RcvProto] = wrap(_RcvProto)
+
+            if _SendProto is not None:
+                stub[_SendProto] = wrap(_SendProto)
+
             stub['_RcvProto'] = wrap(_RcvProto)
             stub['_SendProto'] = wrap(_RcvProto)
 
