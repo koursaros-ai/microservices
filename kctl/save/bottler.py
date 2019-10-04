@@ -58,12 +58,14 @@ class ClassBottler:
         """recursive function to indent each subclass nested
         within a ClassCompiler.Class
         """
+        print(self.classes)
+        raise SystemExit
         indent = '    ' * indents
         indented = [indent + line for line in self.lines]
         self.lines += [f'class {self.name}{self.parent}:'] + indented
 
         indents += 1
-        print(self.classes)
+
 
         for cls in self.classes:
             cls.bottle(indents=indents)
