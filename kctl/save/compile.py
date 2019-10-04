@@ -129,8 +129,8 @@ class PipelineBottler(ClassBottler):
             for stub in all_stubs.pop(name):
 
                 stubs.digest(stub)
+            service.digest(stubs)
             services.digest(service)
-
         self.digest(services)
 
     def compile_messages(self):
