@@ -74,7 +74,7 @@ class PipelineBottler(ClassBottler):
             parent_class='ActivatingContainer'
         )
 
-        conns.digest(list(self.conn_yaml.keys()), name='__name__')
+        conns.digest(list(self.conn_yaml.keys()), name='__names__')
 
         for name, configs in self.conn_yaml.items():
             conn = ClassBottler(name, parent_class='Connection')
@@ -149,7 +149,7 @@ class PipelineBottler(ClassBottler):
 
         with open(f'{self.pm.compile_path}/__init__.py', 'w') as fh:
             fh.write(imports)
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
 
     def save(self):
         print(f'Writing to {self.pm.pipe_save_dir}...')

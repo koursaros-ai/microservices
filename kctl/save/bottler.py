@@ -40,7 +40,7 @@ class ClassBottler:
 
         elif isinstance(obj, dict):
             for key, value in obj.items():
-                self.digest(key, value)
+                self.digest(value, name=key)
 
         # class or function
         elif callable(obj):
