@@ -23,35 +23,34 @@ class PathManager:
     def __init__(self, base=os.getcwd()):
         self.base = base
         self.pipe_root = self.find_pipe_root()
-        self.pipe_name = self.pipe_root.split('/')[-2] if self.pipe_root else None
-        self.pipe = self.load_pipe()
         self.pipelines = pipelines
         self.compile_path = pipelines.__path__[0] + '/'
         self.existing_pipes = self.get_dirs(self.compile_path)
         self.kctl_path = kctl.__path__[0] + '/'
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
-        self.pipe_save_dir = self.compile_path + self.pipe_name
-        self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
-        self.conn_path = self.pipe_root + '/connections.yaml'
-        self.stubs_path = self.pipe_root + '/stubs.yaml'
-        self.serv_dirs = self.get_dirs(self.pipe_root + 'services/')
-        self.serv_paths = {name: path + '/service.yaml' for name, path in self.serv_dirs.items()}
-        self.conn_hash = self.hash_files([self.conn_path])[0]
-        self.stubs_hash = self.hash_files([self.stubs_path])[0]
-        self.serv_hashes = self.hash_files(
-            [self.serv_paths[name] for name in sorted(self.serv_paths)]
-        )
+
+        if self.pipe_root is not None:
+            self.pipe_name = self.pipe_root.split('/')[-2]
+            self.pipe = self.load_pipe()
+            self.pipe_save_dir = self.compile_path + self.pipe_name
+            self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
+            self.conn_path = self.pipe_root + '/connections.yaml'
+            self.stubs_path = self.pipe_root + '/stubs.yaml'
+            self.serv_dirs = self.get_dirs(self.pipe_root + 'services/')
+            self.serv_paths = {name: path + '/service.yaml' for name, path in self.serv_dirs.items()}
+            self.conn_hash = self.hash_files([self.conn_path])[0]
+            self.stubs_hash = self.hash_files([self.stubs_path])[0]
+            self.serv_hashes = self.hash_files(
+                [self.serv_paths[name] for name in sorted(self.serv_paths)]
+            )
 
     def reload_pipelines(self):
         reload(self.pipelines)
         self.pipe = self.load_pipe()
 
     def load_pipe(self):
-        if self.pipe_name is not None:
-            pipe = getattr(pipelines, self.pipe_name, None)
-            return pipe() if pipe is not None else None
-        else:
-            return None
+        pipe = getattr(pipelines, self.pipe_name, None)
+        return pipe() if pipe is not None else None
 
     def find_pipe_root(self):
         current_path = ''
