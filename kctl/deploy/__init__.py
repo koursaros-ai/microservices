@@ -71,8 +71,9 @@ def subproc(cmds):
     procs = []
 
     try:
-        for cmd in cmds:
-            print(f'''Running "{BOLD.format(' '.join(cmd))}"...''')
+        for directory, cmd in cmds:
+            os.chdir(directory)
+            print(f'''Running "{BOLD.format(' '.join(cmd))}" from "{directory}"...''')
             p = Popen(cmd)
 
             procs.append((p, cmd))
