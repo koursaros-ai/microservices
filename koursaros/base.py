@@ -176,8 +176,8 @@ class Stub(ReprClassName):
     def __call__(self, func):
         if not self.__active__:
             self.raise_not_active()
-
         self.func = func
+        return self.process
 
     class NotInActiveServiceError(Exception):
         pass
