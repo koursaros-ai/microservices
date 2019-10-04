@@ -1,9 +1,9 @@
-from threading import Thread, get_ident
+from threading import Thread
 from kctl.logger import KctlLogger
-from kctl.cli import get_args
 from kctl.utils import cls
 from random import randint
 import functools
+import argparse
 import pika
 
 
@@ -105,7 +105,11 @@ class Pipeline(ReprClassName):
         print(f'Initializing "{repr(self)}"...')
 
         # get command line arguments
-        self.args = get_args()
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-c', '--connection')
+        parser.add_argument('-d', '--debug', action='store_true')
+        self.args = parser.parse_args()
+
         self.debug = self.args.debug
         self.prefetch = prefetch
 
