@@ -20,8 +20,9 @@ def save(path_manager):
         bottle.compile_connections()
         bottle.compile_services()
         bottle.compile_messages()
+        bottle.add_headers(IMPORTS)
         bottle.save()
         path_manager.reload_pipelines()
-        bottle.add_headers(IMPORTS)
+        bottle.reset_imports()
 
 
