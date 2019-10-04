@@ -23,9 +23,9 @@ class PathManager:
         self.base = base
         self.pipe_root = self.find_pipe_root()
         self.pipe_name = self.pipe_root.split('/')[-2] if self.pipe_root else None
-        self.compile_path = koursaros.__path__[0] + '/'
+        self.compile_path = koursaros.pipelines.__path__[0] + '/'
         self.kctl_path = kctl.__path__[0] + '/'
-        self.kctl_create_path = self.kctl_path + '/create/template/pipeline'
+        self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
         self.pipelines = koursaros.pipelines
 
     def find_pipe_root(self):
