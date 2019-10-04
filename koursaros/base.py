@@ -113,7 +113,6 @@ class Pipeline(ReprClassName):
         print(f'Initializing "{self}.{active_service}"')
         self.Connections = self.Connections([argv[1]])
         self.Services = self.Services([active_service], self)
-        import pdb; pdb.set_trace()
 
 
 class Connection(ReprClassName):
