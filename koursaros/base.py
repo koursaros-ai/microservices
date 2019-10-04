@@ -396,5 +396,5 @@ class Consumer(Connector):
         if self._pipe.debug:
             print(f'"Received "{cls(proto)}" message on {channel}...')
 
-        process_thread = Thread(target=self._stub.process, args=(proto, method))
+        process_thread = Thread(target=self._stub._process, args=(proto, method))
         process_thread.run()
