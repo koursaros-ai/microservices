@@ -31,7 +31,7 @@ class PathManager:
         self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
         self.conn_path = self.pipe_root + '/connections.yaml'
         self.stubs_path = self.pipe_root + '/stubs.yaml'
-        self.serv_paths = self.get_dirs(self.pipe_root + '/services/')
+        self.serv_paths = self.get_dirs(self.pipe_root + 'services/')
         self.conn_hash = self.hash_files([self.conn_path])
         self.stubs_hash = self.hash_files([self.stubs_path])
         self.serv_hashes = self.hash_files(
