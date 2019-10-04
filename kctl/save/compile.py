@@ -154,9 +154,9 @@ class PipelineBottler(ClassBottler):
         services.digest(path, name='path')
 
         all_stubs = self.compile_stubs()
-        services.digest(self.serv_names, name='__names__')
+        services.digest(list(self.serv_yamls.keys()), name='__names__')
 
-        for name in self.serv_names:
+        for name in self.serv_yamls.keys():
             service = ClassBottler(name, parent_class='Service')
             stubs = ClassBottler('Stubs', parent_class='ActivatingContainer')
             yaml = self.serv_yamls[name]
