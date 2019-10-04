@@ -12,6 +12,7 @@ deploy_options = option_group([
     click.option('-c', '--connection', required=True),
     click.option('-r', '--rebind', is_flag=True),
     click.option('-d', '--debug', is_flag=True),
+    click.pass_obj
 ])
 
 
@@ -24,7 +25,6 @@ def deploy(ctx):
 
 @deploy.command()
 @deploy_options
-@click.pass_obj
 def pipeline(pm, connection, rebind):
     rmq_setup(pm, connection, rebind)
     services = [cls(service) for service in pm.pipe.Services]
@@ -34,7 +34,6 @@ def pipeline(pm, connection, rebind):
 @deploy.command()
 @click.argument('service')
 @deploy_options
-@click.pass_obj
 def service(pm, service, connection, rebind):
     rmq_setup(pm, connection, rebind)
     subproc_servs(pm, [service], connection)
