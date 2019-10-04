@@ -48,7 +48,7 @@ class PathManager:
         self.existing_pipes = self.get_dirs(self.compile_path)
         self.kctl_path = kctl.__path__[0] + '/'
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
-
+        import pdb; pdb.set_trace()
         if self.pipe_root is not None:
             self.pipe_name = self.pipe_root.split('/')[-2]
             self.pipe = self.load_pipe()
