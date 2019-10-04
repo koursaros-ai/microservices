@@ -59,8 +59,10 @@ class ClassBottler:
         within a ClassCompiler.Class
         """
         indent = '    ' * indents
-        indented = [indent + line for line in self.lines]
-        self.lines += [f'class {self.name}{self.parent}:'] + indented
+        cap = [f'{indent}class {self.name}{self.parent}:']
+        indent = '    ' * (indents + 1)
+        lines = [indent + line for line in self.lines]
+        self.lines = cap  + lines
 
         indents += 1
 
