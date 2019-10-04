@@ -17,17 +17,19 @@ def deploy(ctx):
     ctx.invoke(save)
 
 
-def deploy_options(f):
-    @wraps(f)
-    @click.option('-c', '--connection', required=True)
-    @click.option('-r', '--rebind', is_flag=True)
-    @click.option('-d', '--debug', is_flag=True)
-    def wrapper(*args, **kwargs):
-        return f(*args, **kwargs)
+# def deploy_options(f):
+#     @wraps(f)
+#     @click.option('-c', '--connection', required=True)
+#     @click.option('-r', '--rebind', is_flag=True)
+#     @click.option('-d', '--debug', is_flag=True)
+#     def wrapper(*args, **kwargs):
+#         return f(*args, **kwargs)
 
 
 @deploy.command()
-@deploy_options
+@click.option('-c', '--connection', required=True)
+@click.option('-r', '--rebind', is_flag=True)
+@click.option('-d', '--debug', is_flag=True)
 @click.pass_obj
 def pipeline(pm, connection, rebind):
     rmq_setup(pm, connection, rebind)
@@ -39,7 +41,9 @@ def pipeline(pm, connection, rebind):
 
 @deploy.command()
 @click.argument('service')
-@deploy_options
+@click.option('-c', '--connection', required=True)
+@click.option('-r', '--rebind', is_flag=True)
+@click.option('-d', '--debug', is_flag=True)
 @click.pass_obj
 def service(pm, service, connection, rebind):
     rmq_setup(pm, connection, rebind)
