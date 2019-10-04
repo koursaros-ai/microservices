@@ -25,7 +25,7 @@ def deploy(ctx):
 
 @deploy.command()
 @deploy_options
-def pipeline(pm, connection, rebind):
+def pipeline(pm, connection, rebind, debug):
     rmq_setup(pm, connection, rebind)
     services = [cls(service) for service in pm.pipe.Services]
     subproc_servs(pm, services, connection)
@@ -34,7 +34,7 @@ def pipeline(pm, connection, rebind):
 @deploy.command()
 @click.argument('service')
 @deploy_options
-def service(pm, service, connection, rebind):
+def service(pm, service, connection, rebind, debug):
     import pdb; pdb.set_trace()
     rmq_setup(pm, connection, rebind)
     subproc_servs(pm, [service], connection)
