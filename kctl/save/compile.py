@@ -177,8 +177,9 @@ class PipelineBottle(ClassBottle):
         # keep stubs in list so services can eat them
         stubs = dict()
         for name, string in self.stubs_yaml.items():
+            stub = dict()
+
             parsed = parse_stub_string(string)
-            stub = ClassBottle(name, parent_class='Stub').digest(parsed)
 
             _RcvProto = stub['_rcv_proto']
             _SendProto = stub['_send_proto']
@@ -189,6 +190,8 @@ class PipelineBottle(ClassBottle):
             stub['_SendProto'] = wrap(_RcvProto)
 
             service = parsed['service']
+
+            stub = ClassBottle(name, parent_class='Stub').digest(stub)
             stubs[service] = stubs.get(service, []) + stub
 
         return stubs
