@@ -26,9 +26,6 @@ class PathManager:
         self.compile_path = koursaros.pipelines.__path__[0] + '/'
         self.kctl_path = kctl.__path__[0] + '/'
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
-        self.pipelines = koursaros.pipelines
-        import pdb; pdb.set_trace()
-        self.pipe = getattr(self.pipelines, self.pipe_name)() if self.pipe_name else None
         self.pipe_save_dir = self.compile_path + self.pipe_name
         self.existing_pipes = self.get_dirs(self.pipe_save_dir)
         self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'

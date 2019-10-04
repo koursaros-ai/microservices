@@ -10,42 +10,34 @@ from ..save import save
 
 
 @click.group()
-@click.pass_context
-def deploy(path_manager):
-    """Check configuration yamls, bind rabbitmq, and deploy"""
-    save(path_manager)
-
-
-@deploy.command()
 @click.option('-c', '--connection', required=True)
 @click.option('-r', '--rebind', is_flag=True)
-@click.pass_obj
-def pipeline(path_manager, connection, rebind):
+@click.pass_context
+def deploy(path_manager, connection, rebind):
+    """Check configuration yamls, bind rabbitmq, and deploy"""
+    save(path_manager)
     check_rabbitmq(connection)
     if rebind:
         bind_rabbitmq(connection)
+    os.chdir(path_manager.pipe_root + '..')
+
+
+@deploy.command()
+@click.pass_obj
+def pipeline(path_manager):
     pm = path_manager
-    os.chdir(pm.pipe_root + '..')
     services = [cls(service) for service in pm.pipe.Services]
-    deploy(services)
+    subproc_servs(path_manager, services)
 
 
 @deploy.command()
 @click.argument('service')
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
 @click.pass_obj
-def service(path_manager, service, connection, rebind):
-    check_rabbitmq(connection)
-    if rebind:
-        bind_rabbitmq(connection)
-    pm = path_manager
-    os.chdir(pm.pipe_root + '..')
-    deploy([service])
+def service(path_manager, service):
+    subproc_servs(path_manager, [service])
 
 
-def subproc_servs(services, pm):
-
+def subproc_servs(pm, services):
     processes = []
 
     try:
