@@ -83,6 +83,7 @@ class PipelineBottler(ClassBottler):
             print(self.out_file)
             with open(self.out_file) as f:
                 firstline = f.readline()
+                import pdb; pdb.set_trace()
                 return True if firstline == self.hashed else False
 
         except FileNotFoundError:
