@@ -58,6 +58,7 @@ class PipelineBottler(ClassBottler):
         self.conn_yaml = self.get_yaml(self.pipe_root + '/connections.yaml', 'connections')
         self.stubs_yaml = self.get_yaml(self.pipe_root + '/stubs.yaml', 'stubs')
         self.serv_paths, self.serv_yamls = self.get_serv_yamls()
+        self.hashed = self.hash_yamls()
 
         super().__init__(self.pipe_name, parent_class='Pipeline')
 
@@ -73,14 +74,16 @@ class PipelineBottler(ClassBottler):
         """open a dictionary of filepaths to bytes (paths are the values)"""
         return {key: open(path, 'rb').read() for key, path in dict_.items()}
 
+    def hash_yamls(self):
+        plaintext = self.open_dict(self.serv_paths)
+        return self.md5_dict(plaintext)
+
     def cached(self):
         try:
             print(self.out_file)
             with open(self.out_file) as f:
                 firstline = f.readline()
-                plaintext = self.open_dict(self.serv_paths)
-                hashed = self.md5_dict(plaintext)
-                return True if firstline == hashed else False
+                return True if firstline == self.hashed else False
 
         except FileNotFoundError:
             return False
@@ -148,11 +151,7 @@ class PipelineBottler(ClassBottler):
 
     def compile_services(self):
 
-        path = self.pipe_root + 'services/'
-
         services = ClassBottler('Services', parent_class='ActivatingContainer')
-        services.digest(path, name='path')
-
         all_stubs = self.compile_stubs()
         services.digest(list(self.serv_yamls.keys()), name='__names__')
 
@@ -193,6 +192,6 @@ class PipelineBottler(ClassBottler):
         os.makedirs(self.save_path, exist_ok=True)
         compiled = self.to_string()
         with open(self.out_file, 'w') as fh:
-            fh.write(compiled)
+            fh.write(self.hashed + '\n' + compiled)
 
         self.reset_imports()
