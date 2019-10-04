@@ -15,6 +15,8 @@ from ..save import save
 @click.pass_context
 def deploy(path_manager, connection, rebind):
     """Check configuration yamls, bind rabbitmq, and deploy"""
+
+    import pdb; pdb.set_trace()
     save(path_manager)
     check_rabbitmq(connection)
     if rebind:
