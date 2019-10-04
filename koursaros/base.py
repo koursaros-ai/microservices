@@ -101,26 +101,20 @@ class Pipeline(ReprClassName):
     class Services(ActivatingContainer):
         pass
 
-    def __init__(self, package, prefetch=1):
-        print(f'Initializing "{repr(self)}"...')
-
-        self.debug = self.args.debug
+    def __init__(self, package, prefetch=1, logger=True):
         self.prefetch = prefetch
 
-        self.Connections = self.Connections([argv[1]])
+        if 'debug' in argv:
+            self.debug = True
 
-        if package is None:
-            active_service_name = None
-            self.active_service = None
-        else:
-            active_service_name = package.split('.')[-1]
+        if logger:
             KctlLogger.init()
 
-        if self.debug:
-            print(f'Initializing {self}.Services')
+        active_service = package.split('.')[-1]
 
-        # init services with reference to pipeline
-        self.Services = self.Services([active_service_name], self)
+        print(f'Initializing "{self}.{active_service}"')
+        self.Connections = self.Connections([argv[1]])
+        self.Services = self.Services([active_service], self)
 
 
 class Connection(ReprClassName):

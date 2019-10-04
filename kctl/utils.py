@@ -71,7 +71,7 @@ class PathManager:
             self.reload()
             pipe = getattr(self.pipelines, self.pipe_name)
 
-        return pipe() if pipe is not None else None
+        return pipe(__package__) if pipe is not None else None
 
     def reload(self):
         self.reset_imports()
