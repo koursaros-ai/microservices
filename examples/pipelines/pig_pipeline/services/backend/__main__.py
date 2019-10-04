@@ -51,6 +51,9 @@ def receive(piggified):
 
 
 if __name__ == "__main__":
+    import pdb
+
+    pdb.set_trace()
     s = Thread(target=backend.run)
     a = Thread(target=app.run)
 
