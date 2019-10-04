@@ -1,5 +1,6 @@
 
-import koursaros.pipelines
+from koursaros import pipelines
+from importlib import reload
 from hashlib import md5
 import kctl
 import os
@@ -23,7 +24,9 @@ class PathManager:
         self.base = base
         self.pipe_root = self.find_pipe_root()
         self.pipe_name = self.pipe_root.split('/')[-2] if self.pipe_root else None
-        self.compile_path = koursaros.pipelines.__path__[0] + '/'
+        self.pipe = self.get_pipe()
+        self.pipelines = pipelines
+        self.compile_path = pipelines.__path__[0] + '/'
         self.existing_pipes = self.get_dirs(self.compile_path)
         self.kctl_path = kctl.__path__[0] + '/'
         self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
@@ -38,6 +41,13 @@ class PathManager:
         self.serv_hashes = self.hash_files(
             [self.serv_paths[name] for name in sorted(self.serv_paths)]
         )
+
+    def reload_pipe(self):
+        reload(self.pipelines)
+        self.pipe = self.get_pipe()
+
+    def get_pipe(self):
+        return getattr(pipelines, self.pipe_name)() if self.pipe_name else None
 
     def find_pipe_root(self):
         current_path = ''
