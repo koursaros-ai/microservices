@@ -63,6 +63,7 @@ class ClassBottler:
         self.lines += [f'class {self.name}{self.parent}:'] + indented
 
         indents += 1
+        print(indents)
 
         for cls in self.classes:
             cls.bottle(indents=indents)
