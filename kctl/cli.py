@@ -7,6 +7,7 @@ Find more information at: https://github.com/koursaros-ai/koursaros
 
 
 from .utils import PathManager
+from .logger import KctlLogger
 from .create import create
 from .deploy import deploy
 from .train import train
@@ -19,6 +20,7 @@ import click
 @click.pass_context
 def cli(ctx):
     ctx.obj = PathManager()
+    KctlLogger.init()
 
 
 cli.add_command(create)
