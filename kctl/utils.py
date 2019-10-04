@@ -32,7 +32,7 @@ class PathManager:
         self.conn_path = self.pipe_root + '/connections.yaml'
         self.stubs_path = self.pipe_root + '/stubs.yaml'
         self.serv_dirs = self.get_dirs(self.pipe_root + 'services/')
-        self.serv_paths = {name: path + '/service.yaml' for name, path in self.serv_dirs.itmes()}
+        self.serv_paths = {name: path + '/service.yaml' for name, path in self.serv_dirs.items()}
         self.conn_hash = self.hash_files([self.conn_path])
         self.stubs_hash = self.hash_files([self.stubs_path])
         self.serv_hashes = self.hash_files(
