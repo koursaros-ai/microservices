@@ -380,7 +380,7 @@ class Consumer(Connector):
         proto = self._stub._RcvProto()
         proto.ParseFromString(body)
 
-        if self._pipe.args.debug:
+        if self._pipe.debug:
             print(f'"Received "{cls(proto)}" message on {channel}...')
 
         process_thread = Thread(target=self._stub.process, args=(proto, method))
