@@ -2,6 +2,7 @@ from .checks import check_rabbitmq
 from .rabbitmq import bind_rabbitmq
 from kctl.utils import BOLD, cls
 from subprocess import Popen
+from functools import wraps
 import signal
 import sys
 import os
@@ -13,38 +14,42 @@ from ..save import save
 @click.pass_context
 def deploy(ctx):
     """Check configuration yamls, bind rabbitmq, and deploy"""
-    path_manager = ctx.obj
     ctx.invoke(save)
-    os.chdir(path_manager.pipe_root + '..')
+
+
+def deploy_options(f):
+    @wraps(f)
+    @click.option('-c', '--connection', required=True)
+    @click.option('-r', '--rebind', is_flag=True)
+    @click.option('-d', '--debug', is_flag=True)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
 
 
 @deploy.command()
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
+@deploy_options
 @click.pass_obj
-def pipeline(path_manager, connection, rebind):
-    rmq_setup(connection, rebind)
-    pm = path_manager
+def pipeline(pm, connection, rebind):
+    rmq_setup(pm, connection, rebind)
     from koursaros import pipelines
     pipe = getattr(pipelines, pm.pipe_name)
     services = [cls(service) for service in pipe.Services]
-    subproc_servs(path_manager, services, connection)
+    subproc_servs(pm, services, connection)
 
 
 @deploy.command()
 @click.argument('service')
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
+@deploy_options
 @click.pass_obj
-def service(path_manager, service, connection, rebind):
-    rmq_setup(connection, rebind)
-    subproc_servs(path_manager, [service], connection)
+def service(pm, service, connection, rebind):
+    rmq_setup(pm, connection, rebind)
+    subproc_servs(pm, [service], connection)
 
 
-def rmq_setup(connection, rebind):
-    check_rabbitmq(connection)
+def rmq_setup(pm, connection, rebind):
+    check_rabbitmq(pm, connection)
     if rebind:
-        bind_rabbitmq(connection)
+        bind_rabbitmq(pm, connection)
 
 
 def subproc_servs(pm, services, connection):
