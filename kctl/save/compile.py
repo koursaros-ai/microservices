@@ -86,7 +86,7 @@ class ClassBottle:
 
         else:
             raise NotImplementedError(f'var "{name}" of type '
-                                      '{type(obj)} not supported')
+                                      f'{type(obj)} not supported')
 
     def bottle(self, indents=0):
         """recursive function to indent each subclass nested
