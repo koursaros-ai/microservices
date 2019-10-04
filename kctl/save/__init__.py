@@ -12,9 +12,9 @@ def save(path_manager):
     bottle = PipelineBottler(path_manager)
 
     if bottle.cached():
-        print(f'No changes to "{bottle.pipe_name}", skipping compile...')
+        print(f'No changes to "{bottle.pm.pipe_name}", skipping compile...')
     else:
-        print(f'Compiling pipeline "{bottle.pipe_name}"...')
+        print(f'Compiling pipeline "{bottle.pm.pipe_name}"...')
         bottle.compile_connections()
         bottle.compile_services()
         bottle.compile_messages()
