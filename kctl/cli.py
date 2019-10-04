@@ -7,7 +7,6 @@ Find more information at: https://github.com/koursaros-ai/koursaros
 
 
 from .utils import PathManager
-from .logger import KctlLogger
 from .create import create
 from .deploy import deploy
 from .train import train
@@ -15,12 +14,10 @@ from .pull import pull
 from .save import save
 import click
 
-KctlLogger.init()
 
 @click.group()
 @click.pass_context
 def kctl(ctx):
-
     ctx.obj = PathManager()
 
 
