@@ -30,7 +30,6 @@ def pipeline(path_manager, *rmq):
     services = [cls(service) for service in pipe.Services]
     subproc_servs(path_manager, services)
 
-
 @deploy.command()
 @click.argument('service')
 @click.option('-c', '--connection', required=True)

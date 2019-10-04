@@ -101,7 +101,7 @@ def send_claims():
                 ksql.insert(SCHEMA + '.' + TABLE, buffer)
                 ksql.commit()
                 buffer.clear()
-            print(f'Dumped {i * CHUNK_SIZE} claims')
+        print(f'Dumped {i * CHUNK_SIZE} claims')
     if len(buffer) > 0:
         ksql.insert(SCHEMA + '.' + TABLE, buffer)
         ksql.commit()
