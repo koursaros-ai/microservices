@@ -1,5 +1,4 @@
 
-from koursaros import pipelines
 from importlib import reload
 from hashlib import md5
 import kctl
@@ -43,6 +42,7 @@ class PathManager:
     def __init__(self, base=os.getcwd()):
         self.base = base
         self.pipe_root = self.find_pipe_root()
+        from koursaros import pipelines
         self.pipelines = pipelines
         self.compile_path = pipelines.__path__[0] + '/'
         self.existing_pipes = self.get_dirs(self.compile_path)
