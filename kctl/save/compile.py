@@ -126,8 +126,8 @@ class PipelineBottle(ClassBottle):
         self.save_path = self.compile_path + self.pipe_name
         self.name = self.pipe_name
         self.out_file = f'{self.save_path}/__init__.py'
-        self.conn_yaml = self.get_yaml('/connections.yaml', 'connections')
-        self.stubs_yaml = self.get_yaml('/stubs.yaml', 'stubs')
+        self.conn_yaml = self.get_yaml(self.pipe_root + '/connections.yaml', 'connections')
+        self.stubs_yaml = self.get_yaml(self.pipe_root + '/stubs.yaml', 'stubs')
         self.serv_names, self.serv_yamls = self.get_serv_yamls()
 
 
@@ -145,15 +145,13 @@ class PipelineBottle(ClassBottle):
             return False
 
     def get_serv_yamls(self):
-        serv_dirs = get_valid_dirs(self.pipe_root + '/services/')
+        serv_dirs = get_valid_dirs(self.pipe_root + 'services/')
         serv_paths, self.serv_names = serv_dirs
         import pdb; pdb.set_trace()
         yamls = [self.get_yaml(path + '/stubs.yaml', 'stubs') for path in serv_paths]
         return dict(zip(self.serv_names, yamls))
 
-
-    def get_yaml(self, path_from_pipe_root, head):
-        path = self.pipe_root + path_from_pipe_root
+    def get_yaml(self, path, head):
         yaml = pyyaml.safe_load(open(path))
         return yaml[head]
 
