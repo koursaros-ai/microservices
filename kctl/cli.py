@@ -15,11 +15,12 @@ from .pull import pull
 from .save import save
 import click
 
+KctlLogger.init()
 
 @click.group()
 @click.pass_context
 def kctl(ctx):
-    KctlLogger.init()
+
     ctx.obj = PathManager()
 
 
