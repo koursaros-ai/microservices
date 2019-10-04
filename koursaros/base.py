@@ -6,7 +6,6 @@ from sys import argv
 import functools
 import pika
 
-
 EXCHANGE = 'nyse'
 RECONNECT_DELAY = 5000  # 5 sec
 PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
@@ -15,6 +14,14 @@ PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
 class ReprClassName:
     def __repr__(self):
         return self.__class__.__name__
+
+
+class ActivatingContainerErrors(Exception):
+    pass
+
+
+class NotOneActiveError(ActivatingContainerErrors):
+    pass
 
 
 class ActivatingContainer:
@@ -68,8 +75,8 @@ class ActivatingContainer:
         subclass... will raise if there is not exactly one
         """
         if len(self.__activerefs__) != 1:
-            raise self.NotOneActiveError('Not exactly one __active__ subclass: '
-                                         f'{self.__activerefs__}')
+            raise NotOneActiveError('Not exactly one __active__ subclass: '
+                                    f'{self.__activerefs__}')
 
         return self.__activerefs__[0]
 
@@ -77,9 +84,6 @@ class ActivatingContainer:
         rand_int = randint(0, len(self.__activerefs__) - 1)
 
         return self.__activerefs__[rand_int]
-
-    class NotOneActiveError(Exception):
-        pass
 
 
 class Pipeline(ReprClassName):
