@@ -10,22 +10,20 @@ from ..save import save
 
 
 @click.group()
-@click.option('-c', '--connection', required=True)
-@click.option('-r', '--rebind', is_flag=True)
 @click.pass_context
-def deploy(ctx, connection, rebind):
+def deploy(ctx):
     """Check configuration yamls, bind rabbitmq, and deploy"""
     path_manager = ctx.obj
     ctx.invoke(save)
-    check_rabbitmq(connection)
-    if rebind:
-        bind_rabbitmq(connection)
     os.chdir(path_manager.pipe_root + '..')
 
 
 @deploy.command()
+@click.option('-c', '--connection', required=True)
+@click.option('-r', '--rebind', is_flag=True)
 @click.pass_obj
-def pipeline(path_manager):
+def pipeline(path_manager, *rmq):
+    rmq_setup(*rmq)
     pm = path_manager
     from koursaros import pipelines
     pipe = getattr(pipelines, pm.pipe_name)
@@ -35,12 +33,22 @@ def pipeline(path_manager):
 
 @deploy.command()
 @click.argument('service')
+@click.option('-c', '--connection', required=True)
+@click.option('-r', '--rebind', is_flag=True)
 @click.pass_obj
-def service(path_manager, service):
+def service(path_manager, service, *rmq):
+    rmq_setup(*rmq)
     subproc_servs(path_manager, [service])
 
 
-def subproc_servs(pm, services):
+def rmq_setup(connection, rebind):
+    check_rabbitmq(connection)
+    if rebind:
+        bind_rabbitmq(connection)
+
+def suproc_servs()
+
+def subproc(pm, services):
     processes = []
 
     try:
