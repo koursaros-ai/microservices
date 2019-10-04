@@ -140,6 +140,9 @@ class Service(ReprClassName):
 
         # init stubs with reference to pipeline and service
         self.Stubs = self.Stubs(active_stubs, self)
+        print(dir(self.Stubs))
+        print(self.Stubs)
+        import pdb; pdb.set_trace()
 
     def run(self):
         for stub in self.Stubs:
@@ -166,8 +169,6 @@ class Stub(ReprClassName):
 
     def __init__(self, _service):
         self._service = _service
-        print(dir(_service))
-        print(_service)
         self._pipe = _service._pipe
         self._debug = self._pipe.debug
         self._should_send = True if self._send_stub else False
