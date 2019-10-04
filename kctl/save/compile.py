@@ -134,6 +134,7 @@ class PipelineBottle(ClassBottle):
 
     def cached(self):
         try:
+            print(self.out_file)
             with open(self.out_file) as f:
                 line = f.readline()
                 print(line)
