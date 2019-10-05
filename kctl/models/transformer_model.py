@@ -1,5 +1,5 @@
 from .model import Model
-import torch
+import torch.nn
 from transformers import *
 
 MODEL_CLASSES = {
@@ -19,6 +19,7 @@ class TransformerModel (Model):
          else:
             pass
          self.model = model.from_pretrained()
+         self.tokenizer = tokenizer.from_pretrained()
 
 
      def train(self):
