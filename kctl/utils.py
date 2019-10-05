@@ -75,11 +75,17 @@ class PathManager:
         self.app_root = Path(self.find_app_root())
         import koursaros
         # import pdb;
+        print()
+        print(self.app_root.tostring())
+        print()
         # pdb.set_trace()
         self.koursaros = koursaros
         self.kpath = Path(koursaros.__path__[0])
         self.pipe_path = [self.app_root + 'pipelines', self.kpath + 'pipelines']
         self.serv_path = [self.app_root + 'services', self.kpath + 'services']
+        print()
+        print(self.app_root.tostring())
+        print()
 
         if self.app_root is not None:
             self.app_name = self.kpath[-1]
