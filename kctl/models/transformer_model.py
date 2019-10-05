@@ -38,5 +38,8 @@ class TransformerModel (Model):
              scheduler.step()
              optimizer.zero_grad()
 
+     def eval(self):
+        pass
+
      def run(self, *args):
-         pass
+        pass

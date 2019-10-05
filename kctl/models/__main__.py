@@ -22,7 +22,6 @@ pipeline = factchecking(__file__)
 scorer = pipeline.services.scorer
 inference = pipeline.services.inference
 
-
 def load_model():
     global regression_model
 
