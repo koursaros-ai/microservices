@@ -1,0 +1,10 @@
+type: transformer/roberta
+name: fever
+training:
+  dataSource: postgres
+  schmea: model_data
+  trainTable: fever_train
+  testTable: fever_test
+deployment:
+  kind: regression
+  pipeline: etc
