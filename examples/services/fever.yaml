@@ -1,5 +1,5 @@
 name: fever
-architecture: transformer/roberta-base
+base: transformer
 repo: gs://poloma-models
 task: classification
 data:

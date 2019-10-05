@@ -11,18 +11,23 @@ from .utils import PathManager
 from .create import create
 from .deploy import deploy
 from .pull import pull
+from .train import train
 import click
 
 
 @click.group()
 @click.pass_context
 def kctl(ctx):
-    ctx.obj = PathManager()
+    try:
+        ctx.obj = PathManager()
+    except:
+        ctx.obj = None
 
 
 kctl.add_command(create)
 kctl.add_command(deploy)
 kctl.add_command(pull)
+kctl.add_command(train)
 
 
 def cli():

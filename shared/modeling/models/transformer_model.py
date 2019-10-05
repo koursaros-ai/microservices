@@ -1,4 +1,4 @@
-from .model import Model
+from ..model import Model
 import torch.nn
 from transformers import *
 
@@ -43,3 +43,6 @@ class TransformerModel (Model):
 
      def run(self, *args):
         pass
+
+     def architectures(self):
+         return MODEL_CLASSES.keys()

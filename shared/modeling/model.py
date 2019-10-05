@@ -39,3 +39,8 @@ class Model(object):
     def save_model(self):
         # append hash of yaml to model checkpoint
         raise NotImplementedError()
+
+    @staticmethod
+    def architectures(self):
+        raise NotImplementedError()
+

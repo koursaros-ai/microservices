@@ -4,9 +4,9 @@ import os
 from shared.modeling import get_model
 
 @click.command()
+@click.argument('name')
 @click.pass_obj
-def train(*args):
-    name = args[0]
+def train(pathmanager, name):
     get_model(name)
 
 @click.command()
