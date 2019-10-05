@@ -56,7 +56,7 @@ class Path:
 class PipelineYaml(dict):
     def __init__(self, path):
         super().__init__()
-        self.yaml = pyyaml.safe_load(path)
+        self.yaml = pyyaml.safe_load(open(path))
         self.path = path
         import pdb;
         pdb.set_trace()
