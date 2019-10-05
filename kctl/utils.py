@@ -58,8 +58,7 @@ class PipelineYaml(dict):
         super().__init__()
         self.yaml = pyyaml.safe_load(open(path))
         self.path = path
-        import pdb;
-        pdb.set_trace()
+        
         for service, configs in self.yaml['pipeline'].items():
             self[service] = Box(configs)
 
