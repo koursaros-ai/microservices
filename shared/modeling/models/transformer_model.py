@@ -12,14 +12,15 @@ MODEL_CLASSES = {
 
 class TransformerModel (Model):
 
-     def __init__(self):
-         super().__init__()
-         if self.task == 'classification':
-            config, model, tokenizer = MODEL_CLASSES[self.architecture]
+     def __init__(self, *args):
+         super().__init__(*args)
+         if self.config.task == 'classification':
+            config, model, tokenizer = MODEL_CLASSES[self.config.base]
          else:
-            pass
-         self.model = model.from_pretrained()
-         self.tokenizer = tokenizer.from_pretrained()
+            raise NotImplementedError()
+
+         self.model = model.from_pretrained(self.checkpoint)
+         self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
 
      def train(self):
@@ -44,5 +45,6 @@ class TransformerModel (Model):
      def run(self, *args):
         pass
 
-     def architectures(self):
-         return MODEL_CLASSES.keys()
+     @staticmethod
+     def architectures():
+         return list(MODEL_CLASSES.keys())

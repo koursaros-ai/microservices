@@ -1,5 +1,5 @@
 name: fever
-base: transformer
+base: bert
 repo: gs://poloma-models
 task: classification
 data:
@@ -13,6 +13,6 @@ labels:
   - REFUTES
   - NEI
 training:
-  init-checkpoint: https://dl.fbaipublicfiles.com/fairseq/models/roberta.large.tar.gz
+  checkpoint: bert-base-uncased
   epochs: 3
-  learning-rate: 1e-05
+  learning_rate: 1e-05

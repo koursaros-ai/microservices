@@ -1,4 +1,7 @@
 import csv
+import hashlib
+import os
+from shared.utils.database.psql import Conn
 
 def get_rows_from_tsv(fname):
     samples = []
@@ -10,20 +13,33 @@ def select_all(table):
 
 class Model(object):
 
-    def __init__(self):
+    def __init__(self, config, version):
         # load configs from yaml
-        self.data_loader = None # self.get_data_loader(configs)
-        self.hash = None # Map to hash of yaml
-        self.architecture = None
-        self.task = None
-        self.lr = 1e-05
-        pass
+        self.config = config
+        self.version = version
+        ckpt_path = f'.cache/{version}.bin'
+        if os.path.exists(ckpt_path): # else check if in model repo
+            self.checkpoint = ckpt_path
+            self.trained = True
+        else:
+            self.checkpoint = config.training.checkpoint
+            self.trained = False
 
     # train_data and test_data are either URL to download from
     # conn.query_fn = (query) -> of form text1, <optional text2>, label
     # returns train_data, test data iterable of rows
     def get_data(self):
-        if self.query_fn == None:
+        data = self.config.data
+        if data.source == 'postgres':
+            p = Conn(
+                host=HOST,
+                user=USER,
+                password=PASS,
+                dbname=args.dbname,
+                sslmode=SSLMODE,
+                cert_path=CERT_PATH
+            )
+            query_fn = p.query
             return query_fn(select_all(train_data)), query_fn(select_all(test_data))
         else:
             return get_rows_from_tsv(train_data), get_rows_from_tsv(test_data)
@@ -41,6 +57,6 @@ class Model(object):
         raise NotImplementedError()
 
     @staticmethod
-    def architectures(self):
+    def architectures():
         raise NotImplementedError()
 
