@@ -22,7 +22,6 @@ def kctl(ctx):
 
 kctl.add_command(create)
 kctl.add_command(deploy)
-kctl.add_command(train)
 kctl.add_command(pull)
 
 
