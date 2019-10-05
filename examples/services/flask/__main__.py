@@ -1,15 +1,10 @@
-from koursaros.pipelines import pig_pipeline
+from koursaros import Service
 from flask import Flask, request, jsonify
-from queue import Queue
-from threading import Thread
-import uuid
 
-Pipeline = pig_pipeline(__package__)
+
+service = Service(__package__)
 app = Flask(__name__)
-sentences = dict()
 
-backend = Pipeline.Services.backend
-pig = Pipeline.Services.pig
 
 @app.route('/')
 def receive():
@@ -17,46 +12,26 @@ def receive():
     if not text:
         return jsonify({
             "status": "failure",
-            "msg": "Please provide a sentence"
-        })
-    global sentences
-
-    sentence_id = str(uuid.uuid4())
-    queue = Queue()
-    sentences[sentence_id] = queue
-    sentence = backend.Stubs.send.Sentence(id=sentence_id, text=text)
-    send_sentence(sentence)
-    piggified = queue.get()
-    sentences.pop(sentence_id)
-
-    return jsonify({
-        "status": "success",
-        "msg": piggified
+            "msg": "Please provide a msg"
         })
 
-
-@backend.Stubs.send
-def send_sentence(sentence):
-    print(sentence)
-    return sentence
+    send(service.Message(text=text))
 
 
-@backend.Stubs.receive
-def receive(piggified):
-    global sentences
-    print(sentences)
-    sentences[piggified.sentence.id].put(piggified.pig_latin)
+@service.stub
+def send(msg):
+    print('Sending ' + msg)
+    return msg
+
+
+@service.callback
+def callback(msg):
+    print('Received ' + msg)
 
 
 if __name__ == "__main__":
-    s = Thread(target=backend.run)
-    a = Thread(target=app.run)
+    service.run(subs=[app.run])
 
-    print('Starting backend stubs...')
-    s.start()
-    print('Starting flask...')
-    a.start()
-    s.join()
-    a.join()
+
 
 

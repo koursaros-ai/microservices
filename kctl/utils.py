@@ -1,14 +1,12 @@
 
 from importlib import reload
 from hashlib import md5
-import kctl
+import yaml as pyyaml
+from box import Box
 import os
 
+
 BOLD = '\033[1m{}\033[0m'
-
-
-def cls(obj):
-    return obj.__class__.__name__
 
 
 def decorator_group(options):
@@ -31,6 +29,36 @@ def decorator_group(options):
     return option_decorator
 
 
+class Path:
+    """Manages paths by splitting "/" into a list
+
+    """
+    __slots__ = ['start', 'path']
+
+    def __init__(self, path):
+        self.start = '/' if path.startswith('/') else ''
+        self.path = list(filter(None, path.split('/')))
+
+    def tostring(self):
+        return self.start + '/'.join(self.path)
+
+    def __add__(self, other):
+        self.path += [other]
+        return self
+
+    def __getitem__(self, item):
+        return self.path[item]
+
+
+class PipelineYaml(dict):
+    def __init__(self, path):
+        super().__init__()
+        self.yaml = pyyaml.safe_load(path)
+        self.path = path
+        for service, configs in self.yaml['pipeline'].items():
+            self[service] = Box(configs)
+
+
 class PathManager:
     """Manager that keeps track of all of the koursaros
     paths and packages. Passed around at runtime to make
@@ -41,71 +69,68 @@ class PathManager:
 
     def __init__(self, base=os.getcwd()):
         self.base = base
-        self.pipe_root = self.find_pipe_root()
-        from koursaros import pipelines
-        self.pipelines = pipelines
-        self.compile_path = pipelines.__path__[0] + '/'
-        self.existing_pipes = self.get_dirs(self.compile_path)
-        self.kctl_path = kctl.__path__[0] + '/'
-        self.kctl_create_path = self.kctl_path + '/create/template/pipeline/'
+        self.app_root = Path(self.find_app_root())
+        import koursaros
+        self.koursaros = koursaros
+        self.kpath = Path(koursaros.__path__[0])
+        self.pipe_path = [self.app_root + 'pipelines', self.kpath + 'pipelines']
+        self.serv_path = [self.app_root + 'services', self.kpath + 'services']
 
-        if self.pipe_root is not None:
-            self.pipe_name = self.pipe_root.split('/')[-2]
-            self.pipe = self.load_pipe()
-            self.pipe_save_dir = self.compile_path + self.pipe_name
-            self.pipe_save_file = f'{self.pipe_save_dir}/__init__.py'
-            self.conn_path = self.pipe_root + '/connections.yaml'
-            self.stubs_path = self.pipe_root + '/stubs.yaml'
-            self.serv_dirs = self.get_dirs(self.pipe_root + 'services/')
-            self.serv_paths = {name: path + '/service.yaml' for name, path in self.serv_dirs.items()}
-            self.conn_hash = self.hash_files([self.conn_path])[0]
-            self.stubs_hash = self.hash_files([self.stubs_path])[0]
-            self.serv_hashes = self.hash_files(
-                [self.serv_paths[name] for name in sorted(self.serv_paths)]
-            )
+        if self.app_root is not None:
+            self.app_name = self.kpath[-1]
 
-    def load_pipe(self):
-        try:
-            pipe = getattr(self.pipelines, self.pipe_name)
-        except AttributeError:
-            self.reload()
-            pipe = getattr(self.pipelines, self.pipe_name)
+    def get_pipe_yaml(self, pipe_yaml):
+        for path in self.pipe_path:
+            pipe_yamls = self.get_next(path, suffix='.yaml', option=2)
 
-        return pipe(__package__) if pipe is not None else None
+            if pipe_yaml in pipe_yamls:
+                return PipelineYaml((path + pipe_yaml).tostring())
+
+        return None
+
+    def get_serv_path(self, serv_name):
+        for path in self.serv_path:
+            serv_names = self.get_next(path, option=1)
+
+            if serv_name in serv_names:
+                return serv_name, (path + serv_name).tostring()
+
+        return None
 
     def reload(self):
-        self.reset_imports()
-        reload(self.pipelines)
+        reload(self.koursaros)
         self.__init__()
 
-    def reset_imports(self):
-        imports = ''
-        for pipe in self.existing_pipes:
-            imports += f'from .{pipe} import {pipe}\n'
-
-        with open(f'{self.compile_path}/__init__.py', 'w') as fh:
-            fh.write(imports)
-
-    def find_pipe_root(self):
+    def find_app_root(self):
         current_path = ''
         for directory in self.base.split('/'):
             current_path += directory + '/'
-            test_path = current_path + '.koursaros'
+            test_path = current_path + '.kapp'
             if os.path.isdir(test_path):
                 return current_path
 
         return None
 
-
-
     @staticmethod
-    def get_dirs(path):
+    def get_next(path, option=1, suffix=None):
         """Returns directories for a path
 
-        :param path: filepath
-        :return: (dir names, dir paths)
+        :param path: Path object
+        :param option: 1 = directories, 2 = files
+        :param suffix: suffix to filter with (filetype)
+        :return: (name, path) tuples
         """
-        dir_names = next(os.walk(path))[1]
+        names = next(os.walk(path.tostring()))[option]
+        filtered = [name for name in names if name[0] not in '_.']
+        if suffix is not None:
+            filtered = [name for name in names if name.endswith(suffix)]
+
+        return filtered
+        # return dict(zip(filtered, [path + name for name in filtered]))
+
+    @staticmethod
+    def get_files(path):
+        dir_names = next(os.walk(path))[2]
         filtered = [name for name in dir_names if name[0] not in '_.']
         return dict(zip(filtered, [path + name for name in filtered]))
 
@@ -113,10 +138,10 @@ class PathManager:
     def hash_files(paths):
         return [md5(open(path, 'rb').read()).hexdigest() for path in paths]
 
-    def raise_if_pipe_root(self):
-        if self.pipe_root is not None:
+    def raise_if_app_root(self):
+        if self.app_root is not None:
             raise IsADirectoryError(f'"{self.base}" is already a pipeline')
 
-    def raise_if_no_pipe_root(self):
-        if self.pipe_root is None:
+    def raise_if_no_app_root(self):
+        if self.app_root is None:
             raise NotADirectoryError(f'"{self.base}" is not a pipeline')

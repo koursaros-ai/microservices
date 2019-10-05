@@ -11,7 +11,6 @@ from .create import create
 from .deploy import deploy
 from .train import train
 from .pull import pull
-from .save import save
 import click
 
 
@@ -25,7 +24,6 @@ kctl.add_command(create)
 kctl.add_command(deploy)
 kctl.add_command(train)
 kctl.add_command(pull)
-kctl.add_command(save)
 
 
 def cli():

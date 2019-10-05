@@ -1,406 +1,145 @@
+from kctl.logger import Logger
 from threading import Thread
-from kctl.logger import KctlLogger
-from kctl.utils import cls
-from random import randint
 from sys import argv
-import functools
-import pika
-
-EXCHANGE = 'nyse'
-RECONNECT_DELAY = 5000  # 5 sec
-PROPS = pika.BasicProperties(delivery_mode=2)  # persistent
+import messages_pb2
+import zmq
 
 
-class ReprClassName:
-    def __repr__(self):
-        return self.__class__.__name__
-
-
-class ActivatingContainerErrors(Exception):
-    pass
-
-
-class NotOneActiveError(ActivatingContainerErrors):
-    pass
-
-
-class ActivatingContainer:
-    """Class that holds a number of other classes.
-    Class names are designated in __names__
-
-    When initialized, the container sets
-    __active__ (boolean) to each subclass depending on whether
-    the class is in active_names. Then initializes them
-    with *args and **kwargs.
-
-    Also sets the container __active__ to true if any
-    children are active...
-
-    Also stores a reference to each active subclass.
-    """
-
-    __names__ = []
-
-    def __init__(self, *args, **kwargs):
-        self.active = False
-
-        for clas in list(self):
-            cls_name = clas.__name__
-            __active__ = True if cls_name in active_names else False
-
-            setattr(clas, '__active__', __active__)
-
-            instance = clas(*args, **kwargs)
-            setattr(self, cls_name, instance)
-
-            if __active__:
-                self.__active__ = True
-
-                self.__activerefs__.append(instance)
-
-    def __iter__(self):
-        attrs = []
-
-        for name in self.__names__:
-            attrs.append(getattr(self, name))
-
-        return iter(attrs)
-
-    def __len__(self):
-        return len(self.__names__)
-
-    def activate(self, what):
-        for child in list(self):
-            if repr(child) == what:
-                child.active = True
-
-
-
-    def getactive(self):
-        """getactive() assumes that their is one __active__
-        subclass... will raise if there is not exactly one
-        """
-        if len(self.__activerefs__) != 1:
-            raise NotOneActiveError('Not exactly one __active__ subclass: '
-                                    f'{self.__activerefs__}')
-
-        return self.__activerefs__[0]
-
-    def randomactive(self):
-        rand_int = randint(0, len(self.__activerefs__) - 1)
-
-        return self.__activerefs__[rand_int]
-
-
-class Pipeline(ReprClassName):
-    """The pipeline object holds services (.Services), connection
-    parameters (.Connections), and command line arguments (.args)
+class Service:
+    """The base service class
 
     :param package: __package__ parameter
-    :param prefetch: (from pika) Specifies a prefetch window in terms of whole
-        messages. This field may be used in combination with the
-        prefetch-size field; a message will only be sent in advance
-        if both prefetch windows (and those at the channel and connection
-        level) allow it. The prefetch-count is ignored by consumers
-        who have enabled the no-ack option.
     """
 
-    class Connections(ActivatingContainer):
+    def __init__(self, package):
+        self._context = zmq.Context()
+        self._rcv_proto = messages_pb2.__dict__.get(argv[1], None)
+        self._send_proto = messages_pb2.__dict__.get(argv[2], None)
+        self._cb_proto = messages_pb2.__dict__.get(argv[3], None)
+        self._rcv_host = "tcp://" + argv[3]
+        self._send_host = "tcp://" + argv[4]
+        self._cb_host = "tcp://" + argv[5]
+        self._stub_f = None
+        self._cb_f = None
+        Logger.init()
+
+        service = package.split('.')[-1]
+
+        print(f'Initializing "{service}"')
+
+    class Message:
+        """Class to hold key word arguments for sending via protobuf"""
+        __slots__ = ['kwargs']
+
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+    class STOP:
+        """Class to break stub/callback push/pull"""
+        __slots__ = []
+
+    def stub(self, f):
+        self._stub_f = f
+        return self._stub
+
+    def callback(self, f):
+        self._cb_f = f
+        return self._callback
+
+    def _protofy(self, msg, proto):
+        """Checks whether the type is Message else it assumes it's a proto"""
+        return proto(**msg.kwargs) if type(msg) == self.Message else msg
+
+    def _check_rcv_proto(self, proto):
         pass
 
-    class Services(ActivatingContainer):
+    def _check_send_proto(self, proto):
         pass
 
-    def __init__(self, package, prefetch=1, logger=True):
-        self.prefetch = prefetch
-        self.debug = True if 'debug' in argv else False
-
-        if logger:
-            KctlLogger.init()
-
-        active_service = package.split('.')[-1]
-
-        print(f'Initializing "{self}.{active_service}"')
-        self.Connections = self.Connections([argv[1]])
-        self.Services = self.Services([active_service], self)
-
-
-class Connection(ReprClassName):
-    pass
-
-
-class Service(ReprClassName):
-    """The pipeline object holds stubs (.Stubs)
-
-    :param _pipe: Pipeline object reference
-    """
-    __active__ = False
-
-    class Stubs(ActivatingContainer):
+    def _check_cb_proto(self, proto):
         pass
 
-    def __init__(self, _pipe):
-        self._pipe = _pipe
-        self._debug = _pipe.debug
+    def _stub(self, msg):
 
-        if self._debug:
-            print(f'Initializing "{self}" service...')
+        proto = self._protofy(msg, self._rcv_proto)
+        self._check_rcv_proto(proto)
+        msg = self._stub_f(proto)
 
-        active_stubs = self.Stubs.__names__ if self.__active__ else []
+        if msg is not None:
+            raise ValueError('Send stub must return...')
 
-        # init stubs with reference to pipeline and service
-        self.Stubs = self.Stubs(active_stubs, self)
+        proto = self._send_proto(**msg.kwargs)
+        self._check_send_proto(proto)
+        body = proto.SerializeToString()
+        return body
 
-    def run(self):
-        for stub in self.Stubs:
-            stub.run()
-        for stub in self.Stubs:
-            stub.join()
+    def _callback(self, msg):
+        proto = self._protofy(msg, self._cb_proto)
+        self._check_cb_proto(proto)
+        self._cb_f(proto)
 
+    def _push_pull(self, func, push_host=None, pull_host=None):
+        """Executes a push pull loop, executing the func as a callback
 
-class StubErrors(Exception):
-    pass
+        :param func: callback to execute message with
+        """
+        push = True if push_host is not None else False
+        pull = True if pull_host is not None else False
 
+        if push:
+            push_socket = self._context.socket(zmq.PUSH)
+            push_socket.connect(push_socket)
+            print('Socket created on ' + push_socket)
 
-class NotInActiveServiceError(StubErrors):
-    pass
-
-
-class NoReturnError(StubErrors):
-    pass
-
-
-class ShouldNotReturnError(StubErrors):
-    pass
-
-
-class WrongMessageTypeError(StubErrors):
-    pass
-
-
-class StubNotFoundError(StubErrors):
-    pass
-
-
-class Stub(ReprClassName):
-    __active__ = False
-
-    _rcv_proto = None
-    _send_proto = None
-    _RcvProto = None
-    _SendProto = None
-
-    _send_stub = None
-
-    _consumer = None
-    _publisher = None
-
-    _pthread = None
-    _cthread = None
-
-    def __init__(self, _service):
-        self._service = _service
-        self._pipe = _service._pipe
-        self._debug = self._pipe.debug
-        self._should_send = True if self._send_stub else False
-
-        if self._debug:
-            print(f'Initializing "{self}" stub...')
-
-    def __call__(self, func):
-        if not self.__active__:
-            self._raise_not_active()
-        self._func = func
-        return self._process
-
-    def _raise_wrong_msg_type(self, incorrect_type):
-        msg = (f'"{repr(self)}" sending "{incorrect_type}" message,'
-               f'but expected "{cls(self._SendProto)}" message')
-        raise WrongMessageTypeError(msg)
-
-    def _raise_stub_not_found(self):
-        msg = f'{repr(self)} could not find "{self._send_stub}" stub to send to'
-        raise StubNotFoundError(msg)
-
-    def _raise_not_active(self):
-        # if the parent service is not active then crash
-        msg = (f'Cannot use stubs from "{self._service}"'
-               f'service in "{self._pipe.Services.getactive()}" service')
-        raise NotInActiveServiceError(msg)
-
-    def _raise_no_return(self):
-        msg = (f'"{self}" stub did not return anything,'
-               f'but it should be sending to "{self._send_stub}" stub')
-        raise NoReturnError(msg)
-
-    def _raise_should_not_return(self):
-        msg = f'"{self}" stub should not return anything...'
-        raise ShouldNotReturnError(msg)
-
-    def _process(self, proto, method=None):
-
-        if self._debug:
-            print(f'"{self}" stub processing "{cls(proto)}"...')
-
-        returned = self._func(proto)
-
-        if self._debug:
-            print(f'"{self._func.__name__}" returned "{cls(returned)}"...')
-
-        if self._should_send:
-            if returned is None:
-                self._raise_no_return()
-            else:
-                self._send(returned)
-
-        else:
-            if returned is not None:
-                self._raise_should_not_return()
-        if method is not None:
-            if self._debug:
-                print(f'"{self}" stub sending ack callback')
-
-            self._consumer.ack_callback(method.delivery_tag)
-
-    def _send(self, proto):
-
-        if self.__active__:
-            self._publisher.publish(proto)
-        else:
-            # get active service then send from random active stub
-            self._pipe.Services.getactive().Stubs.randomactive()._send(proto)
-
-    def run(self):
-        self._consumer = Consumer(self)
-        self._publisher = Publisher(self)
-
-        p = Thread(target=self._publisher.run)
-        c = Thread(target=self._consumer.run)
-
-        print(f'Running stub "{repr(self)}" publisher {c.getName()}')
-        p.start()
-        self._pthread = p
-
-        print(f'Running stub "{repr(self)}" consumer {c.getName()}')
-        c.start()
-        self._cthread = c
-
-    def join(self):
-        p = self._pthread
-        c = self._cthread
-
-        print(f'Waiting for stub "{repr(self)}" publisher to finish {p.getName()}')
-        p.join()
-        print(f'Waiting for stub "{repr(self)}" consumer to finish {c.getName()}')
-        c.join()
-
-
-class Connector(ReprClassName):
-    """An abstract class that serves as the connection creator
-    for the publisher and consumer
-
-    :param _stub: reference to parent stub
-    """
-
-    _connection = None
-    _channel = None
-    _debug = False
-
-    def __init__(self, _stub):
-        self._pipe = _stub._service._pipe
-        self._debug = self._pipe.debug
-        self._service = _stub._service
-        self._stub = _stub
-
-    def _connect(self):
-
-        # get the active connection in the pipeline
-        conn = self._pipe.Connections.getactive()
-
-        user = repr(self._service) + '.' + repr(self._stub)
-        vhost = repr(self._pipe)
-
-        credentials = pika.credentials.PlainCredentials(user, conn.password)
-
-        params = pika.ConnectionParameters(conn.host, conn.port, vhost, credentials)
+        if pull:
+            pull_socket = self._context.socket(zmq.PULL)
+            pull_socket.connect(pull_socket)
+            print('Socket created on ' + pull_socket)
 
         while True:
-            try:
-                self._connection = pika.BlockingConnection(parameters=params)
-                self._channel = self._connection.channel()
-                break
-            except Exception as exc:
-                print(f'Failed pika connection...\n{exc.args}')
-                import time
-                time.sleep(RECONNECT_DELAY)
+            if pull:
+                msg = pull_socket.recv()
+                body = func(msg)
+            else:
+                body = func()
+            if push:
+                push_socket.send(body)
 
+    def run(self, subs=None):
+        """Takes optional sub functions to run in separate threads
 
-class Publisher(Connector):
-    """A simple rabbitmq producer that receives connection from base class
-    and sends messages on the queue (name of the referenced _send_stub)
-    """
-
-    def run(self):
-        self._connect()
-
-    def check_send_proto(self, proto):
-        """Checks an outgoing proto against the
-        type that is expected by the stub
+        :param subs: iterable of functions
         """
-        if self._stub._send_proto != cls(proto):
-            self._stub._raise_wrong_msg_type(cls(proto))
+        threads = []
 
-    def publish(self, proto):
-        # tag outgoing protos with their class names
+        if subs is not None:
+            for sub in subs:
+                t = Thread(target=sub)
+                t.start()
+                threads.append(t)
 
-        self.check_send_proto(proto)
+        if self._send_host is not None or self._rcv_host is not None:
+            t = Thread(
+                target=self._push_pull,
+                args=[self._stub],
+                kwargs={
+                    'push_host': self._send_host,
+                    'pull_host': self._rcv_host
+                }
+            )
+            t.start()
+            threads.append(t)
 
-        body = proto.SerializeToString()
+        if self._cb_host:
+            t = Thread(
+                target=self._push_pull,
+                args=[self._callback],
+                kwargs={
+                    'pull_host': self._cb_host
+                }
+            )
+            t.start()
+            threads.append(t)
 
-        send_queue = self._stub._send_stub
-
-        if self._debug:
-            print(f'"Publishing "{cls(proto)}" to "{send_queue}" queue...')
-
-        self._channel.basic_publish(
-            exchange=EXCHANGE,
-            routing_key=send_queue,
-            body=body,
-            properties=PROPS
-        )
-
-        if self._debug:
-            print(f'"Published "{cls(proto)}" to "{send_queue}" queue...')
-
-
-class Consumer(Connector):
-    """A simple rabbitmq consumer that receives connection from base class
-    and listens on the queue (name of the referenced _stub)
-    """
-
-    def run(self):
-        self._connect()
-        self.consume()
-
-    def consume(self):
-        # queue is stub name
-        rcv_queue = repr(self._stub)
-
-        self._channel.basic_qos(prefetch_count=self._pipe.prefetch)
-        self._channel.basic_consume(queue=rcv_queue, on_message_callback=self.consume_callback)
-        print(f'Consuming messages on "{rcv_queue}" queue...')
-        self._channel.start_consuming()
-
-    def ack_callback(self, delivery_tag):
-        cb = functools.partial(self._channel.basic_ack, delivery_tag)
-        self._connection.add_callback_threadsafe(cb)
-
-    def consume_callback(self, channel, method, properties, body):
-        proto = self._stub._RcvProto()
-        proto.ParseFromString(body)
-
-        if self._pipe.debug:
-            print(f'"Received "{cls(proto)}" message on {channel}...')
-
-        process_thread = Thread(target=self._stub._process, args=(proto, method))
-        process_thread.run()
+        for t in threads:
+            t.join()

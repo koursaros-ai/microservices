@@ -1,64 +1,26 @@
-from .checks import check_rabbitmq
-from .rabbitmq import bind_rabbitmq
-from ..utils import BOLD, cls, decorator_group
 from subprocess import Popen
+from ..utils import BOLD
 import signal
+import click
 import sys
 import os
-import click
-from ..save import save
-
-deploy_options = decorator_group([
-    click.option('-c', '--connection', required=True),
-    click.option('-r', '--rebind', is_flag=True),
-    click.option('-d', '--debug', is_flag=True),
-    click.pass_obj
-])
 
 
 @click.group()
 @click.pass_context
 def deploy(ctx):
     """Check configuration yamls, bind rabbitmq, and deploy"""
-    ctx.invoke(save)
 
 
 @deploy.command()
-@deploy_options
-def pipeline(pm, connection, rebind, debug):
+@click.option('name')
+def pipeline(pm, name):
     """Deploy a pipeline"""
-    rmq_setup(pm, connection, rebind)
-    services = [cls(service) for service in pm.pipe.Services]
-    subproc_servs(pm, services, connection, debug)
-
-
-@deploy.command()
-@click.argument('service')
-@deploy_options
-def service(pm, service, connection, rebind, debug):
-    """Deploy a service or group of services"""
-    import pdb; pdb.set_trace()
-    rmq_setup(pm, connection, rebind)
-    subproc_servs(pm, [service], connection, debug)
-
-
-def rmq_setup(pm, connection, rebind):
-    check_rabbitmq(pm, connection)
-    if rebind:
-        bind_rabbitmq(pm, connection)
-
-
-def subproc_servs(pm, services, connection, debug):
     cmds = []
-    for service in services:
-        cmd = [
-            sys.executable, '-m',
-            f'{pm.pipe_name}.services.{service}',
-            connection, service,
-            'debug' if debug else ''
-        ]
-        directory = pm.pipe_root + '..'
-        cmds.append((directory, cmd))
+    for service in pm.get_pipe_yaml(name):
+        deploy_path = pm.get_serv_path(service) + '..'
+        cmd = [sys.executable, '-m', service]
+        cmds.append((deploy_path, cmd))
 
     subproc(cmds)
 
