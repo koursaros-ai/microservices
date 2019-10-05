@@ -86,6 +86,9 @@ class PathManager:
 
     def get_pipe_yaml(self, pipe_yaml):
         for path in self.pipe_path:
+            print()
+            print(self.app_root)
+            print()
             pipe_yamls = self.get_next(path, suffix='.yaml', option=2)
 
             if pipe_yaml in pipe_yamls:
@@ -96,9 +99,7 @@ class PathManager:
     def get_serv_path(self, serv_name):
 
         for path in self.serv_path:
-            print()
-            print(self.app_root)
-            print()
+
             serv_names = self.get_next(path, option=1)
 
             if serv_name in serv_names:
