@@ -89,6 +89,8 @@ class PathManager:
             if pipe_yaml in pipe_yamls:
                 return PipelineYaml((path + pipe_yaml).tostring())
 
+            import pdb; pdb.set_trace()
+
         return None
 
     def get_serv_path(self, serv_name):
