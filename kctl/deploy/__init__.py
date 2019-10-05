@@ -13,10 +13,11 @@ def deploy(pm, yaml):
     """Deploy a pipeline"""
     cmds = []
     pipe_yaml = pm.get_pipe_yaml(yaml)
-    for service in pipe_yaml:
+
+    for service in pipe_yaml.services:
         import pdb; pdb.set_trace()
-        deploy_path = pm.get_serv_path(service) + '/..'
-        cmd = [sys.executable, '-m', service]
+        deploy_path = pm.get_serv_path(service.name) + '/..'
+        cmd = [sys.executable, '-m', service.name, service]
         cmds.append((deploy_path, cmd))
 
     subproc(cmds)

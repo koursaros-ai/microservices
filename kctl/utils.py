@@ -53,14 +53,19 @@ class Path:
         return self.path[item]
 
 
-class PipelineYaml(dict):
+class PipelineYaml:
     def __init__(self, path):
         super().__init__()
         self.yaml = pyyaml.safe_load(open(path))
         self.path = path
+        self.services = []
 
-        for service, configs in self.yaml['pipeline'].items():
-            self[service] = None if configs is None else Box(configs)
+        for serv_name, configs in self.yaml['pipeline'].items():
+            if configs is not None:
+                service = Box(configs)
+                service.name = serv_name
+                import pdb; pdb.set_trace()
+                self.services.append(service)
 
 
 class PathManager:
