@@ -99,7 +99,7 @@ class PathManager:
             serv_names = self.get_next(path, option=1)
 
             if serv_name in serv_names:
-                return serv_name, (path + serv_name).tostring()
+                return (path + serv_name).tostring()
 
         return None
 
