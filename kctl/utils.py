@@ -58,9 +58,9 @@ class PipelineYaml(dict):
         super().__init__()
         self.yaml = pyyaml.safe_load(open(path))
         self.path = path
-        
+
         for service, configs in self.yaml['pipeline'].items():
-            self[service] = Box(configs)
+            self[service] = None if configs is None else Box(configs)
 
 
 class PathManager:
