@@ -122,7 +122,8 @@ class PathManager:
         :param suffix: suffix to filter with (filetype)
         :return: (name, path) tuples
         """
-        names = list(next(os.walk(path.tostring()))[option])
+        names = next(os.walk(path.tostring()))[option]
+        import pdb; pdb.set_trace()
         filtered = [name for name in names if name[0] not in '_.']
         if suffix is not None:
             filtered = [name for name in names if name.endswith(suffix)]
