@@ -1,12 +1,12 @@
-# from koursaros.pipelines import factchecking
+from koursaros.pipelines import factchecking
 from .ksql import Ksql
 from .kelastic import Kelastic
 import os
 
-# pipeline = factchecking(__package__)
+pipeline = factchecking(__package__)
 
-# elastic = pipeline.Services.elastic
-# scorer = pipeline.Services.scorer
+elastic = pipeline.Services.elastic
+scorer = pipeline.Services.scorer
 
 SCHEMA = 'test'
 TABLE = 'elastic_50'
@@ -20,7 +20,6 @@ CREATE = f'''CREATE TABLE {SCHEMA}.{TABLE} (
 
 '''
 
-
 ES_HYPERS = {
     'x': 4.954666662367618,
     'y': 1.5952138657439607,
@@ -29,13 +28,13 @@ ES_HYPERS = {
     'k1': 3.615698435281512
 }
 
-# QUERY_CLAIM_IDS = '''
-#     SELECT l.text
-#     FROM wiki.lines l
-#     JOIN wiki.articles a
-#         ON l.article_id = a.id
-#     WHERE a.fever_id IN ({ids})
-# '''
+QUERY_CLAIM_IDS = '''
+    SELECT l.text
+    FROM wiki.lines l
+    JOIN wiki.articles a
+        ON l.article_id = a.id
+    WHERE a.fever_id IN ({ids})
+'''
 
 # Elasticsearch connection
 kelastic = Kelastic(
@@ -56,26 +55,31 @@ ksql = Ksql(
     cert_path=os.environ.get('CERT_PATH')
 )
 
-
-# @elastic.Stubs.retrieve
-def get_articles(chunk):
+def multisearch_articles(chunk):
     ids, hits = kelastic.get_hits(chunk)
     all_hits = [hit['hits']['hits'] for hit in hits]
     fever_ids = [[hit['_source']['fever_id'] for hit in hits] for hits in all_hits]
     scores = [[hit['_score'] for hit in hits] for hits in all_hits]
-    # fever_ids = ','.join(["'" + fever_id.replace("'", "''") + "'" for fever_id in fever_ids])
-
-    # rows = ksql.query(
-    #     QUERY_CLAIM_IDS.format(fever_ids)
-    # )
-
-    # lines = [row[0] for row in rows]
-    # results = elastic.Stubs.retrieve.ClaimWithLines(
-    #     claim=claim,
-    #     lines=lines
-    # )
     return zip(ids, fever_ids, scores)
 
+@elastic.Stubs.retrieve
+def get_articles(claim):
+
+    claim_ids_batch, fever_ids_batch = kelastic.get_hits((claim.id, claim.text))
+    claim_id, fever_ids = claim_ids_batch[0], fever_ids_batch[0]
+
+    fever_ids = ','.join(["'" + fever_id.replace("'", "''") + "'" for fever_id in fever_ids])
+
+    rows = ksql.query(
+        QUERY_CLAIM_IDS.format(fever_ids)
+    )
+
+    lines = [row[0] for row in rows]
+    results = elastic.Stubs.retrieve.ClaimWithLines(
+        claim=claim,
+        lines=lines
+    )
+    return results
 
 def send_claims():
     query = '''
@@ -101,13 +105,12 @@ def send_claims():
                 ksql.insert(SCHEMA + '.' + TABLE, buffer)
                 ksql.commit()
                 buffer.clear()
-            print(f'Dumped {i * CHUNK_SIZE} claims')
+        print(f'Dumped {i * CHUNK_SIZE} claims')
     if len(buffer) > 0:
         ksql.insert(SCHEMA + '.' + TABLE, buffer)
         ksql.commit()
 
-
 if __name__ == "__main__":
-    # elastic.run()
-    send_claims()
-    # elastic.join()
+    elastic.run()
+    # send_claims()
+    elastic.join()
