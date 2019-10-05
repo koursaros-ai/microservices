@@ -10,7 +10,6 @@ Find more information at: https://github.com/koursaros-ai/koursaros
 from .utils import PathManager
 from .create import create
 from .deploy import deploy
-from .train import train
 from .pull import pull
 import click
 
