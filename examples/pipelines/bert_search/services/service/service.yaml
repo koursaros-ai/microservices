@@ -1,8 +1,0 @@
-version: '3.7'
-
-service:
-  from: ubuntu:latest
-  image: example/image
-  deps:
-    - pip3 install elasticsearch
-  replicas: 1
