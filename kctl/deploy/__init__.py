@@ -29,26 +29,6 @@ def pipeline(pm, connection, rebind, debug):
     """Deploy a pipeline"""
     rmq_setup(pm, connection, rebind)
     services = [cls(service) for service in pm.pipe.Services]
-    subproc_servs(pm, services, connection, debug)
-
-
-@deploy.command()
-@click.argument('service')
-@deploy_options
-def service(pm, service, connection, rebind, debug):
-    """Deploy a service or group of services"""
-    import pdb; pdb.set_trace()
-    rmq_setup(pm, connection, rebind)
-    subproc_servs(pm, [service], connection, debug)
-
-
-def rmq_setup(pm, connection, rebind):
-    check_rabbitmq(pm, connection)
-    if rebind:
-        bind_rabbitmq(pm, connection)
-
-
-def subproc_servs(pm, services, connection, debug):
     cmds = []
     for service in services:
         cmd = [
@@ -59,8 +39,22 @@ def subproc_servs(pm, services, connection, debug):
         ]
         directory = pm.pipe_root + '..'
         cmds.append((directory, cmd))
-
     subproc(cmds)
+
+@deploy.command()
+@click.argument('service')
+@deploy_options
+def service(pm, service, connection, rebind, debug):
+    """Deploy a service or group of services"""
+    import pdb; pdb.set_trace()
+    rmq_setup(pm, connection, rebind)
+    directory = pm.pipe_root + '..'
+
+
+def rmq_setup(pm, connection, rebind):
+    check_rabbitmq(pm, connection)
+    if rebind:
+        bind_rabbitmq(pm, connection)
 
 
 def subproc(cmds):
