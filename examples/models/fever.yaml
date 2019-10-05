@@ -16,3 +16,4 @@ labels:
 training:
   init-checkpoint: https://dl.fbaipublicfiles.com/fairseq/models/roberta.large.tar.gz
   epochs: 3
+  learning-rate: 1e-05
