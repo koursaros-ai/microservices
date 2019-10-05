@@ -34,11 +34,11 @@ class Path:
     """Manages paths by splitting "/" into a list
 
     """
-    __slots__ = ['start', 'path']
 
     def __init__(self, path):
         if path is None:
             raise ValueError('path is ' + type(None))
+
         self.start = '/' if path.startswith('/') else ''
         self.path = list(filter(None, path.split('/')))
 
@@ -75,26 +75,17 @@ class PathManager:
         self.app_root = Path(self.find_app_root())
         import koursaros
         # import pdb;
-        print()
-        print(self.app_root.tostring())
-        print()
         # pdb.set_trace()
         self.koursaros = koursaros
         self.kpath = Path(koursaros.__path__[0])
         self.pipe_path = [self.app_root + 'pipelines', self.kpath + 'pipelines']
         self.serv_path = [self.app_root + 'services', self.kpath + 'services']
-        print()
-        print(self.app_root.tostring())
-        print()
 
         if self.app_root is not None:
             self.app_name = self.kpath[-1]
 
     def get_pipe_yaml(self, pipe_yaml):
         for path in self.pipe_path:
-            print()
-            print(self.app_root.tostring())
-            print()
             pipe_yamls = self.get_next(path, suffix='.yaml', option=2)
 
             if pipe_yaml in pipe_yamls:
