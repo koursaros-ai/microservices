@@ -9,10 +9,10 @@ import os
 @click.command()
 @click.option('name')
 @click.pass_obj
-def pipeline(pm, name):
+def deploy(pm, yaml):
     """Deploy a pipeline"""
     cmds = []
-    for service in pm.get_pipe_yaml(name):
+    for service in pm.get_pipe_yaml(yaml):
         deploy_path = pm.get_serv_path(service) + '..'
         cmd = [sys.executable, '-m', service]
         cmds.append((deploy_path, cmd))
