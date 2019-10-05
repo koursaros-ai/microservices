@@ -3,6 +3,7 @@
 kctl controls the \033[1;4mKoursaros\033[0m platform.
 Find more information at: https://github.com/koursaros-ai/koursaros
 
+
 ."""
 
 
