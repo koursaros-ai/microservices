@@ -7,7 +7,7 @@ import os
 
 
 @click.command()
-@click.argument('name')
+@click.argument('yaml')
 @click.pass_obj
 def deploy(pm, yaml):
     """Deploy a pipeline"""

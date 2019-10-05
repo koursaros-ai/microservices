@@ -36,6 +36,8 @@ class Path:
     __slots__ = ['start', 'path']
 
     def __init__(self, path):
+        if path is None:
+            raise ValueError('path is ' + type(None))
         self.start = '/' if path.startswith('/') else ''
         self.path = list(filter(None, path.split('/')))
 
