@@ -46,8 +46,8 @@ class Path:
         return self.start + '/'.join(self.path)
 
     def __add__(self, other):
-        self.path += [other]
-        return self
+        path = self.start + '/'.join(self.path + [other])
+        return Path(path)
 
     def __getitem__(self, item):
         return self.path[item]
