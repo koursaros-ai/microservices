@@ -10,20 +10,31 @@ def select_all(table):
 
 class Model(object):
 
+    def __init__(self):
+        # load configs from yaml
+        self.data_loader = None # self.get_data_loader(configs)
+        self.hash = None # Map to hash of yaml
+        pass
+
     # train_data and test_data are either URL to download from
     # conn.query_fn = (query) -> of form text1, <optional text2>, label
     # returns train_data, test data iterable of rows
-    def get_data(self, train_data, test_data, query_fn=None):
-        if query_fn == None:
+    def get_data(self):
+        if self.query_fn == None:
             return query_fn(select_all(train_data)), query_fn(select_all(test_data))
         else:
             return get_rows_from_tsv(train_data), get_rows_from_tsv(test_data)
 
     # train_data and test_data both lists of rows
-    def train(self, train_data, test_data, checkpoint):
+    def train(self):
+        # CHECK TO MAKE SURE DEVICE HAS ENOUGH SPACE
         raise NotImplementedError()
 
-    def save_model(self, output_bucket):
+    def run(self, *args):
+        raise NotImplementedError()
+
+    def save_model(self):
+        # append hash of yaml to model checkpoint
         raise NotImplementedError()
 
 
