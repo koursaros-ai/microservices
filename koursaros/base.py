@@ -1,6 +1,7 @@
 from kctl.logger import KctlLogger
 from threading import Thread
 from sys import argv
+import pdb; pdb.set_trace()
 import messages_pb2
 import zmq
 

@@ -64,8 +64,16 @@ class PipelineYaml:
             if configs is not None:
                 service = Box(configs)
                 service.name = serv_name
-                import pdb; pdb.set_trace()
+                self.check_null(service, 'push')
+                self.check_null(service, 'pull')
+                self.check_null(service, 'callback')
                 self.services.append(service)
+
+    @staticmethod
+    def check_null(obj, attr):
+        """Set attribute to the string "null" if it does not exist"""
+        if not hasattr(obj, attr):
+            setattr(obj, attr, 'null')
 
 
 class PathManager:
@@ -79,6 +87,7 @@ class PathManager:
     def __init__(self, base=os.getcwd()):
         self.base = base
         self.app_root = Path(self.find_app_root())
+        self.kapp_path = self.app_root + '.kapp'
         import koursaros
         self.koursaros = koursaros
         self.kpath = Path(koursaros.__path__[0])

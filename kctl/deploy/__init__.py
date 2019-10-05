@@ -1,9 +1,21 @@
+from grpc_tools import protoc
 from subprocess import Popen
 from ..utils import BOLD
 import signal
 import click
 import sys
 import os
+
+
+def compile_messages(in_path, out_path):
+    print(f'Compiling messages for {in_path}')
+
+    protoc.main((
+        '',
+        f'-I={in_path}',
+        f'--python_out={out_path}',
+        f'{in_path}/messages.proto',
+    ))
 
 
 @click.command()
@@ -13,12 +25,25 @@ def deploy(pm, yaml):
     """Deploy a pipeline"""
     cmds = []
     pipe_yaml = pm.get_pipe_yaml(yaml)
+    kapp_path = pm.kapp_path.tostring()
 
     for service in pipe_yaml.services:
-        import pdb; pdb.set_trace()
-        deploy_path = pm.get_serv_path(service.name) + '/..'
-        cmd = [sys.executable, '-m', service.name, service]
-        cmds.append((deploy_path, cmd))
+
+        out_path = kapp_path + service.name
+        serv_path = pm.get_serv_path(service.name)
+        os.makedirs(out_path, exist_ok=True)
+        compile_messages(serv_path, out_path)
+
+        cmd = [sys.executable, '-m',
+               service.name,
+               service.messages.rcv,
+               service.messages.send,
+               service.messages.callback,
+               service.push,
+               service.pull,
+               service.callback]
+
+        cmds.append((serv_path + '/..', cmd))
 
     subproc(cmds)
 
