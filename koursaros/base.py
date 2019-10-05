@@ -1,4 +1,4 @@
-from kctl.logger import Logger
+from kctl.logger import KctlLogger
 from threading import Thread
 from sys import argv
 import messages_pb2
@@ -16,12 +16,12 @@ class Service:
         self._rcv_proto = messages_pb2.__dict__.get(argv[1], None)
         self._send_proto = messages_pb2.__dict__.get(argv[2], None)
         self._cb_proto = messages_pb2.__dict__.get(argv[3], None)
-        self._rcv_host = "tcp://" + argv[3]
-        self._send_host = "tcp://" + argv[4]
-        self._cb_host = "tcp://" + argv[5]
+        self._rcv_host = "tcp://127.0.0.1" + argv[3]
+        self._send_host = "tcp://127.0.0.1" + argv[4]
+        self._cb_host = "tcp://127.0.0.1" + argv[5]
         self._stub_f = None
         self._cb_f = None
-        Logger.init()
+        KctlLogger.init()
 
         service = package.split('.')[-1]
 

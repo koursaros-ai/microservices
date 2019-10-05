@@ -12,7 +12,9 @@ import os
 def deploy(pm, yaml):
     """Deploy a pipeline"""
     cmds = []
-    for service in pm.get_pipe_yaml(yaml):
+    pipe_yaml = pm.get_pipe_yaml(yaml)
+    for service in pipe_yaml:
+        import pdb; pdb.set_trace()
         deploy_path = pm.get_serv_path(service) + '/..'
         cmd = [sys.executable, '-m', service]
         cmds.append((deploy_path, cmd))

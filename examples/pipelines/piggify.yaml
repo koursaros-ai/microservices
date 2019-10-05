@@ -2,5 +2,10 @@ version: '3.7'
 
 pipeline:
   flask:
+    pull: 5007
+    push: 5008
+    callback: 5009
   pig:
+    pull: 5008
+    push: 5009
 
