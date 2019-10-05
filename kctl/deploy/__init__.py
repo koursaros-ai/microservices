@@ -6,14 +6,9 @@ import sys
 import os
 
 
-@click.group()
-@click.pass_context
-def deploy(ctx):
-    """Check configuration yamls, bind rabbitmq, and deploy"""
-
-
-@deploy.command()
+@click.command()
 @click.option('name')
+@click.pass_obj
 def pipeline(pm, name):
     """Deploy a pipeline"""
     cmds = []
