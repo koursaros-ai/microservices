@@ -14,6 +14,9 @@ class Model(object):
         # load configs from yaml
         self.data_loader = None # self.get_data_loader(configs)
         self.hash = None # Map to hash of yaml
+        self.architecture = None
+        self.task = None
+        self.lr = 1e-05
         pass
 
     # train_data and test_data are either URL to download from

@@ -1,17 +1,13 @@
 name: fever
 architecture: transformer/roberta-base
 repo: gs://poloma-models
-task: classification
+task: regression
 data:
   source: postgres
   db: fever
   schema: model_data
-  train: fever_train
-  test: fever_test
-labels:
-  - SUPPORTS
-  - REFUTES
-  - NEI
+  train: scorer_train
+  test: scorer_test
 training:
   init-checkpoint: https://dl.fbaipublicfiles.com/fairseq/models/roberta.large.tar.gz
   epochs: 3
