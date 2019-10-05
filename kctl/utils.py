@@ -81,6 +81,8 @@ class PathManager:
         if self.app_root is not None:
             self.app_name = self.kpath[-1]
 
+        import pdb; pdb.set_trace()
+
     def get_pipe_yaml(self, pipe_yaml):
         for path in self.pipe_path:
             pipe_yamls = self.get_next(path, suffix='.yaml', option=2)
