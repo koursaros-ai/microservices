@@ -1,6 +1,2 @@
-stubs:
- send: backend(Claim) -> Claim                       | retrieve
- retrieve: elastic(Claim) -> ClaimWithLines          | rerank
- rerank: scorer(ClaimWithLines) -> ClaimWithLines    | label
- label: inference(ClaimWithLines) -> EvaluatedClaim  | receive
- receive: backend(EvaluatedClaim)                  ->|
+pipeline:
+ route: backend -> elastic -> scorer -> inference -> receiver

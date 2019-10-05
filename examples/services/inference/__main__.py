@@ -21,7 +21,6 @@ pipeline = factchecking(__file__)
 inference = pipeline.services.inference
 backend = pipeline.services.backend
 
-
 def load_model():
     global model
 
