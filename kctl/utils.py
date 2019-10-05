@@ -74,8 +74,8 @@ class PathManager:
         self.base = base
         self.app_root = Path(self.find_app_root())
         import koursaros
-        import pdb;
-        pdb.set_trace()
+        # import pdb;
+        # pdb.set_trace()
         self.koursaros = koursaros
         self.kpath = Path(koursaros.__path__[0])
         self.pipe_path = [self.app_root + 'pipelines', self.kpath + 'pipelines']
@@ -94,7 +94,11 @@ class PathManager:
         return None
 
     def get_serv_path(self, serv_name):
+
         for path in self.serv_path:
+            print()
+            print(self.app_root)
+            print()
             serv_names = self.get_next(path, option=1)
 
             if serv_name in serv_names:
