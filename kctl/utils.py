@@ -21,7 +21,7 @@ def decorator_group(options):
             click.option('-r', '--rebind', is_flag=True),
             click.option('-d', '--debug', is_flag=True),
         ])
-        
+
     """
     def option_decorator(f):
         for option in options:
@@ -81,8 +81,6 @@ class PathManager:
 
         if self.app_root is not None:
             self.app_name = self.kpath[-1]
-
-        import pdb; pdb.set_trace()
 
     def get_pipe_yaml(self, pipe_yaml):
         for path in self.pipe_path:
