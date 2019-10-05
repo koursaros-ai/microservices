@@ -87,7 +87,7 @@ class PathManager:
     def get_pipe_yaml(self, pipe_yaml):
         for path in self.pipe_path:
             print()
-            print(self.app_root)
+            print(self.app_root.tostring())
             print()
             pipe_yamls = self.get_next(path, suffix='.yaml', option=2)
 
