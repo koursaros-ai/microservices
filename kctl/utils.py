@@ -21,6 +21,7 @@ def decorator_group(options):
             click.option('-r', '--rebind', is_flag=True),
             click.option('-d', '--debug', is_flag=True),
         ])
+        
     """
     def option_decorator(f):
         for option in options:
