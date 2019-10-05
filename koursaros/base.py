@@ -30,7 +30,7 @@ class ActivatingContainer:
 
     When initialized, the container sets
     __active__ (boolean) to each subclass depending on whether
-    the class is in active_names then initializes them
+    the class is in active_names. Then initializes them
     with *args and **kwargs.
 
     Also sets the container __active__ to true if any
@@ -41,9 +41,8 @@ class ActivatingContainer:
 
     __names__ = []
 
-    def __init__(self, active_names, *args, **kwargs):
-        self.__active__ = False
-        self.__activerefs__ = []
+    def __init__(self, *args, **kwargs):
+        self.active = False
 
         for clas in list(self):
             cls_name = clas.__name__
@@ -69,6 +68,13 @@ class ActivatingContainer:
 
     def __len__(self):
         return len(self.__names__)
+
+    def activate(self, what):
+        for child in list(self):
+            if repr(child) == what:
+                child.active = True
+
+
 
     def getactive(self):
         """getactive() assumes that their is one __active__

@@ -31,6 +31,7 @@ def pipeline(pm, connection, rebind, debug):
     services = [cls(service) for service in pm.pipe.Services]
     subproc_servs(pm, services, connection, debug)
 
+
 @deploy.command()
 @click.argument('service')
 @deploy_options
