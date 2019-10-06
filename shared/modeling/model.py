@@ -2,6 +2,7 @@ import csv
 import hashlib
 import os
 from shared.utils.database.psql import Conn
+from shared.utils.misc import gb_free_space
 
 def get_rows_from_tsv(fname):
     samples = []
@@ -15,6 +16,10 @@ class Model(object):
 
     def __init__(self, config, version):
         # load configs from yaml
+        if gb_free_space() < 2:
+            print("There is not enough space on your disk, please allocate more!")
+            raise SystemError
+
         self.config = config
         self.version = version
         ckpt_path = f'.cache/{version}.bin'
@@ -31,18 +36,11 @@ class Model(object):
     def get_data(self):
         data = self.config.data
         if data.source == 'postgres':
-
-            p = Conn(
-                host=os.environ.get('PGHOST'),
-                user=os.environ.get('PGUSER'),
-                password=os.environ.get('PGPASS'),
-                dbname=os.environ.get('PGDBNAME'),
-                sslmode=os.environ.get('PGSSLMODE')
-            )
+            p = Conn()
             query_fn = p.query
-            return query_fn(select_all(train_data)), query_fn(select_all(test_data))
+            return query_fn(select_all(data.train)), query_fn(select_all(data.test))
         else:
-            return get_rows_from_tsv(train_data), get_rows_from_tsv(test_data)
+            return get_rows_from_tsv(data.train), get_rows_from_tsv(data.test)
 
     # train_data and test_data both lists of rows
     def train(self):
