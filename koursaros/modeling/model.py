@@ -58,3 +58,9 @@ class Model(object):
     def architectures():
         raise NotImplementedError()
 
+    def getInputProto(self):
+        raise NotImplementedError()
+
+    def getOutputProto(self):
+        raise NotImplementedError()
+
