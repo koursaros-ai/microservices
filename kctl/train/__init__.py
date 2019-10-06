@@ -7,7 +7,7 @@ import os
 @click.argument('name')
 @click.pass_obj
 def train(appmanager, name):
-    cmd = [sys.executable, '-m', 'trainer',  name]
+    cmd = [sys.executable, '-m', 'kouraros.trainer',  name]
     subproc([(os.getcwd(), cmd)])
 
 @click.command()
