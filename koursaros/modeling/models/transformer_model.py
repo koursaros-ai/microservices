@@ -31,7 +31,7 @@ class TransformerModel (Model):
          train_data, test_data = self.get_data()
          batch_size = 4
          max_grad_norm = 1.0
-         optimizer = AdamW(self.model.parameters(), lr=self.config.training.learning_rate,
+         optimizer = AdamW(self.model.parameters(), lr=float(self.config.training.learning_rate),
                            correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
          num_warmup_steps = int(0.06 * len(train_data))
          scheduler = WarmupLinearSchedule(optimizer, warmup_steps=num_warmup_steps,
