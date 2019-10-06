@@ -19,8 +19,6 @@ import click
 @click.pass_context
 def kctl(ctx):
     ctx.obj = AppManager()
-    import pdb; pdb.set_trace()
-
 
 
 kctl.add_command(create)

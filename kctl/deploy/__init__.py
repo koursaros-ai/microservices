@@ -1,3 +1,4 @@
+from koursaros import Ktype
 from grpc_tools import protoc
 from subprocess import Popen
 from ..utils import BOLD
@@ -21,29 +22,18 @@ def compile_messages(in_path, out_path):
 @click.command()
 @click.argument('yaml')
 @click.pass_obj
-def deploy(pm, yaml):
+def deploy(app_manager, yaml):
     """Deploy a pipeline"""
+    import pdb; pdb.set_trace()
     cmds = []
-    pipe_yaml = pm.get_pipe_yaml(yaml)
-    kapp_path = pm.kapp_path.tostring()
+    pipeline_yaml = app_manager.search_yaml(app_manager.base, Ktype.PIPELINE)
+    for service in pipeline_yaml.services:
+        base_path = app_manager.search_path(service.base, Ktype.BASE)
+        os.makedirs(app_manager.root.joinpath, exist_ok=True)
+        # compile_messages(serv_path, out_path)
 
-    for service in pipe_yaml.services:
-
-        out_path = kapp_path + service.name
-        serv_path = pm.get_serv_path(service.name)
-        os.makedirs(out_path, exist_ok=True)
-        compile_messages(serv_path, out_path)
-
-        cmd = [sys.executable, '-m',
-               service.name,
-               service.messages.rcv,
-               service.messages.send,
-               service.messages.callback,
-               service.push,
-               service.pull,
-               service.callback]
-
-        cmds.append((serv_path + '/..', cmd))
+        cmd = [sys.executable, '-m', pipeline_yaml.__path__]
+        cmds.append((base_path.joinpath('..'), cmd))
 
     subproc(cmds)
 
@@ -57,13 +47,12 @@ def subproc(cmds):
     procs = []
 
     try:
-        for directory, cmd in cmds:
-            os.chdir(directory)
+        for path, cmd in cmds:
+            os.chdir(path)
             formatted = BOLD.format(' '.join(cmd))
 
-            print(f'''Running "{formatted}" from "{directory}"...''')
+            print(f'''Running "{formatted}" from "{path}"...''')
             p = Popen(cmd)
-
             procs.append((p, formatted))
 
         for p, formatted in procs:

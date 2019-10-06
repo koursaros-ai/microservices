@@ -3,6 +3,7 @@ from pathlib import Path
 from hashlib import md5
 from yaml import safe_load
 from enum import Enum
+from box import Box
 
 
 BOLD = '\033[1m{}\033[0m'
@@ -28,19 +29,14 @@ def decorator_group(options):
         return f
     return option_decorator
 
-class YamlType(Enum):
+
+class Ktype(Enum):
     BASE = 0
     PIPELINE = 1
     SERVICE = 2
 
-yaml_types = {
-    'base': YamlType.BASE,
-    'pipeline': YamlType.PIPELINE,
-    'service': YamlType.BASE,
-}
 
-
-class Yaml:
+class Yaml(Box):
     """
     Class for managing a yaml as a python object.
 
@@ -50,17 +46,17 @@ class Yaml:
         self.__path__ = path
         self.__yaml__ = safe_load(open(path))
         self.__version__ = self.__yaml__.pop('version')
-        self.__type__ = yaml_types.get((self.__yaml__.keys() & yaml_types.keys()).pop())
-        self.__dict__.update(self.Attrs(self.__yaml__))
 
-    class Attrs:
-        """"""
-        def __init__(self, dict_):
-            for k, v in dict_.items():
-                if isinstance(v, dict):
-                    self.__dict__.update(Yaml.Attrs(v))
-                else:
-                    self.__dict__[k] = v
+        if 'base' in self.__yaml__:
+            self.__type__ = KType.BASE
+        elif 'pipeline' in self.__yaml__:
+            self.__type__ = KType.PIPELINE
+        elif 'service' in self.__yaml__:
+            self.__type__ = KType.SERVICE
+        else:
+            raise ValueError('Invalid yaml type for %s' % self.__path__)
+
+        super().__init__(self.__yaml__)
 
 
 class AppManager:
@@ -74,7 +70,7 @@ class AppManager:
     def __init__(self, base='.'):
         self.base = Path(base).absolute()
         self.pkg_path = Path(__import__('koursaros').__path__[0])
-        self.lookup_path = [self.base, self.pkg_path]
+        self.lookup_path = [self.base, self.root, self.pkg_path]
 
     @property
     def root(self):
@@ -82,7 +78,11 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-        return None
+    def search_path(self, name, type):
+        for path in self.lookup_path:
+            service_path = path.joinpath(type).joinpath(name)
+            if service_path.is_dir():
+                return service_path
 
     @staticmethod
     def hash_files(paths):
