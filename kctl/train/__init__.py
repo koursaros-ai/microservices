@@ -2,6 +2,7 @@ import click
 # from utils.train.roberta_inference import RobertaInference
 import os
 # from koursaros.modeling import get_model
+import transformers
 
 @click.command()
 @click.argument('name')
