@@ -1,8 +1,8 @@
 
 from importlib import reload
+from pathlib import Path
 from hashlib import md5
 import yaml as pyyaml
-from box import Box
 import os
 
 
@@ -30,29 +30,6 @@ def decorator_group(options):
     return option_decorator
 
 
-class Path:
-    """Manages paths by splitting "/" into a list
-
-    """
-
-    def __init__(self, path):
-        if path is None:
-            raise ValueError('path is ' + type(None))
-
-        self.start = '/' if path.startswith('/') else ''
-        self.path = list(filter(None, path.split('/')))
-
-    def tostring(self):
-        return self.start + '/'.join(self.path)
-
-    def __add__(self, other):
-        path = self.start + '/'.join(self.path + [other])
-        return Path(path)
-
-    def __getitem__(self, item):
-        return self.path[item]
-
-
 class PipelineYaml:
     def __init__(self, path):
         super().__init__()
@@ -62,7 +39,7 @@ class PipelineYaml:
 
         for serv_name, configs in self.yaml['pipeline'].items():
             if configs is not None:
-                service = Box(configs)
+                # service = Box(configs)
                 service.name = serv_name
                 self.check_null(service, 'push')
                 self.check_null(service, 'pull')
@@ -76,7 +53,7 @@ class PipelineYaml:
             setattr(obj, attr, 'null')
 
 
-class PathManager:
+class Manager:
     """Manager that keeps track of all of the koursaros
     paths and packages. Passed around at runtime to make
     things more efficient.
@@ -84,8 +61,9 @@ class PathManager:
     :param base: base path to check for pipeline default=CWD
     """
 
-    def __init__(self, base=os.getcwd()):
-        self.base = base
+    def __init__(self, base='.'):
+        self.base = Path(base)
+        import pdb; pdb.set_trace()
         self.app_root = Path(self.find_app_root())
         self.kapp_path = self.app_root + '.kapp'
         import koursaros
