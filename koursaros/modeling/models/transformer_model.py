@@ -25,7 +25,6 @@ class TransformerModel (Model):
      def extract_features(self, data):
          return self.tokenizer.encode(data)
 
-
      def train(self):
          ### In Transformers, optimizer and schedules are splitted and instantiated like this:
          train_data, test_data = self.get_data()
@@ -35,19 +34,20 @@ class TransformerModel (Model):
                            correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
          num_warmup_steps = int(0.06 * len(train_data))
          scheduler = WarmupLinearSchedule(optimizer, warmup_steps=num_warmup_steps,
-                                          t_total=(self.config.training.epochs * len(train_data) / batch_size))  # PyTorch scheduler
+                                          t_total=(self.config.training.epochs * len(train_data) / batch_size))
          self.model.train()
 
          for epoch in range(0, self.config.training.epochs):
              ### and used like this:
              for i, batch in enumerate(train_data):
-                 loss = self.model(batch)
+                 features = self.extract_features(batch)
+                 loss = self.model(features)
                  loss.backward()
                  torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
                  optimizer.step()
                  print(f'step {i}')
-             scheduler.step(epoch=epoch)
-             optimizer.zero_grad()
+                 scheduler.step(epoch=epoch)
+                 optimizer.zero_grad()
 
      def eval(self):
          pass
