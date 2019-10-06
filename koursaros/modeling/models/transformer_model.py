@@ -1,5 +1,5 @@
 from ..model import Model
-import torch.nn
+import torch.nn, torch.tensor
 from transformers import *
 
 MODEL_CLASSES = {
@@ -40,8 +40,9 @@ class TransformerModel (Model):
          for epoch in range(0, self.config.training.epochs):
              ### and used like this:
              for i, batch in enumerate(train_data):
-                 features = self.extract_features(batch)
-                 loss = self.model(features)
+                 features = torch.tensor(self.extract_features(batch))
+                 outputs = self.model(features)
+                 loss = outputs[0]
                  loss.backward()
                  torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
                  optimizer.step()
