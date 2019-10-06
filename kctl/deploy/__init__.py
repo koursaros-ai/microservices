@@ -22,26 +22,27 @@ def compile_messages_proto(path):
 @click.command()
 @click.argument('pipeline_yaml_name')
 @click.pass_obj
-def deploy(app_manager, pipeline_yaml_name):
+def deploy(app_manager, pipeline_yaml_filename):
     """Deploy a pipeline yaml"""
-    build(app_manager, pipeline_yaml_name)
-    build_yaml = app_manager.search_for_yaml(pipeline_yaml_name, Type.BUILD)
+    build(app_manager, pipeline_yaml_filename)
+    build_yaml = app_manager.search_for_yaml(pipeline_yaml_filename, Type.BUILD)
+    print(build_yaml)
 
 
-def build(app_manager, pipeline_yaml_name):
+def build(app_manager, pipeline_yaml_filename):
     """
     Receives a pipeline yaml path and creates a build yaml.
     Saves the build yaml with the pipeline name.
     """
 
     # find pipeline
-    pipeline_path, pipeline_yaml_path = app_manager.search_for_type(
-        pipeline_yaml_name, Type.PIPELINE)
-    pipeline_yaml = Yaml(pipeline_yaml_path)
+    pipeline_yaml = app_manager.search_for_yaml(pipeline_yaml_filename, Type.PIPELINE)
 
     for service_name in pipeline_yaml.services:
 
         # find each service
+        service_yaml = app_manager.search_for_yaml(service_name + '.yaml', Type.SERVICE)
+
         service_path, service_yaml_path = app_manager.search_for_type(
             service_name, Type.SERVICE)
         service_yaml = Yaml(service_yaml_path)
