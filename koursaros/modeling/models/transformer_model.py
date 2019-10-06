@@ -53,9 +53,9 @@ class TransformerModel (Model):
          pass
 
      def run(self, *args):
+         # Protobuffs in and protobuffs out
          batch = self.tokenizer(args[0], args[1])
          return self.model(batch)
-
 
      @staticmethod
      def architectures():
