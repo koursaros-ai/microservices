@@ -31,13 +31,13 @@ class Model(object):
     def get_data(self):
         data = self.config.data
         if data.source == 'postgres':
+
             p = Conn(
-                host=HOST,
-                user=USER,
-                password=PASS,
-                dbname=args.dbname,
-                sslmode=SSLMODE,
-                cert_path=CERT_PATH
+                host=os.environ.get('PGHOST'),
+                user=os.environ.get('PGUSER'),
+                password=os.environ.get('PGPASS'),
+                dbname=os.environ.get('PGDBNAME'),
+                sslmode=os.environ.get('PGSSLMODE')
             )
             query_fn = p.query
             return query_fn(select_all(train_data)), query_fn(select_all(test_data))

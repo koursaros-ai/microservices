@@ -16,6 +16,14 @@ class Conn(extensions.connection):
             os.environ['PGSSLMODE'] = sslmode
         if cert_path:
             os.environ['PGSSLROOTCERT'] = cert_path
+        if not host:
+            host = os.environ.get('PGHOST')
+        if not user:
+            user = os.environ.get('PGUSER')
+        if not password:
+            password = os.environ.get('PGPASS')
+        if not dbname:
+            dbname = os.environ.get('PGDBNAME')
         dsn = f"dbname='{dbname}' user='{user}' host='{host}' password='{password}'"
         super(Conn, self).__init__(dsn=dsn)
 
