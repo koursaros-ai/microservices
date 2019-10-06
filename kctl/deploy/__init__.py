@@ -1,4 +1,4 @@
-from koursaros import Ktype, Yaml
+# from koursaros import Type, Yaml
 from grpc_tools import protoc
 from subprocess import Popen
 from ..utils import BOLD
@@ -25,7 +25,7 @@ def compile_messages_proto(path):
 def deploy(app_manager, pipeline_yaml_name):
     """Deploy a pipeline yaml"""
     build(app_manager, pipeline_yaml_name)
-    
+
 
 
 def build(app_manager, pipeline_yaml_name):

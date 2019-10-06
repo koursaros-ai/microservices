@@ -78,7 +78,7 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-    def search_for_type(self, name, type):
+    def search_for_yaml(self, name, type):
         """
         Given a particular type of entity and its name, find
         the directory and path to its yaml (if applicable)
@@ -87,9 +87,12 @@ class AppManager:
         :return:
         """
         for path in self.lookup_path:
-            service_path = path.joinpath(type).joinpath(name)
-            if service_path.is_dir():
-                return service_path
+            search_path = path.joinpath(type).joinpath(name)
+
+            # if type
+            if type == Type.BASE:
+                if search_path.is_dir():
+                    return Yaml(search_path.joinpath('base.yaml'))
 
     @staticmethod
     def hash_files(paths):
