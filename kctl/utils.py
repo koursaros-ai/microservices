@@ -82,20 +82,29 @@ class AppManager:
         """
         Given a particular type of entity and its name, find
         the directory and path to its yaml (if applicable)
-        :param name:
-        :param type:
-        :return:
+        :param name: the name of the type
+
+        Each type name is designated in the name of the yaml.
+        For example, the elastic service should be in
+        services => elastic.yaml...
+
+        This rule has one exception: bases
+        Each base is named according to its directory.
+        For example, the elastic base should be in
+        bases => elastic => base.yaml
         """
         for path in self.lookup_path:
             search_path = path.joinpath(type).joinpath(name)
 
             # if type is base then find yaml in base dir
             if type == Type.BASE:
-                if search_path.is_dir():
-                    return Yaml(search_path.joinpath('base.yaml'))
+                search_path = search_path.joinpath('bases')
+                name = 'base'
 
-            elif type in (Type.PIPELINE, Type.BASE, Type.BUILD):
-                pass
+            search_yaml_path = search_path.joinpath(name + '.yaml')
+            if search_yaml_path.is_file():
+                return Yaml(search_yaml_path)
+
 
     @staticmethod
     def hash_files(paths):

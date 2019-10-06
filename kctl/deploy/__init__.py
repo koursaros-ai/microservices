@@ -25,27 +25,30 @@ def compile_messages_proto(path):
 def deploy(app_manager, pipeline_yaml_name):
     """Deploy a pipeline yaml"""
     build(app_manager, pipeline_yaml_name)
-
+    build_yaml = app_manager.search_for_yaml(pipeline_yaml_name, Type.BUILD)
 
 
 def build(app_manager, pipeline_yaml_name):
-    """Receives a pipeline yaml path and creates a build yaml"""
+    """
+    Receives a pipeline yaml path and creates a build yaml.
+    Saves the build yaml with the pipeline name.
+    """
 
     # find pipeline
     pipeline_path, pipeline_yaml_path = app_manager.search_for_type(
-        pipeline_yaml_name, Ktype.PIPELINE)
+        pipeline_yaml_name, Type.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
     for service_name in pipeline_yaml.services:
 
         # find each service
         service_path, service_yaml_path = app_manager.search_for_type(
-            service_name, Ktype.SERVICE)
+            service_name, Type.SERVICE)
         service_yaml = Yaml(service_yaml_path)
 
         # find respective base
         base_path, base_yaml_path = app_manager.search_for_type(
-            service_yaml.base, Ktype.BASE)
+            service_yaml.base, Type.BASE)
         base_yaml = Yaml(base_yaml_path)
 
         # validate service yaml with base schema
