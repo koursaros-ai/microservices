@@ -59,7 +59,7 @@ class AppManager:
         For example, the elastic base should be in
         bases => elastic => base.yaml
 
-        :param yaml_filename: the name of the type
+        :param name: the name of the type
         """
         for path in self.lookup_path:
             search_path = path.joinpath(type).joinpath(name)

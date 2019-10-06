@@ -1,11 +1,8 @@
 from koursaros import Type, Yaml
 from grpc_tools import protoc
-from subprocess import Popen
-from ..utils import BOLD
 from pathlib import Path
 import click
 import sys
-import os
 
 
 def compile_messages_proto(path):
@@ -52,10 +49,7 @@ def build(app_manager, pipeline_name):
         app_manager.validate_yaml(service_yaml, base_yaml)
 
         entrypoint = '{}{}{}{}'.format(
-            sys.executable, '-m',
-            service_yaml_path,
-            pipeline_yaml.__path__
-        )
+            sys.executable, '-m', base_yaml_path.parent, pipeline_yaml.__path__)
 
 
         # compile messages for that service
