@@ -18,10 +18,8 @@ import click
 @click.group()
 @click.pass_context
 def kctl(ctx):
-    try:
-        ctx.obj = Manager()
-    except:
-        ctx.obj = None
+    ctx.obj = Manager()
+
 
 
 kctl.add_command(create)
