@@ -4,8 +4,8 @@ from koursaros.utils.misc import subproc
 @click.command()
 @click.argument('name')
 @click.pass_obj
-def train(pathmanager, name):
-    subproc([(pathmanager.root, 'python -m koursaros.trainer %s' % name)])
+def train(appmanager, name):
+    subproc([(appmanager.pkg_path, 'python -m koursaros.trainer %s' % name)])
 
 @click.command()
 @click.pass_obj
