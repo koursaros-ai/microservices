@@ -63,6 +63,7 @@ class Manager:
 
     def __init__(self, base='.'):
         self.base = Path(base).absolute()
+        x = self.kapp
         import pdb; pdb.set_trace()
         self.app_root = Path(self.find_app_root())
         self.kapp_path = self.app_root + '.kapp'
