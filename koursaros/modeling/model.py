@@ -1,8 +1,8 @@
 import csv
 import hashlib
 import os
-from shared.utils.database.psql import Conn
-from shared.utils.misc import gb_free_space
+from koursaros.utils.database.psql import Conn
+from koursaros.utils.misc import gb_free_space
 
 def get_rows_from_tsv(fname):
     samples = []

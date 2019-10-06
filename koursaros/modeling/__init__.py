@@ -1,6 +1,6 @@
 from yaml import load, dump, FullLoader
 from box import Box
-from shared.modeling.models import MODELS
+from koursaros.modeling.models import MODELS
 import hashlib
 
 def model_filename_resolver(name):

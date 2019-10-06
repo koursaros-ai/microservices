@@ -1,7 +1,7 @@
 import click
 # from utils.train.roberta_inference import RobertaInference
 import os
-# from shared.modeling import get_model
+from koursaros.modeling import get_model
 
 @click.command()
 @click.argument('name')
