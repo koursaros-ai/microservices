@@ -23,7 +23,7 @@ class TransformerModel (Model):
          self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
      def extract_features(self, data):
-         return self.tokenizer.encode(data)
+         return [self.tokenizer.encode(b) for b in data]
 
      def train(self):
          ### In Transformers, optimizer and schedules are splitted and instantiated like this:
