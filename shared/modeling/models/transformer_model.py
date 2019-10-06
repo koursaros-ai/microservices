@@ -1,4 +1,4 @@
-from .model import Model
+from ..model import Model
 import torch.nn
 from transformers import *
 
@@ -12,14 +12,15 @@ MODEL_CLASSES = {
 
 class TransformerModel (Model):
 
-     def __init__(self):
-         super().__init__()
-         if self.task == 'classification':
-            config, model, tokenizer = MODEL_CLASSES[self.architecture]
+     def __init__(self, *args):
+         super().__init__(*args)
+         if self.config.task == 'classification':
+            config, model, tokenizer = MODEL_CLASSES[self.config.base]
          else:
-            pass
-         self.model = model.from_pretrained()
-         self.tokenizer = tokenizer.from_pretrained()
+            raise NotImplementedError()
+
+         self.model = model.from_pretrained(self.checkpoint)
+         self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
 
      def train(self):
@@ -38,5 +39,12 @@ class TransformerModel (Model):
              scheduler.step()
              optimizer.zero_grad()
 
+     def eval(self):
+        pass
+
      def run(self, *args):
-         pass
+        pass
+
+     @staticmethod
+     def architectures():
+         return list(MODEL_CLASSES.keys())

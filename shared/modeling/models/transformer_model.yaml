@@ -1,0 +1,15 @@
+name: string
+architecture: string
+repo: string
+task: string
+data:
+  source: string
+  db: string
+  schema: string
+  train: string
+  test: string
+labels: string[]
+training:
+  init-checkpoint: string
+  epochs: numeric
+  learning-rate: numeric
