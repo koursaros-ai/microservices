@@ -1,6 +1,7 @@
 from ..model import Model
 import torch.nn, torch.tensor
 from transformers import *
+from koursaros.utils.misc import batch_list
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
@@ -23,7 +24,7 @@ class TransformerModel (Model):
          self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
      def extract_features(self, data):
-         return [self.tokenizer.encode(b) for b in data]
+         return [self.tokenizer.encode(*b, add_special_tokens=True) for b in data]
 
      def train(self):
          ### In Transformers, optimizer and schedules are splitted and instantiated like this:
@@ -39,7 +40,7 @@ class TransformerModel (Model):
 
          for epoch in range(0, self.config.training.epochs):
              ### and used like this:
-             for i, batch in enumerate(train_data):
+             for i, batch in enumerate(batch_list(train_data, 4)):
                  features = torch.tensor(self.extract_features(batch))
                  outputs = self.model(features)
                  loss = outputs[0]
