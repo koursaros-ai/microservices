@@ -1,4 +1,4 @@
-from koursaros import Ktype
+from koursaros import Ktype, Yaml
 from grpc_tools import protoc
 from subprocess import Popen
 from ..utils import BOLD
@@ -8,34 +8,59 @@ import sys
 import os
 
 
-def compile_messages(in_path, out_path):
-    print(f'Compiling messages for {in_path}')
+def compile_messages_proto(path):
+    print(f'Compiling messages for {path}')
 
     protoc.main((
         '',
-        f'-I={in_path}',
-        f'--python_out={out_path}',
-        f'{in_path}/messages.proto',
+        f'-I={path}',
+        f'--python_out={path}',
+        f'{path}/messages.proto',
     ))
 
 
 @click.command()
-@click.argument('yaml')
+@click.argument('pipeline_yaml_name')
 @click.pass_obj
-def deploy(app_manager, yaml):
-    """Deploy a pipeline"""
-    import pdb; pdb.set_trace()
-    cmds = []
-    pipeline_yaml = app_manager.search_yaml(app_manager.base, Ktype.PIPELINE)
-    for service in pipeline_yaml.services:
-        base_path = app_manager.search_path(service.base, Ktype.BASE)
-        os.makedirs(app_manager.root.joinpath, exist_ok=True)
-        # compile_messages(serv_path, out_path)
+def deploy(app_manager, pipeline_yaml_name):
+    """Deploy a pipeline yaml"""
+    build(app_manager, pipeline_yaml_name)
+    
 
-        cmd = [sys.executable, '-m', pipeline_yaml.__path__]
-        cmds.append((base_path.joinpath('..'), cmd))
 
-    subproc(cmds)
+def build(app_manager, pipeline_yaml_name):
+    """Receives a pipeline yaml path and creates a build yaml"""
+
+    # find pipeline
+    pipeline_path, pipeline_yaml_path = app_manager.search_for_type(
+        pipeline_yaml_name, Ktype.PIPELINE)
+    pipeline_yaml = Yaml(pipeline_yaml_path)
+
+    for service_name in pipeline_yaml.services:
+
+        # find each service
+        service_path, service_yaml_path = app_manager.search_for_type(
+            service_name, Ktype.SERVICE)
+        service_yaml = Yaml(service_yaml_path)
+
+        # find respective base
+        base_path, base_yaml_path = app_manager.search_for_type(
+            service_yaml.base, Ktype.BASE)
+        base_yaml = Yaml(base_yaml_path)
+
+        # validate service yaml with base schema
+        app_manager.validate_yaml(service_yaml, base_yaml)
+
+        entrypoint = '{}{}{}{}'.format(
+            sys.executable, '-m',
+            service_yaml_path,
+            pipeline_yaml.__path__
+        )
+
+
+        # compile messages for that service
+        # compile_messages_proto(service_path)
+
 
 
 def subproc(cmds):

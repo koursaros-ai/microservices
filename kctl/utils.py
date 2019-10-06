@@ -30,7 +30,7 @@ def decorator_group(options):
     return option_decorator
 
 
-class Ktype(Enum):
+class Type(Enum):
     BASE = 0
     PIPELINE = 1
     SERVICE = 2
@@ -48,11 +48,11 @@ class Yaml(Box):
         self.__version__ = self.__yaml__.pop('version')
 
         if 'base' in self.__yaml__:
-            self.__type__ = KType.BASE
+            self.__type__ = Type.BASE
         elif 'pipeline' in self.__yaml__:
-            self.__type__ = KType.PIPELINE
+            self.__type__ = Type.PIPELINE
         elif 'service' in self.__yaml__:
-            self.__type__ = KType.SERVICE
+            self.__type__ = Type.SERVICE
         else:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
@@ -70,7 +70,7 @@ class AppManager:
     def __init__(self, base='.'):
         self.base = Path(base).absolute()
         self.pkg_path = Path(__import__('koursaros').__path__[0])
-        self.lookup_path = [self.base, self.root, self.pkg_path]
+        self.lookup_path = [self.root, self.pkg_path]
 
     @property
     def root(self):
@@ -78,7 +78,14 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-    def search_path(self, name, type):
+    def search_for_type(self, name, type):
+        """
+        Given a particular type of entity and its name, find
+        the directory and path to its yaml (if applicable)
+        :param name:
+        :param type:
+        :return:
+        """
         for path in self.lookup_path:
             service_path = path.joinpath(type).joinpath(name)
             if service_path.is_dir():
