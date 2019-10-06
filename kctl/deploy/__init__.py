@@ -46,6 +46,7 @@ def build(app_manager, pipeline_name):
 
         # find respective base
         base_yaml_path = app_manager.search_for_yaml_path(service_yaml.base, Type.BASE)
+        base_yaml = Yaml(base_yaml_path)
 
         # validate service yaml with base schema
         app_manager.validate_yaml(service_yaml, base_yaml)
