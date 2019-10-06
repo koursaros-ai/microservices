@@ -19,7 +19,7 @@ import click
 @click.pass_context
 def kctl(ctx):
     try:
-        ctx.obj = PathManager()
+        ctx.obj = Manager()
     except:
         ctx.obj = None
 
