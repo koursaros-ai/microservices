@@ -5,8 +5,8 @@ task: classification
 data:
   source: postgres
   schema: sets
-  train: fever_train
-  test: fever_test
+  train: train_fever
+  test: test_fever
 labels:
   - SUPPORTS
   - REFUTES
