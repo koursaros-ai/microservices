@@ -1,4 +1,4 @@
-from yaml import load, dump, FullLoader
+from yaml import load, dump
 from box import Box
 from koursaros.modeling.models import MODELS
 import hashlib
@@ -10,7 +10,7 @@ def model_filename_resolver(name):
 
 def model_from_yaml(filename):
     with open(filename, 'r') as stream:
-        config = Box(load(stream, Loader=FullLoader))
+        config = Box(load(stream))
         md5 = hashlib.md5()
         md5.update(stream.read().encode())
         for model_class in MODELS:
