@@ -7,7 +7,8 @@ from shared.modeling import get_model
 @click.argument('name')
 @click.pass_obj
 def train(pathmanager, name):
-    get_model(name)
+    model = get_model(name)
+    model.train()
 
 @click.command()
 @click.pass_obj

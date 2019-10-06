@@ -20,4 +20,4 @@ def model_from_yaml(filename):
 
 def get_model(name):
     filename = model_filename_resolver(name)
-    model_from_yaml(filename)
+    return model_from_yaml(filename)

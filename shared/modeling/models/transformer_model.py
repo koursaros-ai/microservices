@@ -22,28 +22,40 @@ class TransformerModel (Model):
          self.model = model.from_pretrained(self.checkpoint)
          self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
+     def extract_features(self, data):
+         return self.tokenizer.encode(data)
+
 
      def train(self):
          ### In Transformers, optimizer and schedules are splitted and instantiated like this:
-         optimizer = AdamW(self.model.parameters(), lr=self.lr,
+         train_data, test_data = self.get_data()
+         batch_size = 4
+         max_grad_norm = 1.0
+         optimizer = AdamW(self.model.parameters(), lr=self.config.training.learning_rate,
                            correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
+         num_warmup_steps = int(0.06 * len(train_data))
          scheduler = WarmupLinearSchedule(optimizer, warmup_steps=num_warmup_steps,
-                                          t_total=num_total_steps)  # PyTorch scheduler
-         ### and used like this:
-         for batch in train_data:
-             loss = model(batch)
-             loss.backward()
-             torch.nn.utils.clip_grad_norm_(model.parameters(),
-                                            max_grad_norm)  # Gradient clipping is not in AdamW anymore (so you can use amp without issue)
-             optimizer.step()
-             scheduler.step()
+                                          t_total=(self.config.training.epochs * len(train_data) / batch_size))  # PyTorch scheduler
+         self.model.train()
+
+         for epoch in range(0, self.config.training.epochs):
+             ### and used like this:
+             for i, batch in enumerate(train_data):
+                 loss = self.model(batch)
+                 loss.backward()
+                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
+                 optimizer.step()
+                 print(f'step {i}')
+             scheduler.step(epoch=epoch)
              optimizer.zero_grad()
 
      def eval(self):
-        pass
+         pass
 
      def run(self, *args):
-        pass
+         batch = self.tokenizer(args[0], args[1])
+         return self.model(batch)
+
 
      @staticmethod
      def architectures():
