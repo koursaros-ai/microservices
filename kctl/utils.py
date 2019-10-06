@@ -78,11 +78,10 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-    def search_for_yaml(self, name, type):
+    def search_for_yaml(self, yaml_filename, type):
         """
         Given a particular type of entity and its name, find
         the directory and path to its yaml (if applicable)
-        :param name: the name of the type
 
         Each type name is designated in the name of the yaml.
         For example, the elastic service should be in
@@ -92,16 +91,18 @@ class AppManager:
         Each base is named according to its directory.
         For example, the elastic base should be in
         bases => elastic => base.yaml
+
+        :param yaml_filename: the name of the type
         """
         for path in self.lookup_path:
-            search_path = path.joinpath(type).joinpath(name)
+            search_path = path.joinpath(type).joinpath(yaml_filename.stem)
 
             # if type is base then find yaml in base dir
             if type == Type.BASE:
                 search_path = search_path.joinpath('bases')
-                name = 'base'
+                yaml_filename = 'base.yaml'
 
-            search_yaml_path = search_path.joinpath(name + '.yaml')
+            search_yaml_path = search_path.joinpath(yaml_filename)
             if search_yaml_path.is_file():
                 return Yaml(search_yaml_path)
 
