@@ -1,10 +1,6 @@
-
+from koursaros import Type
 from pathlib import Path
 from hashlib import md5
-from yaml import safe_load
-from enum import Enum
-from box import Box
-
 
 BOLD = '\033[1m{}\033[0m'
 
@@ -30,35 +26,6 @@ def decorator_group(options):
     return option_decorator
 
 
-class Type(Enum):
-    BASE = 0
-    PIPELINE = 1
-    SERVICE = 2
-
-
-class Yaml(Box):
-    """
-    Class for managing a yaml as a python object.
-
-    :param path: path to .yaml file
-    """
-    def __init__(self, path):
-        self.__path__ = path
-        self.__yaml__ = safe_load(open(path))
-        self.__version__ = self.__yaml__.pop('version')
-
-        if 'base' in self.__yaml__:
-            self.__type__ = Type.BASE
-        elif 'pipeline' in self.__yaml__:
-            self.__type__ = Type.PIPELINE
-        elif 'service' in self.__yaml__:
-            self.__type__ = Type.SERVICE
-        else:
-            raise ValueError('Invalid yaml type for %s' % self.__path__)
-
-        super().__init__(self.__yaml__)
-
-
 class AppManager:
     """Manager that keeps track of all of the koursaros
     paths and packages. Passed around at runtime to make
@@ -67,7 +34,7 @@ class AppManager:
     :param base: base path to check for pipeline default=CWD
     """
 
-    def __init__(self, base='.'):
+    def __init__(self, base: str = '.'):
         self.base = Path(base).absolute()
         self.pkg_path = Path(__import__('koursaros').__path__[0])
         self.lookup_path = [self.root, self.pkg_path]
@@ -78,7 +45,7 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-    def search_for_yaml(self, yaml_filename, type):
+    def search_for_yaml_path(self, name: str, type: Type):
         """
         Given a particular type of entity and its name, find
         the directory and path to its yaml (if applicable)
@@ -92,19 +59,32 @@ class AppManager:
         For example, the elastic base should be in
         bases => elastic => base.yaml
 
-        :param yaml_filename: the name of the type
+        :param name: the name of the type
+        :param type: the type
         """
         for path in self.lookup_path:
-            search_path = path.joinpath(type).joinpath(yaml_filename.stem)
 
             # if type is base then find yaml in base dir
             if type == Type.BASE:
-                search_path = search_path.joinpath('bases')
-                yaml_filename = 'base.yaml'
+                parent_dir = 'bases'
+                name = 'base'
 
-            search_yaml_path = search_path.joinpath(yaml_filename)
+            elif type == Type.PIPELINE:
+                parent_dir = 'pipelines'
+
+            elif type == Type.SERVICE:
+                parent_dir = 'services'
+
+            elif type == Type.BUILD:
+                parent_dir = 'build'
+
+            else:
+                raise TypeError('Invalid type: %s' % type)
+
+            search_yaml_path = path.joinpath(parent_dir).joinpath(name).with_suffix('.yaml')
+
             if search_yaml_path.is_file():
-                return Yaml(search_yaml_path)
+                return search_yaml_path
 
 
     @staticmethod

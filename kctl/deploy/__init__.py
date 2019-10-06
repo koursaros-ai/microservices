@@ -1,11 +1,8 @@
-# from koursaros import Type, Yaml
+from koursaros import Type, Yaml
 from grpc_tools import protoc
-from subprocess import Popen
-from ..utils import BOLD
-import signal
+from pathlib import Path
 import click
 import sys
-import os
 
 
 def compile_messages_proto(path):
@@ -24,8 +21,9 @@ def compile_messages_proto(path):
 @click.pass_obj
 def deploy(app_manager, pipeline_yaml_filename):
     """Deploy a pipeline yaml"""
+    pipeline_name = Path(pipeline_yaml_filename).stem
     build(app_manager, pipeline_yaml_filename)
-    build_yaml = app_manager.search_for_yaml(pipeline_yaml_filename, Type.BUILD)
+    build_yaml = app_manager.search_for_yaml(pipeline_name, Type.BUILD)
     print(build_yaml)
 
 
@@ -36,30 +34,29 @@ def build(app_manager, pipeline_yaml_filename):
     """
 
     # find pipeline
-    pipeline_yaml = app_manager.search_for_yaml(pipeline_yaml_filename, Type.PIPELINE)
+    pipeline_name = pipeline_yaml_filename.stem
+    pipeline_yaml = app_manager.search_for_yaml(pipeline_name, Type.PIPELINE)
 
     for service_name in pipeline_yaml.services:
 
         # find each service
-        service_yaml = app_manager.search_for_yaml(service_name + '.yaml', Type.SERVICE)
-
-        service_path, service_yaml_path = app_manager.search_for_type(
-            service_name, Type.SERVICE)
+        service_yaml_path = app_manager.search_for_yaml_path(service_name, Type.SERVICE)
         service_yaml = Yaml(service_yaml_path)
 
         # find respective base
-        base_path, base_yaml_path = app_manager.search_for_type(
-            service_yaml.base, Type.BASE)
+        base_yaml_path = app_manager.search_for_yaml_path(service_yaml.base, Type.BASE)
         base_yaml = Yaml(base_yaml_path)
+        base_yaml_dir = base_yaml_path.parent
 
         # validate service yaml with base schema
         app_manager.validate_yaml(service_yaml, base_yaml)
 
+        # write build yaml
+        build_yaml_path = app_manager.root.joinpath('build')
+        build_yaml_path.mkdir(exist_ok=True)
+
         entrypoint = '{}{}{}{}'.format(
-            sys.executable, '-m',
-            service_yaml_path,
-            pipeline_yaml.__path__
-        )
+            sys.executable, '-m', pipeline_name, build_yaml_path)
 
 
         # compile messages for that service
