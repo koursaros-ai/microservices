@@ -7,7 +7,7 @@ import sys
 @click.pass_obj
 def train(appmanager, name):
     cmd = [sys.executable, '-m', 'trainer',  name]
-    subproc([(appmanager.pkg_path, cmd)])
+    subproc([(appmanager.root, cmd)])
 
 @click.command()
 @click.pass_obj
