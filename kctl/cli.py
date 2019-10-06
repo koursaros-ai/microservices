@@ -30,6 +30,5 @@ kctl.add_command(train)
 def cli():
     kctl(prog_name=__package__)
 
-
 if __name__ == "__main__":
     cli()
