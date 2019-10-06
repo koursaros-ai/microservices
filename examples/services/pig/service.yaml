@@ -7,4 +7,4 @@ service:
   messages:
     rcv: Message
     send: Message
-    callback: Message
+    res: Message
