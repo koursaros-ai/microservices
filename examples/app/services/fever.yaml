@@ -4,7 +4,7 @@ repo: gs://poloma-models
 task: classification
 data:
   source: postgres
-  schema: test
+  schema: sets
   train: fever_train
   test: fever_test
 labels:
