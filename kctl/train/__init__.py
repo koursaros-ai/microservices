@@ -1,14 +1,16 @@
 import click
 # from utils.train.roberta_inference import RobertaInference
 import os
-# from shared.modeling import get_model
+# from koursaros.modeling import get_model
+import transformers
 
 @click.command()
 @click.argument('name')
 @click.pass_obj
 def train(pathmanager, name):
-    model = get_model(name)
-    model.train()
+    # model = get_model(name)
+    # model.train()
+    pass
 
 @click.command()
 @click.pass_obj

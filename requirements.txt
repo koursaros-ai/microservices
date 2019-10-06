@@ -1,1 +1,2 @@
 distro==1.4.0
+python-box
