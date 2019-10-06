@@ -63,10 +63,7 @@ class Manager:
 
     def __init__(self, base='.'):
         self.base = Path(base).absolute()
-        x = self.kapp
         import pdb; pdb.set_trace()
-        self.app_root = Path(self.find_app_root())
-        self.kapp_path = self.app_root + '.kapp'
         import koursaros
         self.koursaros = koursaros
         self.kpath = Path(koursaros.__path__[0])
@@ -76,6 +73,14 @@ class Manager:
         if self.app_root is not None:
             self.app_name = self.kpath[-1]
 
+    @property
+    def root(self):
+        for path in self.base.parents:
+            if path.joinpath('.kapp').is_dir():
+                return path
+
+        return None
+    
     def get_pipe_yaml(self, pipe_yaml):
         for path in self.pipe_path:
             pipe_yamls = self.get_next(path, suffix='.yaml', option=2)
@@ -100,14 +105,7 @@ class Manager:
         reload(self.koursaros)
         self.__init__()
 
-    @property
-    def kapp(self):
-        for path in self.base.parents:
-            kapp = path.joinpath('.kapp')
-            if kapp.is_dir():
-                return kapp
 
-        return None
 
     @staticmethod
     def get_next(path, option=1, suffix=None):
