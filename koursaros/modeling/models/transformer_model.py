@@ -24,6 +24,7 @@ class TransformerModel (Model):
          self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
      def extract_features(self, data):
+         print(data)
          return [self.tokenizer.encode(*b, add_special_tokens=True) for b in data]
 
      def train(self):
