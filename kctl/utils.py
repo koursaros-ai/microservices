@@ -39,6 +39,7 @@ yaml_types = {
     'service': YamlType.BASE,
 }
 
+
 class Yaml:
     """
     Class for managing a yaml as a python object.
@@ -50,15 +51,16 @@ class Yaml:
         self.__yaml__ = safe_load(open(path))
         self.__version__ = self.__yaml__.pop('version')
         self.__type__ = yaml_types.get((self.__yaml__.keys() & yaml_types.keys()).pop())
-        self.Attrs(self, self.__yaml__)
+        self.__dict__.update(self.Attrs(self.__yaml__))
 
     class Attrs:
-        def __init__(self, obj, dict_):
+        """"""
+        def __init__(self, dict_):
             for k, v in dict_.items():
                 if isinstance(v, dict):
-                    setattr(obj, k, Yaml.Attrs(self, v))
+                    self.__dict__.update(Yaml.Attrs(v))
                 else:
-                    setattr(obj, k, v)
+                    self.__dict__[k] = v
 
 
 class AppManager:
