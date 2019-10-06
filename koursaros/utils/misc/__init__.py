@@ -1,5 +1,5 @@
 import os
-from kctl.utils import BOLD
+# from kctl.utils import BOLD
 from subprocess import Popen
 import signal
 
@@ -28,7 +28,8 @@ def subproc(cmds):
     try:
         for path, cmd in cmds:
             os.chdir(path)
-            formatted = BOLD.format(' '.join(cmd))
+            # formatted = BOLD.format(' '.join(cmd))
+            formatted = ' '.join(cmd)
 
             print(f'''Running "{formatted}" from "{path}"...''')
             p = Popen(cmd)
