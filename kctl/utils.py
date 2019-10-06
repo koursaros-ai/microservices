@@ -34,7 +34,7 @@ class AppManager:
     :param base: base path to check for pipeline default=CWD
     """
 
-    def __init__(self, base='.'):
+    def __init__(self, base: str = '.'):
         self.base = Path(base).absolute()
         self.pkg_path = Path(__import__('koursaros').__path__[0])
         self.lookup_path = [self.root, self.pkg_path]
@@ -45,7 +45,7 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-    def search_for_yaml_path(self, name, type):
+    def search_for_yaml_path(self, name: str, type: Type):
         """
         Given a particular type of entity and its name, find
         the directory and path to its yaml (if applicable)
@@ -60,16 +60,29 @@ class AppManager:
         bases => elastic => base.yaml
 
         :param name: the name of the type
+        :param type: the type
         """
         for path in self.lookup_path:
-            search_path = path.joinpath(type).joinpath(name)
 
             # if type is base then find yaml in base dir
             if type == Type.BASE:
-                search_path = search_path.joinpath('bases')
-                name = 'base.yaml'
+                parent_dir = 'bases'
+                name = 'base'
 
-            search_yaml_path = search_path.joinpath(name)
+            elif type == Type.PIPELINE:
+                parent_dir = 'pipelines'
+
+            elif type == Type.SERVICE:
+                parent_dir = 'services'
+
+            elif type == Type.BUILD:
+                parent_dir = 'build'
+
+            else:
+                raise TypeError('Invalid type: %s' % type)
+
+            search_yaml_path = path.joinpath(parent_dir).joinpath(name).with_suffix('.yaml')
+
             if search_yaml_path.is_file():
                 return search_yaml_path
 
