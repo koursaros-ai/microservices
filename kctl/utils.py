@@ -89,10 +89,13 @@ class AppManager:
         for path in self.lookup_path:
             search_path = path.joinpath(type).joinpath(name)
 
-            # if type
+            # if type is base then find yaml in base dir
             if type == Type.BASE:
                 if search_path.is_dir():
                     return Yaml(search_path.joinpath('base.yaml'))
+
+            elif type in (Type.PIPELINE, Type.BASE, Type.BUILD):
+                pass
 
     @staticmethod
     def hash_files(paths):
