@@ -7,7 +7,7 @@ Find more information at: https://github.com/koursaros-ai/koursaros
 ."""
 
 
-from .utils import Manager
+from .utils import AppManager
 from .create import create
 from .deploy import deploy
 from .pull import pull
@@ -18,7 +18,8 @@ import click
 @click.group()
 @click.pass_context
 def kctl(ctx):
-    ctx.obj = Manager()
+    ctx.obj = AppManager()
+    import pdb; pdb.set_trace()
 
 
 
