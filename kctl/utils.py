@@ -103,7 +103,7 @@ class Manager:
     @property
     def kapp(self):
         for path in self.base.parents:
-            kapp = path.with_name('.kapp')
+            kapp = path.joinpath('.kapp')
             if kapp.is_dir():
                 return kapp
 
