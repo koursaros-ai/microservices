@@ -62,7 +62,7 @@ class Manager:
     """
 
     def __init__(self, base='.'):
-        self.base = Path(base)
+        self.base = Path(base).absolute()
         import pdb; pdb.set_trace()
         self.app_root = Path(self.find_app_root())
         self.kapp_path = self.app_root + '.kapp'
@@ -99,13 +99,12 @@ class Manager:
         reload(self.koursaros)
         self.__init__()
 
-    def find_app_root(self):
-        current_path = ''
-        for directory in self.base.split('/'):
-            current_path += directory + '/'
-            test_path = current_path + '.kapp'
-            if os.path.isdir(test_path):
-                return current_path
+    @property
+    def kapp(self):
+        for path in self.base.parents:
+            kapp = path.with_name('.kapp')
+            if kapp.is_dir():
+                return kapp
 
         return None
 
