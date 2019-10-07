@@ -93,13 +93,16 @@ class Service:
         :param msg:
         :return body:
         """
+        self.logger.info('Stub received %s' % msg)
         proto = self._protofy(msg, self._rcv_proto)
         self._check_rcv_proto(proto)
         msg = self._stub_f(proto)
+        self.logger.info('Returned from stub: %s' % msg)
         self._check_return_msg(msg)
         self._protofy(msg, self._send_proto)
         self._check_send_proto(proto)
         body = proto.SerializeToString()
+        self.logger.info('Sending msg body')
         return body
 
     def _serve(self):
@@ -119,7 +122,7 @@ class Service:
             msg = pull_socket.recv()
             self.logger.info('Received %s' % msg)
             body = self._stub(msg)
-            self.logger.info('Sending %s' % msg) 
+            self.logger.info('Sending %s' % msg)
             push_socket.send(body)
 
     def run(self, subs=None):
