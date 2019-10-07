@@ -1,44 +1,7 @@
-from typing import Iterable, List
-from subprocess import Popen
-import signal
+
 import os
 
 BOLD = '\033[1m{}\033[0m'
-
-
-def subproc(cmds: Iterable[List]):
-    """Subprocess a list of commands from specified
-     and cleanup procs when done...
-
-    :param cmds: iterable of commands (commands should be list)
-    """
-    procs = []
-
-    try:
-        for cmd in cmds:
-            if not isinstance(cmd, list):
-                raise TypeError('"%s" must be list type')
-
-            formatted = BOLD.format(' '.join(cmd))
-
-            print(f'''Running "{formatted}"..''')
-            p = Popen(cmd)
-            procs.append((p, formatted))
-
-        for p, formatted in procs:
-            p.communicate()
-
-    except KeyboardInterrupt:
-        pass
-
-    finally:
-        for p, formatted in procs:
-
-            if p.poll() is None:
-                os.kill(p.pid, signal.SIGTERM)
-                print(f'Killing pid {p.pid}: {formatted}')
-            else:
-                print(f'Process {p.pid}: "{formatted}" ended...')
 
 
 def gb_free_space():
