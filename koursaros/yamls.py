@@ -32,6 +32,7 @@ class Yaml:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
     def __getattribute__(self, item):
+        print(item)
         return getattr(self.box, item)
 
     @property
