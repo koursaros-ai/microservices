@@ -7,6 +7,7 @@ from typing import List
 from sys import argv
 import zmq
 
+HOST = "tcp://127.0.0.1:{}"
 MIN_PORT = 49152
 MAX_PORT = 65536
 
@@ -34,10 +35,11 @@ class Streamer:
         set_logger(self._name)
 
         # set zeromq
-        _, self._in_port = get_hash_ports(self._service_in, 2)
-        self._out_port, _ = get_hash_ports(self._service_out, 2)
-        self._rcv_host = "tcp://127.0.0.1:" + self._in_port
-        self._send_host = "tcp://127.0.0.1:" + self._out_port
+        _, in_port = get_hash_ports(self._service_in, 2)
+        out_port, _ = get_hash_ports(self._service_out, 2)
+
+        self._rcv = HOST.format(in_port)
+        self._send = HOST.format(out_port)
 
         print('Initializing {} streamer'.format(self._name))
 
@@ -48,10 +50,10 @@ class Streamer:
 
         device = ProcessDevice(zmq.STREAMER, zmq.PULL, zmq.PUSH)
         print('{} PULL on {} and PUSH on {}'.format(
-            self._name, self._rcv_host, self._send_host))
+            self._name, self._rcv, self._send))
 
-        device.bind_in(self._rcv_host)
-        device.bind_out(self._send_host)
+        device.bind_in(self._rcv)
+        device.bind_out(self._send)
 
         device.setsockopt_in(zmq.IDENTITY, 'PULL')
         device.setsockopt_out(zmq.IDENTITY, 'PUSH')

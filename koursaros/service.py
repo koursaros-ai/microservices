@@ -17,6 +17,8 @@ class Service:
         self.service_yaml_path = Path(argv[1])
         self.service_yaml = Yaml(self.service_yaml_path)
         self.service_name = self.service_yaml_path.stem
+        print(__package__)
+        raise SystemExit
         self.base_yaml = Yaml('base.yaml')
 
         # set messages
@@ -95,7 +97,6 @@ class Service:
         """
         Executes a push pull loop, executing the stub as a callback
         """
-
 
         pull_socket = self._context.socket(zmq.PULL)
         pull_socket.connect(self._rcv_host)
