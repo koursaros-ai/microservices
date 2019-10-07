@@ -1,5 +1,5 @@
 
-from koursaros.streamer import get_hash_ports, HOST
+from koursaros.streamer import get_hash_ports
 from kctl.logger import set_logger
 from grpc_tools import protoc
 from threading import Thread
@@ -9,6 +9,8 @@ import json
 import sys
 import zmq
 import os
+
+HOST = "tcp://127.0.0.1:{}"
 
 
 class Service:
@@ -44,6 +46,14 @@ class Service:
 
         self.logger.info(f'Initializing "{self._service_name}"')
 
+        self._pull_socket = self._context.socket(zmq.PULL)
+        self._pull_socket.connect(self._rcv)
+        self.logger.bold('PULL socket connected on %s' % self._rcv)
+
+        self._push_socket = self._context.socket(zmq.PUSH)
+        self._push_socket.connect(self._send)
+        self.logger.bold('PUSH socket connected on %s' % self._send)
+
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
         __slots__ = ['kwargs']
@@ -70,8 +80,6 @@ class Service:
 
     def _protofy(self, msg, proto):
         """Checks whether the type is Message else it assumes it's a proto"""
-        self.logger.bold(msg)
-        self.logger.bold(dir(msg))
         return proto(**msg.kwargs) if type(msg) == self.Message else msg
 
     def _check_rcv_proto(self, proto):
@@ -86,39 +94,45 @@ class Service:
 
     def _stub(self, msg):
         """
-        The stub receives a binary message and casts it into a proto
+        The stub receives a message and casts it into a proto
         for the stub to receive. Whatever the stub returns is checked
         and then returned
 
-        :param msg:
+        :param msg: Service.Message or Proto Class
         :return body:
         """
+        self.logger.info('Stub received %s' % msg)
         proto = self._protofy(msg, self._rcv_proto)
         self._check_rcv_proto(proto)
         msg = self._stub_f(proto)
+        self.logger.info('Returned from stub: %s' % msg)
         self._check_return_msg(msg)
-        proto = self._send_proto(**msg.kwargs)
+        self._protofy(msg, self._send_proto)
         self._check_send_proto(proto)
         body = proto.SerializeToString()
-        return body
+        self.logger.info('Sending msg body')
+        self._push(body)
+
+    def _pull(self):
+        body = self._pull_socket.recv()
+        return self._protofy(body, self._rcv_proto)
+
+    def _push(self, body):
+        """
+        :param body: binary protobuf message
+        """
+        self.logger.info('Sending body')
+        self._push_socket.send(body)
 
     def _serve(self):
         """
         Executes a push pull loop, executing the stub as a callback
-        """
-
-        pull_socket = self._context.socket(zmq.PULL)
-        pull_socket.connect(self._rcv)
-        self.logger.bold('PULL socket created on %s' % self._rcv)
-
-        push_socket = self._context.socket(zmq.PUSH)
-        push_socket.connect(self._send)
-        self.logger.bold('PUSH socket created on %s' % self._send)
-
+        """ 
         while True:
-            msg = pull_socket.recv()
-            body = self._stub(msg)
-            push_socket.send(body)
+            # msg could be
+            msg = self._pull()
+            self.logger.info('Received %s' % msg)
+            self._stub(msg)
 
     def run(self, subs=None):
         """Takes optional sub functions to run in separate threads
