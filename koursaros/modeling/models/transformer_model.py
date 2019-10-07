@@ -61,6 +61,8 @@ class TransformerModel(Model):
                                          t_total=(self.config.training.epochs * len(train_dataset) / self.batch_size))
         self.model.train()
 
+        train_dataset = self.load_and_cache_examples(train_dataset)
+
         train_sampler = RandomSampler(train_dataset)
         train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=self.batch_size)
 
