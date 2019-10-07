@@ -49,20 +49,12 @@ def streamers(app_manager, pipeline_name):
     cmds = []
 
     service_names = pipeline_yaml.services
-    first_service = service_names[0]
-    service_names = iter(service_names)
-    while True:
-        cmd = []
-        try:
-            service_in = next(service_names)
-            service_out = next(service_names)
-            cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
-        except StopIteration:
-            # last service's streamer sends back to the first service
-            cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, first_service]
-            break
-        finally:
-            cmds += [cmd]
+
+    service_in = service_names[0]
+    for service_out in service_names[1:] + [service_in]:
+        cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
+        service_in = service_out
+        cmds += [cmd]
 
     print(cmds)
     # subproc(cmds)
