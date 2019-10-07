@@ -30,7 +30,7 @@ class Yaml:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
         # mount box attrs to Yaml instance
-        box = getattr(Box(yaml), self.__type__.lower().name)
+        box = getattr(Box(yaml), self.__type__.name.lower())
         for key in box:
             self.__dict__[key] = getattr(box, key)
 
