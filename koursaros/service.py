@@ -24,7 +24,7 @@ class Service:
 
         # set directories
         os.chdir(_base_dir_path)
-        sys.path.insert(1, _base_dir_path)
+        sys.path.insert(1, str(_base_dir_path))
         print(sys.path)
 
         # set message
