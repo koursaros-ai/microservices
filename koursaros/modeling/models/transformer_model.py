@@ -30,7 +30,7 @@ class TransformerModel(Model):
         self.model_config.num_labels = len(self.config.labels)
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
-        self.batch_size = 4
+        self.batch_size = 8
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
         self.n_gpu = 1
