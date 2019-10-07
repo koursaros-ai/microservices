@@ -15,6 +15,7 @@ def receive():
             "msg": "Please provide a msg"
         })
     send(service.Message(text=text))
+    return
 
 
 @service.stub
