@@ -20,6 +20,9 @@ class Service:
         self._service_name = self._service_yaml_path.stem
         _base_dir_path = Path(argv[0]).parent
         os.chdir(_base_dir_path)
+        print()
+        print(os.getcwd())
+        print()
         self.base_yaml = Yaml('base.yaml')
 
         # set messages
