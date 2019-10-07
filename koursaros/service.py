@@ -82,7 +82,7 @@ class Service:
         pass
 
     def _check_return_msg(self, msg):
-        if msg is not None:
+        if msg is None:
             raise ValueError('Send stub must return...')
 
     def _stub(self, msg):

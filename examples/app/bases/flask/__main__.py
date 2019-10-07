@@ -14,15 +14,12 @@ def receive():
             "status": "failure",
             "msg": "Please provide a msg"
         })
-    service.logger.bold(dir(send))
     send(service.Message(text=text))
 
 
 @service.stub
 def send(msg):
-    print('Sending')
-    # print(msg)
-    # print('Sending {}'.format(repr(msg)))
+    print('Sending %s' % msg)
     return msg
 
 
