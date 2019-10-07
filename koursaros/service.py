@@ -124,7 +124,7 @@ class Service:
 
         if subs is not None:
             for sub in subs:
-                self.logger.info(sub)
+                self.logger.info('Running subprocess "%s"' % sub.__name__)
                 t = Thread(target=sub)
                 t.start()
                 threads += [t]
