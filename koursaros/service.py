@@ -22,6 +22,9 @@ class Service:
         _base_dir_path = Path(argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
+        # set logger
+        self.logger = set_logger(self._service_name)
+
         # set directories
         os.chdir(_base_dir_path)
         sys.path.insert(1, str(_base_dir_path))
@@ -38,9 +41,6 @@ class Service:
         self._rcv = HOST.format(self._in_port)
         self._send = HOST.format(self._out_port)
         self._stub_f = None
-
-        # set logger
-        self.logger = set_logger(self._service_name)
 
         self.logger.info(f'Initializing "{self._service_name}"')
 
@@ -99,7 +99,7 @@ class Service:
 
     def _push_pull(self):
         """
-        Executes a push pull loop, executing the stub as a callback 
+        Executes a push pull loop, executing the stub as a callback
         """
 
         pull_socket = self._context.socket(zmq.PULL)
