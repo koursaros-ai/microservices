@@ -10,7 +10,7 @@ class YamlType(Enum):
     SERVICE = 2
 
 
-class Yaml:
+class Yaml(Box):
     """
     Class for managing a yaml as a python object.
 
