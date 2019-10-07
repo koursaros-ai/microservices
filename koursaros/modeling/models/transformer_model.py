@@ -94,12 +94,12 @@ class TransformerModel(Model):
 
         # Train!
         print("***** Running training *****")
-        print("  Num examples = %d", len(train_dataset))
-        print("  Num Epochs = %d", epochs)
-        print("  Total train batch size (w. parallel, distributed & accumulation) = %d",
+        print("  Num examples = ", len(train_dataset))
+        print("  Num Epochs = ", epochs)
+        print("  Total train batch size (w. parallel, distributed & accumulation) = ",
                     self.batch_size * (
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
-        print("  Total optimization steps = %d", t_total)
+        print("  Total optimization steps = ", t_total)
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -175,8 +175,8 @@ class TransformerModel(Model):
 
         # Eval!
         print("***** Running evaluation *****")
-        print("  Num examples = %d", len(eval_dataset))
-        print("  Batch size = %d", self.batch_size)
+        print("  Num examples = ", len(eval_dataset))
+        print("  Batch size = ", self.batch_size)
         eval_loss = 0.0
         nb_eval_steps = 0
         preds = None
@@ -242,7 +242,7 @@ class TransformerModel(Model):
             print("Loading features from cached file %s", cached_features_file)
             features = torch.load(cached_features_file)
         else:
-            print("Creating features from dataset file at %s", )
+            print("Creating features from dataset file at %s", cached_features_file)
             label_list = self.config.labels
 
             examples = [
@@ -252,6 +252,7 @@ class TransformerModel(Model):
                              label=ex[-1]) for i, ex in enumerate(data)
             ]
             label_map = {label: i for i, label in enumerate(label_list)}
+            print(label_map)
 
             features = []
             for (ex_index, example) in enumerate(examples):
@@ -283,6 +284,7 @@ class TransformerModel(Model):
                                                                                                     self.max_length)
                 if self.config.task == "classification":
                     label = label_map[example.label]
+                    print(label)
                 elif self.config.task == "regression":
                     label = float(example.label)
                 else:
