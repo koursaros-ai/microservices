@@ -22,9 +22,11 @@ class Model(object):
 
         self.config = config
         self.version = version
-        ckpt_path = f'.cache/{version}.bin'
-        if os.path.exists(ckpt_path): # else check if in model repo
-            self.checkpoint = ckpt_path
+        self.ckpt_dir = f'.cache/'
+        self.ckpt_path = f'.cache/{version}.bin'
+        self.data_dir = os.path.join('.model-data', self.version)
+        if os.path.exists(self.ckpt_path): # else check if in model repo
+            self.checkpoint = self.ckpt_path
             self.trained = True
         else:
             self.checkpoint = config.training.checkpoint
