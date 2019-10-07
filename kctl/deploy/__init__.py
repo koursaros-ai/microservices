@@ -14,8 +14,8 @@ def deploy(ctx):
 
 
 @deploy.command()
-@deploy.argument('pipeline_name')
-@deploy.pass_context
+@click.argument('pipeline_name')
+@click.pass_context
 def pipeline(ctx, pipeline_name):
     """
     Deploy a pipeline by threading the deployment
@@ -41,8 +41,8 @@ def pipeline(ctx, pipeline_name):
 
 
 @deploy.command()
-@deploy.argument('pipeline_name')
-@deploy.pass_obj
+@click.argument('pipeline_name')
+@click.pass_obj
 def streamers(app_manager, pipeline_name):
     """Deploy streamers for specified pipeline"""
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
@@ -68,9 +68,9 @@ def streamers(app_manager, pipeline_name):
 
 
 @deploy.command()
-@deploy.argument('service_name')
+@click.argument('service_name')
 @click.option('-a', '--all')
-@deploy.pass_obj
+@click.pass_obj
 def service(app_manager, service_name, a):
     """Deploy a service"""
     service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
