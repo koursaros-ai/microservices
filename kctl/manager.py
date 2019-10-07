@@ -112,12 +112,9 @@ class AppManager:
         Waits for subprocesses to finish. Add to exit stack command.
         """
         while self.subprocs:
-            try:
-                self.subproc_cb.acquire()
-                self.subproc_cb.wait()
-                self.subproc_cb.release()
-            except KeyboardInterrupt:
-                break
+            self.subproc_cb.acquire()
+            self.subproc_cb.wait()
+            self.subproc_cb.release()
 
     def subproc(self, cmd: List):
         """
