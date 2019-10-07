@@ -53,13 +53,13 @@ class TransformerModel(Model):
         tb_writer = SummaryWriter()
 
         train_dataset, test_dataset = self.get_data()
+        train_dataset = self.load_and_cache_examples(train_dataset)
         epochs = int(self.config.training.epochs)
         optimizer = AdamW(self.model.parameters(), lr=float(self.config.training.learning_rate),
                           correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
         num_warmup_steps = int(0.06 * len(train_dataset))
         scheduler = WarmupLinearSchedule(optimizer, warmup_steps=num_warmup_steps,
                                          t_total=(self.config.training.epochs * len(train_dataset) / self.batch_size))
-        self.model.train()
 
         train_sampler = RandomSampler(train_dataset)
         train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=self.batch_size)
