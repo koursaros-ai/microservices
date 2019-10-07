@@ -40,7 +40,7 @@ def set_logger(context, verbose=False):
         formatter = ColoredFormatter(
             '%(levelname)-.3s:\033[1m[' + context +
             '.%(module)s]\033[0m:%(funcName)-.5s:'
-            '%(lineno)3d:%(message)s')
+            '%(lineno)s: %(message)s')
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG if verbose else logging.INFO)
         console_handler.setFormatter(formatter)
