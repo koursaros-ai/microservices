@@ -37,8 +37,8 @@ class TransformerModel(Model):
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
         self.fp16 = False
-        self.logging_steps = 50
-        self.save_steps = 100
+        self.logging_steps = 1000
+        self.save_steps = 1000
         self.max_length=512
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.base == 'xlnet' else 0
