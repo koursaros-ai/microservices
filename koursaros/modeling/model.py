@@ -22,8 +22,8 @@ class Model(object):
 
         self.config = config
         self.version = version
-        self.ckpt_dir = f'.cache/{version}'
-        if os.path.exists(self.ckpt_dir): # else check if in model repo
+        self.ckpt_dir = f'.cache/{version}/'
+        if os.path.exists(self.ckpt_dir + 'config.json'): # else check if in model repo
             self.checkpoint = self.ckpt_dir
             self.trained = True
         else:
