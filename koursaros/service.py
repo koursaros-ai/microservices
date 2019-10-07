@@ -122,6 +122,7 @@ class Service:
             msg = pull_socket.recv()
             self.logger.info('Received %s' % msg)
             body = self._stub(msg)
+            raise SystemExit
             self.logger.info('Sending %s' % msg)
             push_socket.send(body)
 
