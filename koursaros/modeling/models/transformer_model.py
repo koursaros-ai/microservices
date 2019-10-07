@@ -26,19 +26,19 @@ class TransformerModel(Model):
         else:
             raise NotImplementedError()
 
-        self.model_config = config.from_pretraiend(self.checkpoint)
+        self.model_config = config.from_pretrained(self.checkpoint)
         self.model_config.num_labels = len(self.config.labels)
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
-        self.batch_size = 4
+        self.batch_size = 8
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
         self.n_gpu = 1
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
         self.fp16 = False
-        self.logging_steps = 50
-        self.save_steps = 100
+        self.logging_steps = 1000
+        self.save_steps = 1000
         self.max_length=512
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.base == 'xlnet' else 0
@@ -239,9 +239,9 @@ class TransformerModel(Model):
         if self.local_rank not in [-1, 0] and not evaluate:
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
 
-        cached_features_file = os.path.join(self.data_dir, 'features')
+        cached_features_file = os.path.join(self.data_dir, 'features' if not evaluate else 'eval-features')
         if os.path.exists(os.path.join(cached_features_file)):
-            print("Loading features from cached file %s", cached_features_file)
+            print("Loading features from cached file ", cached_features_file)
             features = torch.load(cached_features_file)
         else:
             print("Creating features from dataset file at %s", cached_features_file)
@@ -254,7 +254,6 @@ class TransformerModel(Model):
                              label=ex[-1]) for i, ex in enumerate(data)
             ]
             label_map = {label: i for i, label in enumerate(label_list)}
-            print(label_map)
 
             features = []
             for (ex_index, example) in enumerate(examples):
@@ -286,7 +285,6 @@ class TransformerModel(Model):
                                                                                                     self.max_length)
                 if self.config.task == "classification":
                     label = label_map[example.label]
-                    print(label)
                 elif self.config.task == "regression":
                     label = float(example.label)
                 else:
