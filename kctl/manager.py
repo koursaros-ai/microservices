@@ -64,7 +64,6 @@ class AppManager:
                 raise TypeError('Invalid type: %s' % yaml_type)
 
             search_yaml_path = path.joinpath(parent_dir).joinpath(name).with_suffix('.yaml')
-            print(search_yaml_path)
 
             if search_yaml_path.is_file():
                 return search_yaml_path
