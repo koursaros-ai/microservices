@@ -27,7 +27,7 @@ class Service:
         sys.path.insert(1, str(_base_dir_path))
         print(sys.path)
 
-        # set message
+        # set messages
         self.compile_messages_proto(_base_dir_path)
         messages = __import__('messages_pb2')
         self._rcv_proto = messages.__dict__.get(self.base_yaml.rcv_proto)
