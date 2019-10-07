@@ -68,14 +68,13 @@ class AppManager:
             if search_yaml_path.is_file():
                 return search_yaml_path
 
-    def is_in_pkg_path(self, name: str, yaml_type: YamlType):
+    def is_in_app_path(self, name: str, yaml_type: YamlType):
         """
         returns true if the base is defined in koursaros.bases
         :param: args from get_yaml_path()
         """
-        lookup_path = [self.pkg_path]
+        lookup_path = [self.root]
         yaml_path = self.get_yaml_path(name, yaml_type, lookup_path=lookup_path)
-        print(yaml_path)
         return False if yaml_path is None else True
 
     def save_base_to_pkg(self, base_name: str):
