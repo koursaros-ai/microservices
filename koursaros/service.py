@@ -49,6 +49,8 @@ class Service:
         __slots__ = ['kwargs']
 
         def __init__(self, **kwargs):
+            x = set_logger('asf')
+            x.bold(kwargs)
             self.kwargs = kwargs
 
         def __str__(self):
@@ -73,6 +75,7 @@ class Service:
 
     def _protofy(self, msg, proto):
         """Checks whether the type is Message else it assumes it's a proto"""
+        self.logger.bold(msg)
         return proto(**msg.kwargs) if type(msg) == self.Message else msg
 
     def _check_rcv_proto(self, proto):
