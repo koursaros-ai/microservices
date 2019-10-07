@@ -30,7 +30,7 @@ def pipeline(ctx, pipeline_name):
     threads += [t]
 
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
-    # import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     for service_name in pipeline_yaml.services:
         cb = partial(ctx.invoke, service, service_name)
         t = Thread(target=cb)
