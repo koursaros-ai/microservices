@@ -12,7 +12,7 @@ MAX_PORT = 65536
 
 
 def hash_string_between(string: str, min_num: int, max_num: int):
-    return int(sha1(string).hexdigest(), 16) % (max_num - min_num) + min_num
+    return int(sha1(string.encode()).hexdigest(), 16) % (max_num - min_num) + min_num
 
 
 def get_hash_ports(string: str, num_ports: int) -> List[int]:
