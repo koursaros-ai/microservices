@@ -138,4 +138,6 @@ class AppManager:
         subprocess.call(cmd)
         self.subprocs.discard(get_ident())
         self.logger.bold(f'Exiting "%s"..' % ' '.join(cmd))
+        self.subproc_cb.acquire()
         self.subproc_cb.notify()
+        self.subproc_cb.release()
