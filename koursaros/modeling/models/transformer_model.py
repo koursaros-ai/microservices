@@ -43,6 +43,7 @@ class TransformerModel(Model):
         self.pad_on_left = True
         self.pad_token = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
 
     def extract_features(self, data):
         return [self.tokenizer.encode(*b[:2], add_special_tokens=True) for b in data]
@@ -92,13 +93,13 @@ class TransformerModel(Model):
         #                                                       find_unused_parameters=True)
 
         # Train!
-        logger.info("***** Running training *****")
-        logger.info("  Num examples = %d", len(train_dataset))
-        logger.info("  Num Epochs = %d", epochs)
-        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d",
+        print("***** Running training *****")
+        print("  Num examples = %d", len(train_dataset))
+        print("  Num Epochs = %d", epochs)
+        print("  Total train batch size (w. parallel, distributed & accumulation) = %d",
                     self.batch_size * (
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
-        logger.info("  Total optimization steps = %d", t_total)
+        print("  Total optimization steps = %d", t_total)
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -173,9 +174,9 @@ class TransformerModel(Model):
         eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=self.batch_size)
 
         # Eval!
-        logger.info("***** Running evaluation *****")
-        logger.info("  Num examples = %d", len(eval_dataset))
-        logger.info("  Batch size = %d", self.batch_size)
+        print("***** Running evaluation *****")
+        print("  Num examples = %d", len(eval_dataset))
+        print("  Batch size = %d", self.batch_size)
         eval_loss = 0.0
         nb_eval_steps = 0
         preds = None
@@ -215,9 +216,9 @@ class TransformerModel(Model):
 
         output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
-            logger.info("***** Eval results *****")
+            print("***** Eval results *****")
             for key in sorted(result.keys()):
-                logger.info("  %s = %s", key, str(result[key]))
+                print("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
         return result
@@ -238,10 +239,10 @@ class TransformerModel(Model):
 
         cached_features_file = os.path.join(self.data_dir, 'features')
         if os.path.exists(os.path.join(cached_features_file)):
-            logger.info("Loading features from cached file %s", cached_features_file)
+            print("Loading features from cached file %s", cached_features_file)
             features = torch.load(cached_features_file)
         else:
-            logger.info("Creating features from dataset file at %s", )
+            print("Creating features from dataset file at %s", )
             label_list = self.config.labels
 
             examples = [
@@ -255,7 +256,7 @@ class TransformerModel(Model):
             features = []
             for (ex_index, example) in enumerate(examples):
                 if ex_index % 10000 == 0:
-                    logger.info("Writing example %d" % (ex_index))
+                    print("Writing example %d" % (ex_index))
 
                 input_ids, token_type_ids = self.convert_example(example)
 
@@ -289,12 +290,12 @@ class TransformerModel(Model):
                     raise NotImplementedError()
 
                 if ex_index < 5:
-                    logger.info("*** Example ***")
-                    logger.info("guid: %s" % (example.guid))
-                    logger.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
-                    logger.info("attention_mask: %s" % " ".join([str(x) for x in attention_mask]))
-                    logger.info("token_type_ids: %s" % " ".join([str(x) for x in token_type_ids]))
-                    logger.info("label: %s (id = %d)" % (example.label, label))
+                    print("*** Example ***")
+                    print("guid: %s" % (example.guid))
+                    print("input_ids: %s" % " ".join([str(x) for x in input_ids]))
+                    print("attention_mask: %s" % " ".join([str(x) for x in attention_mask]))
+                    print("token_type_ids: %s" % " ".join([str(x) for x in token_type_ids]))
+                    print("label: %s (id = %d)" % (example.label, label))
 
                 features.append(
                     InputFeatures(input_ids=input_ids,
@@ -302,7 +303,7 @@ class TransformerModel(Model):
                                   token_type_ids=token_type_ids,
                                   label=label))
             if self.local_rank in [-1, 0]:
-                logger.info("Saving features into cached file %s", cached_features_file)
+                print("Saving features into cached file %s", cached_features_file)
                 torch.save(features, cached_features_file)
 
         if self.local_rank == 0 and not evaluate:
