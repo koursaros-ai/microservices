@@ -1,6 +1,7 @@
 from ..model import Model
-import torch.nn
+import torch.nn, torch.tensor
 from transformers import *
+from koursaros.utils.misc import batch_list
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
@@ -23,31 +24,33 @@ class TransformerModel (Model):
          self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
 
      def extract_features(self, data):
-         return self.tokenizer.encode(data)
-
+         print(data)
+         return [self.tokenizer.encode(*b, add_special_tokens=True) for b in data]
 
      def train(self):
          ### In Transformers, optimizer and schedules are splitted and instantiated like this:
          train_data, test_data = self.get_data()
          batch_size = 4
          max_grad_norm = 1.0
-         optimizer = AdamW(self.model.parameters(), lr=self.config.training.learning_rate,
+         optimizer = AdamW(self.model.parameters(), lr=float(self.config.training.learning_rate),
                            correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
          num_warmup_steps = int(0.06 * len(train_data))
          scheduler = WarmupLinearSchedule(optimizer, warmup_steps=num_warmup_steps,
-                                          t_total=(self.config.training.epochs * len(train_data) / batch_size))  # PyTorch scheduler
+                                          t_total=(self.config.training.epochs * len(train_data) / batch_size))
          self.model.train()
 
          for epoch in range(0, self.config.training.epochs):
              ### and used like this:
-             for i, batch in enumerate(train_data):
-                 loss = self.model(batch)
+             for i, batch in enumerate(batch_list(train_data, 4)):
+                 features = torch.tensor(self.extract_features(batch))
+                 outputs = self.model(features)
+                 loss = outputs[0]
                  loss.backward()
                  torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
                  optimizer.step()
                  print(f'step {i}')
-             scheduler.step(epoch=epoch)
-             optimizer.zero_grad()
+                 scheduler.step(epoch=epoch)
+                 optimizer.zero_grad()
 
      def eval(self):
          pass

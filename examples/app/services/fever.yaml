@@ -4,9 +4,9 @@ repo: gs://poloma-models
 task: classification
 data:
   source: postgres
-  schema: model_data
-  train: fever_train
-  test: fever_test
+  schema: sets
+  train: train_fever
+  test: test_fever
 labels:
   - SUPPORTS
   - REFUTES

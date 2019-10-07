@@ -49,3 +49,13 @@ def subproc(cmds):
                 print(f'Killing pid {p.pid}: {formatted}')
             else:
                 print(f'Process {p.pid}: "{formatted}" ended...')
+
+def batch_list(arr, n):
+    buffer = []
+    for i, item in enumerate(arr):
+        buffer.append(item)
+        if (i+1) % n == 0:
+            yield buffer
+            buffer = []
+    if len(buffer) > 0:
+        yield buffer

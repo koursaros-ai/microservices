@@ -9,8 +9,8 @@ def get_rows_from_tsv(fname):
     with open(fname) as file:
       return csv.reader(file, delimiter='\t')
 
-def select_all(table):
-    return f'select * from {table} order by random()'
+def select_all(schema, table):
+    return f'select * from {schema}.{table} order by random()'
 
 class Model(object):
 
@@ -38,7 +38,7 @@ class Model(object):
         if data.source == 'postgres':
             p = Conn()
             query_fn = p.query
-            return query_fn(select_all(data.train)), query_fn(select_all(data.test))
+            return query_fn(select_all(data.schema, data.train)), query_fn(select_all(data.schema, data.test))
         else:
             return get_rows_from_tsv(data.train), get_rows_from_tsv(data.test)
 
