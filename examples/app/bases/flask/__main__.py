@@ -20,7 +20,7 @@ def receive():
 
 @service.stub
 def send(msg):
-    print('Sending ' + msg)
+    print('Sending %s' % msg)
     return msg
 
 
