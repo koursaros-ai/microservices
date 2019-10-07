@@ -22,10 +22,12 @@ class Service:
         _base_dir_path = Path(argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
+        # set logger
+        self.logger = set_logger(self._service_name)
+
         # set directories
         os.chdir(_base_dir_path)
         sys.path.insert(1, str(_base_dir_path))
-        print(sys.path)
 
         # compile messages
         self.compile_messages_proto(_base_dir_path)
@@ -40,10 +42,7 @@ class Service:
         self._send = HOST.format(self._out_port)
         self._stub_f = None
 
-        # set logger
-        set_logger(self._service_name)
-
-        print(f'Initializing "{self._service_name}"')
+        self.logger.info(f'Initializing "{self._service_name}"')
 
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
@@ -52,9 +51,8 @@ class Service:
         def __init__(self, **kwargs):
             self.kwargs = kwargs
 
-    @staticmethod
-    def compile_messages_proto(path):
-        print(f'Compiling messages for "{path}"...')
+    def compile_messages_proto(self, path):
+        self.logger.info(f'Compiling messages for "{path}"...')
 
         protoc.main((
             '',
@@ -106,11 +104,11 @@ class Service:
 
         pull_socket = self._context.socket(zmq.PULL)
         pull_socket.connect(self._rcv)
-        print('Socket created on %s' % self._rcv)
+        self.logger.info('PULL socket created on %s' % self._rcv)
 
         push_socket = self._context.socket(zmq.PUSH)
         push_socket.connect(self._send)
-        print('Socket created on %s' % self._send)
+        self.logger.info('PUSH socket created on %s' % self._send)
 
         while True:
             msg = pull_socket.recv()

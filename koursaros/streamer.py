@@ -31,7 +31,7 @@ class Streamer:
 
         # set logger
         self._name = "{}->{}".format(self._service_in[:5], self._service_out[:5])
-        set_logger(self._name)
+        self.logger = set_logger(self._name)
 
         # set zeromq
         _, in_port = get_hash_ports(self._service_in, 2)
@@ -40,7 +40,7 @@ class Streamer:
         self._rcv = HOST.format(in_port)
         self._send = HOST.format(out_port)
 
-        print('Initializing {} streamer'.format(self._name))
+        self.logger.info('Initializing {} streamer'.format(self._name))
 
     def stream(self):
         """
@@ -48,7 +48,7 @@ class Streamer:
         """
 
         device = ProcessDevice(zmq.STREAMER, zmq.PULL, zmq.PUSH)
-        print('{} PULL on {} and PUSH on {}'.format(
+        self.logger.info('{} PULL on {} and PUSH on {}'.format(
             self._name, self._rcv, self._send))
 
         device.bind_in(self._rcv)
