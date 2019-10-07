@@ -239,9 +239,9 @@ class TransformerModel(Model):
         if self.local_rank not in [-1, 0] and not evaluate:
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
 
-        cached_features_file = os.path.join(self.data_dir, 'features')
+        cached_features_file = os.path.join(self.data_dir, 'features' if not evaluate else 'eval-features')
         if os.path.exists(os.path.join(cached_features_file)):
-            print("Loading features from cached file %s", cached_features_file)
+            print("Loading features from cached file ", cached_features_file)
             features = torch.load(cached_features_file)
         else:
             print("Creating features from dataset file at %s", cached_features_file)
