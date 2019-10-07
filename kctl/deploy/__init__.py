@@ -22,6 +22,7 @@ def pipeline(ctx, pipeline_name):
     of streamers and each service.
     """
     app_manager = ctx.obj
+    app_manager.raise_if_not_app_root()
 
     threads = []
     t = Thread(target=ctx.invoke, args=[streamers], kwargs=dict(pipeline_name=pipeline_name))
@@ -43,7 +44,6 @@ def pipeline(ctx, pipeline_name):
 @click.pass_obj
 def streamers(app_manager, pipeline_name):
     """Deploy streamers for specified pipeline"""
-    app_manager.raise_if_not_app_root()
     import pdb; pdb.set_trace()
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
@@ -68,7 +68,6 @@ def streamers(app_manager, pipeline_name):
 @click.pass_obj
 def service(app_manager, service_name, all=False):
     """Deploy a service"""
-    app_manager.raise_if_not_app_root()
     service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
     service_yaml = Yaml(service_yaml_path)
     import  pdb; pdb.set_trace()
