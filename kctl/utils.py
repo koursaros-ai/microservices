@@ -2,22 +2,22 @@
 BOLD = '\033[1m{}\033[0m'
 
 
-def decorator_group(options):
+def decorator_group(decorators):
     """returns a decorator which bundles the given decorators
 
-    :param options: iterable of decorators
+    :param decorators: iterable of decorators
     :return: single decorator
 
     Example:
-        deploy_options = option_group([
+        deploy_options = decorator_group([
             click.option('-c', '--connection', required=True),
             click.option('-r', '--rebind', is_flag=True),
             click.option('-d', '--debug', is_flag=True),
         ])
 
     """
-    def option_decorator(f):
-        for option in options:
-            f = option(f)
+    def group(f):
+        for decorator in decorators:
+            f = decorator(f)
         return f
-    return option_decorator
+    return group

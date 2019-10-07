@@ -1,6 +1,6 @@
-from koursaros.streamer import get_hash_ports
+
 from koursaros.yamls import YamlType, Yaml
-from koursaros import subproc
+from koursaros.utils.misc import subproc
 from functools import partial
 from threading import Thread
 import click
@@ -29,7 +29,7 @@ def pipeline(ctx, pipeline_name):
     t.start()
     threads += [t]
 
-    pipeline_yaml = Yaml(app_manager.search_for_yaml(pipeline_name, YamlType.PIPELINE))
+    pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
         cb = partial(ctx.invoke, service, app_manager, service_name)
@@ -45,7 +45,7 @@ def pipeline(ctx, pipeline_name):
 @deploy.pass_obj
 def streamers(app_manager, pipeline_name):
     """Deploy streamers for specified pipeline"""
-    pipeline_yaml_path = app_manager.search_for_yaml(pipeline_name, YamlType.PIPELINE)
+    pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
     cmds = []
@@ -63,19 +63,24 @@ def streamers(app_manager, pipeline_name):
         finally:
             cmds += [cmd]
 
-    subproc(cmds)
+    print(cmds)
+    # subproc(cmds)
 
 
 @deploy.command()
 @deploy.argument('service_name')
 @click.option('-a', '--all')
 @deploy.pass_obj
-def service(app_manager, service_name):
+def service(app_manager, service_name, a):
     """Deploy a service"""
-    service_yaml_path = app_manager.search_for_yaml(service_name, YamlType.SERVICE)
+    service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
     service_yaml = Yaml(service_yaml_path)
-    cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, service_yaml_path]
-    subproc(cmd)
+
+    if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE):
+        app_manager.save_base_to_pkg(service_yaml.base)
+    print('Done')
+    # cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, service_yaml_path]
+    # subproc(cmd)
 
 # else:
 #     from .create import build_trigger
