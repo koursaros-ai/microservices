@@ -50,7 +50,7 @@ def streamers(app_manager, pipeline_name):
 
     service_names = pipeline_yaml.services
     first_service = service_names[0]
-
+    service_names = iter(service_names)
     while True:
         cmd = []
         try:
