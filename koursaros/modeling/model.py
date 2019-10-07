@@ -39,6 +39,10 @@ class Model(object):
     # conn.query_fn = (query) -> of form text1, <optional text2>, label
     # returns train_data, test data iterable of rows
     def get_data(self):
+        """
+        Get training data based on yaml config and connection
+        :return:
+        """
         data = self.config.training.data
         if data.source == 'postgres':
             p = Conn()
@@ -50,10 +54,19 @@ class Model(object):
 
     # train_data and test_data both lists of rows
     def train(self):
-        # CHECK TO MAKE SURE DEVICE HAS ENOUGH SPACE
+        """
+        Runs training as defined in the model yaml. Saves model to directory
+        .cache/<md5 hash of yaml>
+        :return: evaluation metric
+        """
         raise NotImplementedError()
 
     def run(self, *args):
+        """
+        Runs inference on arbitrary args
+        :param args: sent_a, sent_b for classification / regression task.
+        :return:
+        """
         raise NotImplementedError()
 
     def save_model(self):
