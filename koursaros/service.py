@@ -24,15 +24,14 @@ class Service:
 
         # set directories
         os.chdir(_base_dir_path)
-        sys.path.insert(1, _base_dir_path)
+        sys.path.insert(1, str(_base_dir_path))
+        print(sys.path)
 
-        # set messages
+        # set message
         self.compile_messages_proto(_base_dir_path)
-        print(os.listdir('.'))
-        
-        messages = __import__('messages_pb2')
-        self._rcv_proto = messages.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto = messages.__dict__.get(self.base_yaml.send_proto)
+        import messages_pb2
+        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
