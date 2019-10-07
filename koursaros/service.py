@@ -31,15 +31,15 @@ class Service:
 
         # set zeromq
         self._context = zmq.Context()
-        self._in_port, self._out_port = get_hash_ports(self.service_name, 2)
+        self._in_port, self._out_port = get_hash_ports(self._service_name, 2)
         self._rcv_host = "tcp://127.0.0.1:" + self._in_port
         self._send_host = "tcp://127.0.0.1:" + self._out_port
         self._stub_f = None
 
         # set logger
-        set_logger(self.service_name)
+        set_logger(self._service_name)
 
-        print(f'Initializing "{self.service_name}"')
+        print(f'Initializing "{self._service_name}"')
 
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
