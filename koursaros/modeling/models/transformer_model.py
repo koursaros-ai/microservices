@@ -21,12 +21,14 @@ class TransformerModel(Model):
 
     def __init__(self, *args):
         super().__init__(*args)
-        if self.config.task == 'classification':
+        if self.config.task == 'classification' or self.config.task == 'regression':
             config, model, tokenizer = MODEL_CLASSES[self.config.base]
         else:
             raise NotImplementedError()
 
-        self.model = model.from_pretrained(self.checkpoint)
+        self.model_config = config.from_pretraiend(self.checkpoint)
+        self.model_config.num_labels = len(self.config.labels)
+        self.model = model.from_pretrained(self.checkpoint, config=self.model_config)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
         self.batch_size = 4
         self.max_grad_norm = 1.0
