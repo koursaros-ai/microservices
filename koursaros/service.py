@@ -124,7 +124,7 @@ class Service:
 
         if subs is not None:
             for sub in subs:
-                print(sub)
+                self.logger.info(sub)
                 t = Thread(target=sub)
                 t.start()
                 threads += [t]
