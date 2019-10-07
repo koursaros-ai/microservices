@@ -51,6 +51,12 @@ class Service:
         def __init__(self, **kwargs):
             self.kwargs = kwargs
 
+        def __str__(self):
+            return repr(self)
+
+        def __repr__(self):
+            return self.kwargs
+
     def compile_messages_proto(self, path):
         self.logger.info(f'Compiling messages for "{path}"...')
 
@@ -124,12 +130,12 @@ class Service:
 
         if subs is not None:
             for sub in subs:
-                self.logger.info(sub)
+                self.logger.info('Running thread "%s"' % sub.__name__)
                 t = Thread(target=sub)
                 t.start()
                 threads += [t]
 
-        t = Thread(target=self.serve)
+        t = Thread(target=self._serve)
         t.start()
         threads += [t]
 
