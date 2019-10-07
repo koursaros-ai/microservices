@@ -1,12 +1,12 @@
 
-from zmq.devices.basedevice import ProcessDevice
 from kctl.logger import set_logger
 from hashlib import sha1
 from typing import List
 from sys import argv
 import zmq
 
-HOST = "tcp://127.0.0.1:{}"
+HOST = "tcp://*:{}"
+
 MIN_PORT = 49152
 MAX_PORT = 65536
 

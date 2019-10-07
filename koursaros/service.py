@@ -1,5 +1,5 @@
 
-from koursaros.streamer import get_hash_ports, HOST
+from koursaros.streamer import get_hash_ports
 from kctl.logger import set_logger
 from grpc_tools import protoc
 from threading import Thread
@@ -9,6 +9,8 @@ import json
 import sys
 import zmq
 import os
+
+HOST = "tcp://127.0.0.1:{}"
 
 
 class Service:
