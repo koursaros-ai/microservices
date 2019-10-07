@@ -1,37 +1,27 @@
-import os
-# from kctl.utils import BOLD
+from typing import Iterable, List
 from subprocess import Popen
 import signal
+import os
 
-def gb_free_space():
-    statvfs = os.statvfs(os.getcwd())
-    return statvfs.f_frsize * statvfs.f_bfree / 1e+9      # Actual number of free bytes
+BOLD = '\033[1m{}\033[0m'
 
-def batch_fn(batch_size, call_fn, items):
-    buffer = []
-    for item in items:
-        buffer.append(item)
-        if len(buffer) % batch_size == 0:
-            yield call_fn(buffer), buffer
-            buffer = []
-    if len(buffer) > 0:
-        yield call_fn(buffer), buffer
 
-def subproc(cmds):
+def subproc(cmds: Iterable[List]):
     """Subprocess a list of commands from specified
-     directories and cleanup procs when done
+     and cleanup procs when done...
 
-    :param cmds: iterable list of tuples (directory, cmd)
+    :param cmds: iterable of commands (commands should be list)
     """
     procs = []
 
     try:
-        for path, cmd in cmds:
-            os.chdir(path)
-            # formatted = BOLD.format(' '.join(cmd))
-            formatted = ' '.join(cmd)
+        for cmd in cmds:
+            if not isinstance(cmd, list):
+                raise TypeError('"%s" must be list type')
 
-            print(f'''Running "{formatted}" from "{path}"...''')
+            formatted = BOLD.format(' '.join(cmd))
+
+            print(f'''Running "{formatted}"..''')
             p = Popen(cmd)
             procs.append((p, formatted))
 
@@ -49,6 +39,23 @@ def subproc(cmds):
                 print(f'Killing pid {p.pid}: {formatted}')
             else:
                 print(f'Process {p.pid}: "{formatted}" ended...')
+
+
+def gb_free_space():
+    statvfs = os.statvfs(os.getcwd())
+    return statvfs.f_frsize * statvfs.f_bfree / 1e+9      # Actual number of free bytes
+
+
+def batch_fn(batch_size, call_fn, items):
+    buffer = []
+    for item in items:
+        buffer.append(item)
+        if len(buffer) % batch_size == 0:
+            yield call_fn(buffer), buffer
+            buffer = []
+    if len(buffer) > 0:
+        yield call_fn(buffer), buffer
+
 
 def batch_list(arr, n):
     buffer = []

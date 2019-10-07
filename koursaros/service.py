@@ -7,6 +7,7 @@ from pathlib import Path
 from .yamls import Yaml
 from sys import argv
 import zmq
+import os
 
 
 class Service:
@@ -14,28 +15,31 @@ class Service:
 
     def __init__(self):
         # set yamls
-        self.service_yaml_path = Path(argv[1])
-        self.service_yaml = Yaml(self.service_yaml_path)
-        self.service_name = self.service_yaml_path.stem
+        self._service_yaml_path = Path(argv[1])
+        self.service_yaml = Yaml(self._service_yaml_path)
+        self._service_name = self._service_yaml_path.stem
+        _base_dir_path = Path(argv[0]).parent
+        os.chdir(_base_dir_path)
         self.base_yaml = Yaml('base.yaml')
+        print(os.getcwd())
 
         # set messages
-        self.compile_messages_proto('.')
+        self.compile_messages_proto(_base_dir_path)
         import messages_pb2
-        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto, None)
-        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto, None)
+        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
-        self._in_port, self._out_port = get_hash_ports(self.service_name, 2)
+        self._in_port, self._out_port = get_hash_ports(self._service_name, 2)
         self._rcv_host = "tcp://127.0.0.1:" + self._in_port
         self._send_host = "tcp://127.0.0.1:" + self._out_port
         self._stub_f = None
 
         # set logger
-        set_logger(self.service_name)
+        set_logger(self._service_name)
 
-        print(f'Initializing "{self.service_name}"')
+        print(f'Initializing "{self._service_name}"')
 
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
