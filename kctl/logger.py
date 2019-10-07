@@ -20,7 +20,7 @@ class ColoredFormatter(Formatter):
     MAPPING = {
         'DEBUG': dict(color='magenta', on_color=None),
         'INFO': dict(color='blue', on_color=None),
-        'BOLD': dict(color='blue', on_color=None, attrs=['bold', 'underline']),
+        'BOLD': dict(color='white', on_color='on_magenta'),
         'WARNING': dict(color='yellow', on_color=None),
         'ERROR': dict(color='red', on_color=None),
         'CRITICAL': dict(color='white', on_color='on_red'),
