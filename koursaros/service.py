@@ -17,11 +17,8 @@ class Service:
         self.service_yaml_path = Path(argv[1])
         self.service_yaml = Yaml(self.service_yaml_path)
         self.service_name = self.service_yaml_path.stem
-        print()
-        print(argv)
-
-        raise SystemExit
-        self.base_yaml = Yaml('base.yaml')
+        base_main_path = Path(argv[0])
+        self.base_yaml = Yaml(base_main_path.parent.joinpath('base.yaml'))
 
         # set messages
         self.compile_messages_proto('.')
