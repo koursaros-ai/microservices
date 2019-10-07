@@ -21,13 +21,12 @@ class Service:
         _base_dir_path = Path(argv[0]).parent
         os.chdir(_base_dir_path)
         self.base_yaml = Yaml('base.yaml')
-        print(os.getcwd())
 
         # set messages
         self.compile_messages_proto(_base_dir_path)
-        import messages_pb2
-        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
+        messages = __import__('messages_pb2')
+        self._rcv_proto = messages.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto = messages.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
@@ -50,7 +49,7 @@ class Service:
 
     @staticmethod
     def compile_messages_proto(path):
-        print(f'Compiling messages for {path}')
+        print(f'Compiling messages for "{path}"...')
 
         protoc.main((
             '',
