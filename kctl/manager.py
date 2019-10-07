@@ -75,7 +75,7 @@ class AppManager:
         """
         lookup_path = [self.pkg_path]
         yaml_path = self.get_yaml_path(name, yaml_type, lookup_path=lookup_path)
-        print(yaml_type)
+        print(yaml_path)
         return False if yaml_path is None else True
 
     def save_base_to_pkg(self, base_name: str):
