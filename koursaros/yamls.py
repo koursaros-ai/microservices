@@ -29,7 +29,7 @@ class Yaml(Box):
         else:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
-        super().__init__(safe_load(self.__yaml__))
+        super().__init__(safe_load(self.__text__))
 
     @property
     def hash(self):
