@@ -7,6 +7,7 @@ from pathlib import Path
 from .yamls import Yaml
 from sys import argv
 import zmq
+import os
 
 
 class Service:
@@ -14,17 +15,19 @@ class Service:
 
     def __init__(self):
         # set yamls
-        self.service_yaml_path = Path(argv[1])
-        self.service_yaml = Yaml(self.service_yaml_path)
-        self.service_name = self.service_yaml_path.stem
-        base_main_path = Path(argv[0])
-        self.base_yaml = Yaml(base_main_path.parent.joinpath('base.yaml'))
+        self._service_yaml_path = Path(argv[1])
+        self.service_yaml = Yaml(self._service_yaml_path)
+        self._service_name = self._service_yaml_path.stem
+        _base_dir_path = Path(argv[0]).parent
+        os.chdir(_base_dir_path)
+        self.base_yaml = Yaml('base.yaml')
+        print(os.getcwd())
 
         # set messages
         self.compile_messages_proto('.')
         import messages_pb2
-        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto, None)
-        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto, None)
+        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
