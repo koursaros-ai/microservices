@@ -25,6 +25,8 @@ class Model(object):
         self.ckpt_dir = f'.cache/'
         self.ckpt_path = f'.cache/{version}.bin'
         self.data_dir = os.path.join('.model-data', self.version)
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir)
         if os.path.exists(self.ckpt_path): # else check if in model repo
             self.checkpoint = self.ckpt_path
             self.trained = True
