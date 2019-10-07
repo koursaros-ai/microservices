@@ -96,6 +96,7 @@ class Service:
         Executes a push pull loop, executing the stub as a callback
         """
 
+
         pull_socket = self._context.socket(zmq.PULL)
         pull_socket.connect(self._rcv_host)
         print('Socket created on %s' % pull_socket)

@@ -58,8 +58,7 @@ def streamers(app_manager, pipeline_name):
         service_in = service_out
         cmds += [cmd]
 
-    print(cmds)
-    # subproc(cmds)
+    subproc(cmds)
 
 
 @deploy.command()
@@ -79,8 +78,7 @@ def service(app_manager, service_name, all=False):
         app_manager.save_base_to_pkg(service_yaml.base)
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, str(service_yaml_path)]
-    print(cmd)
-    # subproc(cmd)
+    subproc(cmd)
 
 
 
