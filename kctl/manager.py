@@ -85,6 +85,6 @@ class AppManager:
         if self.root is not None:
             raise IsADirectoryError(f'"{self.base}" is already a pipeline')
 
-    def raise_if_no_app_root(self):
+    def raise_if_not_app_root(self):
         if self.root is None:
             raise NotADirectoryError(f'"{self.base}" is not a pipeline')

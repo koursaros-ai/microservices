@@ -43,6 +43,8 @@ def pipeline(ctx, pipeline_name):
 @click.pass_obj
 def streamers(app_manager, pipeline_name):
     """Deploy streamers for specified pipeline"""
+    app_manager.raise_if_not_app_root()
+    import pdb; pdb.set_trace()
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
