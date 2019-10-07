@@ -8,8 +8,8 @@ import os
 
 class ColoredFormatter(Formatter):
     MAPPING = {
-        'DEBUG': dict(color='grey', on_color=None),
-        'INFO': dict(color='white', on_color=None),
+        'DEBUG': dict(color='magenta', on_color=None),
+        'INFO': dict(color='blue', on_color=None),
         'WARNING': dict(color='yellow', on_color=None),
         'ERROR': dict(color='red', on_color=None),
         'CRITICAL': dict(color='white', on_color='on_red'),
