@@ -20,6 +20,7 @@ class Yaml(Box):
         self.__path__ = path
         self.__text__ = open(path).read()
         self.__yaml__ = safe_load(self.__text__)
+        import pdb; pdb.set_trace()
         self.__version__ = self.__yaml__.pop('version')
 
         if 'base' in self.__yaml__:
