@@ -107,10 +107,12 @@ class TransformerModel(Model):
         tr_loss, logging_loss = 0.0, 0.0
         self.model.zero_grad()
         train_iterator = trange(int(epochs), desc="Epoch", disable=self.local_rank not in [-1, 0])
+        num_correct = 0
         for _ in train_iterator:
             epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
             for step, batch in enumerate(epoch_iterator):
                 self.model.train()
+                correct_labels = batch[3]
                 batch = tuple(t.to(self.device) for t in batch)
                 inputs = {'input_ids': batch[0],
                           'attention_mask': batch[1],
@@ -120,6 +122,12 @@ class TransformerModel(Model):
                                                                                'xlnet'] else None
                 outputs = self.model(**inputs)
                 loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+                logits = outputs[1]
+                preds = logits.detach().cpu().numpy()
+                preds = np.argmax(preds, axis=1)
+                num_correct += np.sum(preds == correct_labels.numpy()) / len(preds)
+                epoch_iterator.set_description(f'accuracy: {(num_correct / (global_step*self.batch_size))}')
+                epoch_iterator.refresh()  # to show immediately the update
 
                 if self.n_gpu > 1:
                     loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -151,11 +159,9 @@ class TransformerModel(Model):
 
                     if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
                         # Save model checkpoint
-                        if not os.path.exists(self.ckpt_dir):
-                            os.makedirs(self.ckpt_dir)
                         model_to_save = self.model.module if hasattr(self.model,
                                                                 'module') else self.model
-                        model_to_save.save_pretrained(self.ckpt_path)
+                        model_to_save.save_pretrained(self.ckpt_dir)
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
