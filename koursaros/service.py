@@ -94,6 +94,7 @@ class Service:
         :param msg:
         :return:
         """
+        import pdb; pdb.set_trace()
         proto = self._protofy(msg, self._rcv_proto)
         self._check_rcv_proto(proto)
         msg = self._stub_f(proto)
