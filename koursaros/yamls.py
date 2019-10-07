@@ -31,15 +31,11 @@ def Yaml(path):
     yaml['__text__'] = __text__
     yaml['__type__'] = __type__
 
-    import pdb;
-    pdb.set_trace()
-    return Box(yaml)
+    box = Box(yaml)
+    box.__hash__ = text_hash
+    import pdb; pdb.set_trace()
+    return box
 
-        # mount box attrs to Yaml instance
-        # box = getattr(Box(yaml), self.__type__.name.lower())
-        # for key in box:
-        #     self.__dict__[key] = getattr(box, key)
 
-    @property
-    def hash(self):
-        return md5(self.__text__).hexdigest()
+def text_hash(self):
+    return md5(self.__text__).hexdigest()
