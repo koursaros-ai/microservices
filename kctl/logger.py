@@ -9,7 +9,7 @@ import os
 class ColoredFormatter(Formatter):
     MAPPING = {
         'DEBUG': dict(color='white', on_color=None),
-        'INFO': dict(color=None, on_color=None),
+        'INFO': dict(color='cyan', on_color=None),
         'WARNING': dict(color='yellow', on_color=None),
         'ERROR': dict(color='red', on_color=None),
         'CRITICAL': dict(color='white', on_color='on_red'),
@@ -39,7 +39,7 @@ def set_logger(context, verbose=False):
         logger.setLevel(logging.DEBUG if verbose else logging.INFO)
         formatter = ColoredFormatter(
             '%(levelname)-.3s:\033[1m[' + context +
-            '.%(module)s]\033[0m:%(funcName)s-.5s:'
+            '.%(module)s]\033[0m:%(funcName)-.5s:'
             '%(lineno)3d:%(message)s')
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG if verbose else logging.INFO)
