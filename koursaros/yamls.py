@@ -16,25 +16,24 @@ class Yaml:
 
     :param path: path to .yaml file
     """
-
     def __init__(self, path):
-        self.type = None
-        self.path = path
-        self.text = open(path).read()
+        self.__type__ = None
+        self.__path__ = path
+        self.__text__ = open(path).read()
         yaml = safe_load(self.__text__)
-        self.box = Box(yaml)
 
         for yaml_type in YamlType:
             if yaml_type.name.lower() in yaml:
-                self.type = yaml_type
+                self.__type__ = yaml_type
 
         if self.__type__ is None:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
-    def __getattribute__(self, item):
-        print(item)
-        return self.__dict__['box'].__dict__[item]
+        # mount box attrs to Yaml instance
+        box = getattr(Box(yaml), self.__type__.lower().name)
+        for key in box:
+            self.__dict__[key] = getattr(box, key)
 
     @property
     def hash(self):
-        return md5(self.__text__[self.__type__.name.lower()]).hexdigest()
+        return md5(self.__text__).hexdigest()
