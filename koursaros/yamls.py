@@ -13,7 +13,7 @@ class YamlType(Enum):
 
 def Yaml(path):
     """
-    Class for managing a yaml as a python object.
+    Sudo class for managing a yaml as a python object.
 
     :param path: path to .yaml file
     """
@@ -28,15 +28,12 @@ def Yaml(path):
     if __type__ is None:
         raise ValueError('Invalid yaml type for %s' % path)
 
-    yaml['__path__'] = path
-    yaml['__text__'] = __text__
-    yaml['__type__'] = __type__
-
     box = Box(yaml)
-    box.hash = partial(text_hash, box)
+    yaml.__path__ = path
+    yaml.__text__ = __text__
+    yaml.__type__ = __type__
+    yaml.hash = md5(__text__.encode('utf-8')).hexdigest()
+
+
     import pdb; pdb.set_trace()
     return box
-
-
-def text_hash(self):
-    return md5(self.__text__).hexdigest()
