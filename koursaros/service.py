@@ -72,7 +72,7 @@ class Service:
         return self._stub
 
     def _protofy(self, msg, proto):
-        """Checks whether the type is Message else it assumes it's a proto"""
+        """Checks whether the type is Message else it assumes it's a proto""" 
         self.logger.bold(msg)
         return proto(**msg.kwargs) if type(msg) == self.Message else msg
 
