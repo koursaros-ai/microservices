@@ -22,7 +22,7 @@ class Service:
         _base_dir_path = Path(argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
-        # set working directory
+        # set directories
         os.chdir(_base_dir_path)
         sys.path.insert(1, _base_dir_path)
 
