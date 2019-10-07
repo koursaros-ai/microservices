@@ -69,10 +69,16 @@ def service(app_manager, service_name, all=False):
     service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
     service_yaml = Yaml(service_yaml_path)
 
-    if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE):
-        app_manager.save_base_to_pkg(service_yaml.base)
+    base_yaml_path = app_manager.get_yaml_path(service_yaml.base, YamlType.BASE)
 
-    import pdb; pdb.set_trace()
+    if base_yaml_path is None:
+        raise FileNotFoundError('Could not find base %s' % service_yaml.base)
+
+    if not app_manager.is_in_pkg_path(service_yaml.base, YamlType.BASE):
+        app_manager.save_base_to_pkg(service_yaml.base)
+        print('Not found')
+
+
     print('Done')
     # cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, service_yaml_path]
     # subproc(cmd)
