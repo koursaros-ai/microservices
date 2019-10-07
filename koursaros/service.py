@@ -129,7 +129,7 @@ class Service:
                 t.start()
                 threads += [t]
 
-        t = Thread(target=self.serve)
+        t = Thread(target=self._serve)
         t.start()
         threads += [t]
 
