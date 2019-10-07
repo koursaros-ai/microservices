@@ -19,17 +19,18 @@ class Yaml(Box):
     def __init__(self, path):
         self.__path__ = path
         self.__text__ = open(path).read()
+        yaml = safe_load(self.__text__)
 
-        if 'base' in self.__yaml__:
+        if 'base' in yaml:
             self.__type__ = YamlType.BASE
-        elif 'pipeline' in self.__yaml__:
+        elif 'pipeline' in yaml:
             self.__type__ = YamlType.PIPELINE
-        elif 'service' in self.__yaml__:
+        elif 'service' in yaml:
             self.__type__ = YamlType.SERVICE
         else:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
-        super().__init__(safe_load(self.__text__))
+        super().__init__(yaml)
 
     @property
     def hash(self):
