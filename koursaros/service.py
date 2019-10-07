@@ -96,7 +96,7 @@ class Service:
         proto = self._protofy(msg, self._rcv_proto)
         self._check_rcv_proto(proto)
         msg = self._stub_f(proto)
-        self._check_return_msg(msg)
+        self._check_return_msg(msg) 
         self.logger.bold(msg)
         self.logger.bold(dir(msg))
         proto = self._send_proto(**msg.kwargs)
