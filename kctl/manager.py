@@ -52,6 +52,8 @@ class AppManager:
             if yaml_type == YamlType.BASE:
                 parent_dir = 'bases'
                 name = 'base'
+                print()
+                import pdb; pdb.set_trace()
 
             elif yaml_type == YamlType.PIPELINE:
                 parent_dir = 'pipelines'
