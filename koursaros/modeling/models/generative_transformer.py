@@ -44,6 +44,8 @@ class GenerativeTransformer(Model):
     def __init__(self, *args):
         super().__init__(*args)
         model_class, tokenizer_class = MODEL_CLASSES[self.config.base]
+        self.model = model_class.from_pretrained(self.config.checkpoint)
+        self.tokenizer = tokenizer_class.from_pretraiend(self.config.checkpoint)
 
     def set_seed(self, args):
         np.random.seed(args.seed)
@@ -81,7 +83,20 @@ class GenerativeTransformer(Model):
             logits[indices_to_remove] = filter_value
         return logits
 
-    def run(self, length, context, num_samples=1, temperature=1, top_k=0, top_p=0.0, is_xlnet=False,
+    def run(self, raw_text):
+        context_tokens = self.tokenizer.encode(raw_text)
+        out = self.sample_sequence(
+            context=context_tokens,
+            length=len(context_tokens)
+        )
+        out = out[0, len(context_tokens):].tolist()
+
+        text = self.tokenizer.decode(out, clean_up_tokenization_spaces=True, skip_special_tokens=True)
+        # text = text[: text.find(args.stop_token) if args.stop_token else None]
+        return text
+
+
+    def sample_sequence(self, length, context, num_samples=1, temperature=1, top_k=0, top_p=0.9, is_xlnet=False,
                         xlm_lang=None, device='cpu'):
         context = torch.tensor(context, dtype=torch.long, device=device)
         context = context.unsqueeze(0).repeat(num_samples, 1)
