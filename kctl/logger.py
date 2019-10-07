@@ -5,11 +5,14 @@ from termcolor import colored
 from copy import copy
 import os
 
+BOLD_LEVELNO = 25
+
 
 class ColoredFormatter(Formatter):
     MAPPING = {
         'DEBUG': dict(color='magenta', on_color=None),
         'INFO': dict(color='blue', on_color=None),
+        'BOLD': dict(color='cyan', on_color=None),
         'WARNING': dict(color='yellow', on_color=None),
         'ERROR': dict(color='red', on_color=None),
         'CRITICAL': dict(color='white', on_color='on_red'),
@@ -23,8 +26,13 @@ class ColoredFormatter(Formatter):
         seq = self.MAPPING.get(cr.levelname, self.MAPPING['INFO'])  # default info
         print(seq)
         print(cr.levelname)
-        cr.msg = colored(cr.msg, **seq) 
+        cr.msg = colored(cr.msg, **seq)
         return super().format(cr)
+
+
+def bold(self, message, *args, **kws):
+    if self.isEnabledFor(BOLD_LEVELNO):
+        self._log(BOLD_LEVELNO, message, args, **kws)
 
 
 def set_logger(context, verbose=False):
@@ -35,6 +43,7 @@ def set_logger(context, verbose=False):
     for handler in logging.root.handlers[:]:
         logging.root.removeHandler(handler)
 
+    logging.addLevelName(BOLD_LEVELNO, "BOLD")
     logger = logging.getLogger(context)
     logger.propagate = False
     if not logger.handlers:
@@ -48,6 +57,7 @@ def set_logger(context, verbose=False):
         console_handler.setFormatter(formatter)
         logger.handlers = []
         logger.addHandler(console_handler)
+        logger.bold = bold
 
     return logger
 

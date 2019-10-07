@@ -48,7 +48,7 @@ class Streamer:
         """
 
         device = ProcessDevice(zmq.STREAMER, zmq.PULL, zmq.PUSH)
-        self.logger.info('{} PULL on {} and PUSH on {}'.format(
+        self.logger.bold('{} PULL on {} and PUSH on {}'.format(
             self._name, self._rcv, self._send))
 
         device.bind_in(self._rcv)
