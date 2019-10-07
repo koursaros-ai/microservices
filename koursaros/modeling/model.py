@@ -23,7 +23,7 @@ class Model(object):
         self.config = config
         self.version = config.hash
         self.ckpt_dir = f'.cache/{self.version}/'
-        if os.path.exists(self.ckpt_dir + 'config.json'): # else check if in model repo
+        if os.path.exists(self.ckpt_dir + 'config.json') or not 'training' in self.config:
             self.checkpoint = self.ckpt_dir
             self.trained = True
         else:
@@ -39,11 +39,12 @@ class Model(object):
     # conn.query_fn = (query) -> of form text1, <optional text2>, label
     # returns train_data, test data iterable of rows
     def get_data(self):
-        data = self.config.data
+        data = self.config.training.data
         if data.source == 'postgres':
             p = Conn()
             query_fn = p.query
-            return query_fn(select_all(data.schema, data.train)), query_fn(select_all(data.schema, data.test))
+            return query_fn(select_all(data.schema, data.train)), \
+                   query_fn(select_all(data.schema, data.test))
         else:
             return get_rows_from_tsv(data.train), get_rows_from_tsv(data.test)
 

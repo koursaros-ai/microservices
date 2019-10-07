@@ -2,16 +2,16 @@ service:
   base: bert
   repo: gs://poloma-models
   task: classification
-  data:
-    source: postgres
-    schema: mnli
-    train: train_set
-    test: test_set
   labels:
     - neutral
     - contradiction
     - entailment
   training:
+    data:
+      source: postgres
+      schema: mnli
+      train: train_set
+      test: test_set
     checkpoint: bert-base-uncased
     epochs: 3
     learning_rate: 1e-05

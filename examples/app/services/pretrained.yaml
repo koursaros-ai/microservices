@@ -1,0 +1,9 @@
+service:
+  base: bert
+  repo: gs://poloma-models
+  task: classification
+  labels:
+    - neutral
+    - contradiction
+    - entailment
+  checkpoint: roberta-large-mnli
