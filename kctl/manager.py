@@ -1,6 +1,6 @@
 
 from koursaros.yamls import YamlType
-from shutil import copytree
+from shutil import copytree, rmtree
 from pathlib import Path
 from typing import List
 from copy import copy
@@ -82,6 +82,10 @@ class AppManager:
         base_yaml_path = self.get_yaml_path(base_name, YamlType.BASE, lookup_path=lookup_path)
         root_base_dir = base_yaml_path.parent
         pkg_base_dir = self.pkg_path.joinpath('bases').joinpath(base_name)
+
+        if pkg_base_dir.is_dir():
+            rmtree(str(pkg_base_dir))
+
         print('Saving base "{}" to "{}"...'.format(root_base_dir, pkg_base_dir))
         copytree(str(root_base_dir), str(pkg_base_dir))
 
