@@ -75,6 +75,7 @@ class AppManager:
         """
         lookup_path = [self.pkg_path]
         yaml_path = self.get_yaml_path(name, yaml_type, lookup_path=lookup_path)
+        print(yaml_path)
         return False if yaml_path is None else True
 
     def save_base_to_pkg(self, base_name: str):
@@ -82,7 +83,8 @@ class AppManager:
         base_yaml_path = self.get_yaml_path(base_name, YamlType.BASE, lookup_path=lookup_path)
         root_base_dir = base_yaml_path.parent
         pkg_base_dir = self.pkg_path.joinpath('bases').joinpath(base_name)
-        print(root_base_dir, pkg_base_dir)
+        print('Saving base "{}" to "{}"...'.format(root_base_dir, pkg_base_dir))
+        copytree(str(root_base_dir), str(pkg_base_dir))
 
     def raise_if_app_root(self):
         if self.root is not None:
