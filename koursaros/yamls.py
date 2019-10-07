@@ -29,10 +29,10 @@ def Yaml(path):
         raise ValueError('Invalid yaml type for %s' % path)
 
     box = Box(yaml)
-    yaml.__path__ = path
-    yaml.__text__ = __text__
-    yaml.__type__ = __type__
-    yaml.hash = md5(__text__.encode('utf-8')).hexdigest()
+    box.__path__ = path
+    box.__text__ = __text__
+    box.__type__ = __type__
+    box.hash = md5(__text__.encode('utf-8')).hexdigest()
 
 
     import pdb; pdb.set_trace()
