@@ -1,4 +1,5 @@
 
+from zmq.devices.basedevice import ProcessDevice
 from kctl.logger import set_logger
 from pathlib import Path
 from hashlib import sha1
@@ -28,36 +29,36 @@ class Streamer:
         self._service_in = Path(argv[1])
         self._service_out = Path(argv[2])
 
+        # set logger
+        self._name = "{}->{}".format(self._service_in[:5], self._service_out[:5])
+        set_logger(self._name)
+
         # set zeromq
-        self._context = zmq.Context()
         _, self._in_port = get_hash_ports(self._service_in, 2)
         self._out_port, _ = get_hash_ports(self._service_out, 2)
         self._rcv_host = "tcp://127.0.0.1:" + self._in_port
         self._send_host = "tcp://127.0.0.1:" + self._out_port
 
-        # set logger
-        self.name = "{}->{}".format(self._service_in[:5], self._service_out[:5])
+        print('Initializing {} streamer'.format(self._name))
 
-        print('Initializing {} streamer'.format(self.name))
-
-    def push_pull(self):
+    def stream(self):
         """
         Executes a push pull loop, executing the stub as a callback
         """
 
-        push_socket = self._context.socket(zmq.PUSH)
-        push_socket.connect(push_socket)
-        print('Socket created on ' + push_socket)
+        device = ProcessDevice(zmq.STREAMER, zmq.PULL, zmq.PUSH)
+        print('{} PULL on {} and PUSH on {}'.format(
+            self._name, self._rcv_host, self._send_host))
 
-        pull_socket = self._context.socket(zmq.PULL)
-        pull_socket.connect(pull_socket)
-        print('Socket created on ' + pull_socket)
+        device.bind_in(self._rcv_host)
+        device.bind_out(self._send_host)
 
-        while True:
-            msg = pull_socket.recv()
-            push_socket.send(msg)
+        device.setsockopt_in(zmq.IDENTITY, 'PULL')
+        device.setsockopt_out(zmq.IDENTITY, 'PUSH')
+
+        device.start()
 
 
 if __name__ == "__main__":
     s = Streamer()
-    s.push_pull()
+    s.stream()

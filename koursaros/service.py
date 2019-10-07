@@ -1,5 +1,6 @@
+
 from koursaros.streamer import get_hash_ports
-from kctl.logger import KctlLogger
+from kctl.logger import set_logger
 from grpc_tools import protoc
 from threading import Thread
 from pathlib import Path
@@ -32,7 +33,7 @@ class Service:
         self._stub_f = None
 
         # set logger
-        KctlLogger.init()
+        set_logger(self.service_name)
 
         print(f'Initializing "{self.service_name}"')
 
@@ -95,13 +96,13 @@ class Service:
         Executes a push pull loop, executing the stub as a callback
         """
 
-        push_socket = self._context.socket(zmq.PUSH)
-        push_socket.connect(push_socket)
-        print('Socket created on ' + push_socket)
-
         pull_socket = self._context.socket(zmq.PULL)
-        pull_socket.connect(pull_socket)
-        print('Socket created on ' + pull_socket)
+        pull_socket.connect(self._rcv_host)
+        print('Socket created on %s' % pull_socket)
+
+        push_socket = self._context.socket(zmq.PUSH)
+        push_socket.connect(self._send_host)
+        print('Socket created on %s' % push_socket)
 
         while True:
             msg = pull_socket.recv()
