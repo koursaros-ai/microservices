@@ -44,7 +44,6 @@ def pipeline(ctx, pipeline_name):
 @click.pass_obj
 def streamers(app_manager, pipeline_name):
     """Deploy streamers for specified pipeline"""
-    import pdb; pdb.set_trace()
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
@@ -71,8 +70,6 @@ def service(app_manager, service_name, all=False):
     service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
     service_yaml = Yaml(service_yaml_path)
     base_yaml_path = app_manager.get_yaml_path(service_yaml.base, YamlType.BASE)
-    print(base_yaml_path, service_yaml.base, YamlType.BASE)
-
 
     if base_yaml_path is None:
         raise FileNotFoundError('Could not find base "%s"' % service_yaml.base)
