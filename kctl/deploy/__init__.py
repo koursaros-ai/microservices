@@ -26,7 +26,6 @@ def compile_messages_proto(path):
 
 
 @click.group()
-@click.argument('pipeline_yaml_filename')
 @click.pass_context
 def deploy(ctx):
     """Deploy a pipeline or service"""
@@ -40,6 +39,15 @@ def pipeline(app_manager, pipeline_yaml_filename):
     pipeline_name = Path(pipeline_yaml_filename).stem
     build(app_manager, pipeline_yaml_filename)
     build_yaml = app_manager.search_for_yaml(pipeline_name, Type.BUILD)
+
+    for service in build_yaml.services:
+        print(service.entrypoint)
+
+@click.command()
+@click.argument('base_name', 'build_yaml_path')
+@click.pass_obj
+def service():
+    
 
 
 def build(app_manager, pipeline_yaml_filename):
