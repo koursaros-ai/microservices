@@ -4,7 +4,5 @@ base:
   base: python3-slim:latest
   image: example/image
   replicas: 1
-  messages:
-    rcv: Message
-    send: Message
-    res: Message
+  rcv_proto: Message
+  send_proto: Message
