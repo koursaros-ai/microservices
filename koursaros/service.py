@@ -68,8 +68,6 @@ class Service:
         ))
 
     def stub(self, f):
-        self.logger.bold(f)
-        self.logger.bold(dir(f))
         self._stub_f = f
         return self._stub
 

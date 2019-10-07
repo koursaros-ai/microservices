@@ -14,8 +14,6 @@ def receive():
             "status": "failure",
             "msg": "Please provide a msg"
         })
-    service.logger.bold(text)
-    service.logger.bold(send)
     service.logger.bold(dir(send))
     send(service.Message(text=text))
 
