@@ -10,26 +10,29 @@ class YamlType(Enum):
     SERVICE = 2
 
 
-class Yaml(Box):
+class Yaml:
     """
     Class for managing a yaml as a python object.
 
     :param path: path to .yaml file
     """
+
     def __init__(self, path):
-        self.__type__ = None
-        self.__path__ = path
-        self.__text__ = open(path).read()
+        self.type = None
+        self.path = path
+        self.text = open(path).read()
         yaml = safe_load(self.__text__)
+        self.box = Box(yaml)
 
         for yaml_type in YamlType:
             if yaml_type.name.lower() in yaml:
-                self.__type__ = yaml_type
+                self.type = yaml_type
 
         if self.__type__ is None:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
-        super().__init__(yaml)
+    def __getattribute__(self, item):
+        return getattr(self.box, item)
 
     @property
     def hash(self):
