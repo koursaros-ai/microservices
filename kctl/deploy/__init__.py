@@ -24,7 +24,7 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
 
     threads = []
-    t = Thread(target=ctx.invoke, args=[streamers])
+    t = Thread(target=ctx.invoke, args=[streamers], kwargs=dict(pipeline_name=pipeline_name))
     t.start()
     threads += [t]
 
@@ -43,7 +43,6 @@ def pipeline(ctx, pipeline_name):
 @click.pass_obj
 def streamers(app_manager, pipeline_name):
     """Deploy streamers for specified pipeline"""
-    import pdb; pdb.set_trace()
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
