@@ -99,7 +99,7 @@ class Service:
 
     def _push_pull(self):
         """
-        Executes a push pull loop, executing the stub as a callback
+        Executes a push pull loop, executing the stub as a callback 
         """
 
         pull_socket = self._context.socket(zmq.PULL)
