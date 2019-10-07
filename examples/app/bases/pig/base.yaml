@@ -1,6 +1,6 @@
 version: '3.7'
 
-service:
+base:
   base: python3-slim:latest
   image: example/image
   replicas: 1
