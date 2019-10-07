@@ -1,33 +1,40 @@
+from koursaros.streamer import get_hash_ports
 from kctl.logger import KctlLogger
+from grpc_tools import protoc
 from threading import Thread
+from pathlib import Path
+from .yamls import Yaml
 from sys import argv
-import pdb; pdb.set_trace()
-import messages_pb2
 import zmq
 
 
 class Service:
-    """The base service class
+    """The base service class"""
 
-    :param package: __package__ parameter
-    """
+    def __init__(self):
+        # set yamls
+        self.service_yaml_path = Path(argv[1])
+        self.service_yaml = Yaml(self.service_yaml_path)
+        self.service_name = self.service_yaml_path.stem
+        self.base_yaml = Yaml('base.yaml')
 
-    def __init__(self, package):
+        # set messages
+        self.compile_messages_proto('.')
+        import messages_pb2
+        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto, None)
+        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto, None)
+
+        # set zeromq
         self._context = zmq.Context()
-        self._rcv_proto = messages_pb2.__dict__.get(argv[1], None)
-        self._send_proto = messages_pb2.__dict__.get(argv[2], None)
-        self._cb_proto = messages_pb2.__dict__.get(argv[3], None)
-
-        self._rcv_host = "tcp://127.0.0.1" + argv[3]
-        self._send_host = "tcp://127.0.0.1" + argv[4]
-        self._cb_host = "tcp://127.0.0.1" + argv[5]
+        self._in_port, self._out_port = get_hash_ports(self.service_name, 2)
+        self._rcv_host = "tcp://127.0.0.1:" + self._in_port
+        self._send_host = "tcp://127.0.0.1:" + self._out_port
         self._stub_f = None
-        self._cb_f = None
+
+        # set logger
         KctlLogger.init()
 
-        service = package.split('.')[-1]
-
-        print(f'Initializing "{service}"')
+        print(f'Initializing "{self.service_name}"')
 
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
@@ -36,17 +43,20 @@ class Service:
         def __init__(self, **kwargs):
             self.kwargs = kwargs
 
-    class STOP:
-        """Class to break stub/callback push/pull"""
-        __slots__ = []
+    @staticmethod
+    def compile_messages_proto(path):
+        print(f'Compiling messages for {path}')
+
+        protoc.main((
+            '',
+            f'-I={path}',
+            f'--python_out={path}',
+            f'{path}/messages.proto',
+        ))
 
     def stub(self, f):
         self._stub_f = f
         return self._stub
-
-    def callback(self, f):
-        self._cb_f = f
-        return self._callback
 
     def _protofy(self, msg, proto):
         """Checks whether the type is Message else it assumes it's a proto"""
@@ -58,59 +68,50 @@ class Service:
     def _check_send_proto(self, proto):
         pass
 
-    def _check_cb_proto(self, proto):
-        pass
-
-    def _stub(self, msg):
-
-        proto = self._protofy(msg, self._rcv_proto)
-        self._check_rcv_proto(proto)
-        msg = self._stub_f(proto)
-
+    def _check_return_msg(self, msg):
         if msg is not None:
             raise ValueError('Send stub must return...')
 
+    def _stub(self, msg):
+        """
+        The stub receives a binary message and casts it into a proto
+        for the stub to receive. Whatever the stub returns is checked
+        and then returned
+
+        :param msg:
+        :return:
+        """
+        proto = self._protofy(msg, self._rcv_proto)
+        self._check_rcv_proto(proto)
+        msg = self._stub_f(proto)
+        self._check_return_msg(msg)
         proto = self._send_proto(**msg.kwargs)
         self._check_send_proto(proto)
         body = proto.SerializeToString()
         return body
 
-    def _callback(self, msg):
-        proto = self._protofy(msg, self._cb_proto)
-        self._check_cb_proto(proto)
-        self._cb_f(proto)
-
-    def _push_pull(self, func, push_host=None, pull_host=None):
-        """Executes a push pull loop, executing the func as a callback
-
-        :param func: callback to execute message with
+    def _push_pull(self):
         """
-        push = True if push_host is not None else False
-        pull = True if pull_host is not None else False
+        Executes a push pull loop, executing the stub as a callback
+        """
 
-        if push:
-            push_socket = self._context.socket(zmq.PUSH)
-            push_socket.connect(push_socket)
-            print('Socket created on ' + push_socket)
+        push_socket = self._context.socket(zmq.PUSH)
+        push_socket.connect(push_socket)
+        print('Socket created on ' + push_socket)
 
-        if pull:
-            pull_socket = self._context.socket(zmq.PULL)
-            pull_socket.connect(pull_socket)
-            print('Socket created on ' + pull_socket)
+        pull_socket = self._context.socket(zmq.PULL)
+        pull_socket.connect(pull_socket)
+        print('Socket created on ' + pull_socket)
 
         while True:
-            if pull:
-                msg = pull_socket.recv()
-                body = func(msg)
-            else:
-                body = func()
-            if push:
-                push_socket.send(body)
+            msg = pull_socket.recv()
+            body = self._stub(msg)
+            push_socket.send(body)
 
     def run(self, subs=None):
         """Takes optional sub functions to run in separate threads
 
-        :param subs: iterable of functions
+        :param subs: optional iterable of callback funcs
         """
         threads = []
 
@@ -118,30 +119,11 @@ class Service:
             for sub in subs:
                 t = Thread(target=sub)
                 t.start()
-                threads.append(t)
+                threads += [t]
 
-        if self._send_host is not None or self._rcv_host is not None:
-            t = Thread(
-                target=self._push_pull,
-                args=[self._stub],
-                kwargs={
-                    'push_host': self._send_host,
-                    'pull_host': self._rcv_host
-                }
-            )
-            t.start()
-            threads.append(t)
-
-        if self._cb_host:
-            t = Thread(
-                target=self._push_pull,
-                args=[self._callback],
-                kwargs={
-                    'pull_host': self._cb_host
-                }
-            )
-            t.start()
-            threads.append(t)
+        t = Thread(target=self._push_pull)
+        t.start()
+        threads += [t]
 
         for t in threads:
             t.join()
