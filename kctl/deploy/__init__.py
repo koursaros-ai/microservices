@@ -48,7 +48,6 @@ def streamers(app_manager, pipeline_name):
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
-
     cmds = []
 
     service_names = pipeline_yaml.services
