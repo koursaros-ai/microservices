@@ -127,7 +127,7 @@ class Service:
     def _serve(self):
         """
         Executes a push pull loop, executing the stub as a callback
-        """
+        """ 
         while True:
             # msg could be
             msg = self._pull()
