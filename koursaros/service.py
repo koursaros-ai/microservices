@@ -49,7 +49,10 @@ class Service:
         __slots__ = ['kwargs']
 
         def __init__(self, **kwargs):
+            x = set_logger('asf')
+            x.bold(kwargs)
             self.kwargs = kwargs
+            x.bold(self.kwargs)
 
         def __repr__(self):
             return 'Message:\n' + json.dumps(self.kwargs, indent=4)
