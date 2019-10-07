@@ -73,6 +73,7 @@ def service(app_manager, service_name, all=False):
     base_yaml_path = app_manager.get_yaml_path(service_yaml.base, YamlType.BASE)
     print(base_yaml_path, service_yaml.base, YamlType.BASE)
 
+
     if base_yaml_path is None:
         raise FileNotFoundError('Could not find base "%s"' % service_yaml.base)
 
