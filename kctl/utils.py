@@ -1,6 +1,4 @@
 
-BOLD = '\033[1m{}\033[0m'
-
 
 def decorator_group(decorators):
     """returns a decorator which bundles the given decorators

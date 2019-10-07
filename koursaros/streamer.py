@@ -26,8 +26,8 @@ class Streamer:
 
     def __init__(self):
         # set yamls
-        self._service_in = Path(argv[1])
-        self._service_out = Path(argv[2])
+        self._service_in = argv[1]
+        self._service_out = argv[2]
 
         # set logger
         self._name = "{}->{}".format(self._service_in[:5], self._service_out[:5])
