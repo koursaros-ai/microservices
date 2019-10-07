@@ -53,6 +53,7 @@ def streamers(app_manager, pipeline_name):
     while service_names:
         cmd = []
         try:
+            print(service_in)
             service_out = next(service_names)
             cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
         except StopIteration:
