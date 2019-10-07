@@ -27,10 +27,9 @@ def Yaml(path):
     if __type__ is None:
         raise ValueError('Invalid yaml type for %s' % path)
 
-    box = Box(yaml)
+    box = Box(__type__.name.lower())
     box.__path__ = path
     box.__text__ = __text__
     box.__type__ = __type__
     box.hash = md5(__text__.encode()).hexdigest()
-    import pdb; pdb.set_trace()
     return box
