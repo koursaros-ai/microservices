@@ -23,7 +23,7 @@ class ColoredFormatter(Formatter):
         seq = self.MAPPING.get(cr.levelname, self.MAPPING['INFO'])  # default info
         print(seq)
         print(cr.levelname)
-        cr.msg = colored(cr.msg, **seq)
+        cr.msg = colored(cr.msg, **seq) 
         return super().format(cr)
 
 
