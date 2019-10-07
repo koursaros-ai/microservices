@@ -20,6 +20,7 @@ def receive():
 
 @service.stub
 def send(msg):
+    print(msg)
     print('Sending {}'.format(repr(msg)))
     return msg
 
