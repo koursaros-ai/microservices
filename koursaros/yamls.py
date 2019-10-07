@@ -22,7 +22,7 @@ class Yaml(Box):
         self.__path__ = path
         self.__text__ = open(path).read()
         yaml = safe_load(self.__text__)
-        box = super(yaml)
+        box = super().__init__(yaml)
         import pdb; pdb.set_trace()
         # for yaml_type in YamlType:
         #     if yaml_type.name.lower() in yaml:
