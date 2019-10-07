@@ -22,8 +22,9 @@ class Model(object):
 
         self.config = config
         self.version = version
-        self.ckpt_dir = f'.cache/'
-        self.ckpt_path = f'.cache/{version}.bin'
+        self.ckpt_dir = f'.cache/{version}'
+        if not os.path.exists(self.ckpt_dir):
+            os.makedirs(self.ckpt_dir)
         self.data_dir = os.path.join('.model-data', self.version)
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
