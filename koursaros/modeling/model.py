@@ -30,7 +30,8 @@ class Model(object):
             self.data_dir = os.path.join('.model-data', self.version)
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
-            os.makedirs(self.ckpt_dir)
+            if not os.path.exists(self.ckpt_dir):
+                os.makedirs(self.ckpt_dir)
             self.checkpoint = config.training.checkpoint
             self.trained = False
 
