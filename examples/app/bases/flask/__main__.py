@@ -14,7 +14,7 @@ def receive():
             "status": "failure",
             "msg": "Please provide a msg"
         })
-
+    import pdb; pdb.set_trace()
     send(service.Message(text=text))
 
 
