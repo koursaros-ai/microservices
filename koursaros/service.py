@@ -97,7 +97,7 @@ class Service:
         body = proto.SerializeToString()
         return body
 
-    def _push_pull(self):
+    def serve(self):
         """
         Executes a push pull loop, executing the stub as a callback
         """
@@ -128,7 +128,7 @@ class Service:
                 t.start()
                 threads += [t]
 
-        t = Thread(target=self._push_pull)
+        t = Thread(target=self.serve)
         t.start()
         threads += [t]
 
