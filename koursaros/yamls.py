@@ -2,7 +2,6 @@ from yaml import safe_load
 from hashlib import md5
 from enum import Enum
 from box import Box
-from functools import partial
 
 
 class YamlType(Enum):
@@ -32,8 +31,6 @@ def Yaml(path):
     box.__path__ = path
     box.__text__ = __text__
     box.__type__ = __type__
-    box.hash = md5(__text__.encode('utf-8')).hexdigest()
+    box.hash = md5(__text__.encode()).hexdigest()
 
-
-    import pdb; pdb.set_trace()
     return box
