@@ -17,7 +17,7 @@ class Service:
         self.service_yaml_path = Path(argv[1])
         self.service_yaml = Yaml(self.service_yaml_path)
         self.service_name = self.service_yaml_path.stem
-        print(__package__)
+        print(__name__)
         raise SystemExit
         self.base_yaml = Yaml('base.yaml')
 

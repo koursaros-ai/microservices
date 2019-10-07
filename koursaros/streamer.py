@@ -19,7 +19,7 @@ def hash_string_between(string: str, min_num: int, max_num: int):
 def get_hash_ports(string: str, num_ports: int) -> List[int]:
     diff = MAX_PORT - MIN_PORT
     h = hash_string_between(string, 0, round(diff / num_ports))
-    return [h * i for i in range(num_ports)]
+    return [h * (i + 1) for i in range(num_ports)]
 
 
 class Streamer:
