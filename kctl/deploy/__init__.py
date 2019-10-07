@@ -81,6 +81,7 @@ def service(app_manager, service_name, all=False):
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, service_yaml_path]
     print(cmd)
     # subproc(cmd)
+    
 
 
 # else:
