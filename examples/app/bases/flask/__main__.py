@@ -1,8 +1,8 @@
-from koursaros import Service
+from koursaros.service import Service
 from flask import Flask, request, jsonify
 
 
-service = Service(__package__)
+service = Service()
 app = Flask(__name__)
 
 
@@ -22,11 +22,6 @@ def receive():
 def send(msg):
     print('Sending ' + msg)
     return msg
-
-
-@service.callback
-def callback(msg):
-    print('Received ' + msg)
 
 
 if __name__ == "__main__":

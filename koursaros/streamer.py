@@ -1,5 +1,5 @@
 
-from kctl.logger import KctlLogger
+from kctl.logger import set_logger
 from pathlib import Path
 from hashlib import sha1
 from typing import List
@@ -36,9 +36,9 @@ class Streamer:
         self._send_host = "tcp://127.0.0.1:" + self._out_port
 
         # set logger
-        KctlLogger.init()
+        self.name = "{}->{}".format(self._service_in[:5], self._service_out[:5])
 
-        print(f'Initializing "{self._service_in}"->"{self._service_out}" streamer')
+        print('Initializing {} streamer'.format(self.name))
 
     def push_pull(self):
         """

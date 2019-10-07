@@ -10,29 +10,26 @@ class YamlType(Enum):
     SERVICE = 2
 
 
-class Yaml(Box):
+def Yaml(path):
     """
-    Class for managing a yaml as a python object.
+    Sudo class for managing a yaml as a python object.
 
     :param path: path to .yaml file
     """
-    def __init__(self, path):
-        self.__path__ = path
-        self.__text__ = open(path).read()
-        self.__yaml__ = safe_load(self.__text__)
-        self.__version__ = self.__yaml__.pop('version')
+    __type__ = None
+    __text__ = open(path).read()
+    yaml = safe_load(__text__)
 
-        if 'base' in self.__yaml__:
-            self.__type__ = YamlType.BASE
-        elif 'pipeline' in self.__yaml__:
-            self.__type__ = YamlType.PIPELINE
-        elif 'service' in self.__yaml__:
-            self.__type__ = YamlType.SERVICE
-        else:
-            raise ValueError('Invalid yaml type for %s' % self.__path__)
+    for yaml_type in YamlType:
+        if yaml_type.name.lower() in yaml:
+            __type__ = yaml_type
 
-        super().__init__(self.__yaml__)
+    if __type__ is None:
+        raise ValueError('Invalid yaml type for %s' % path)
 
-    @property
-    def hash(self):
-        return md5(self.__text__).hexdigest()
+    box = Box(yaml[__type__.name.lower()])
+    box.__path__ = path
+    box.__text__ = __text__
+    box.__type__ = __type__
+    box.hash = md5(__text__.encode()).hexdigest()
+    return box

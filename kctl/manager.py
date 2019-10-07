@@ -1,6 +1,8 @@
 
 from koursaros.yamls import YamlType
 from pathlib import Path
+from typing import List
+from shutil import copytree
 
 
 class AppManager:
@@ -22,7 +24,7 @@ class AppManager:
             if path.joinpath('.kapp').is_dir():
                 return path
 
-    def search_for_yaml_path(self, name: str, yaml_type: YamlType):
+    def get_yaml_path(self, name: str, yaml_type: YamlType, lookup_path: List[Path] = None):
         """
         Given a particular type of entity and its name, find
         the directory and path to its yaml (if applicable)
@@ -38,8 +40,11 @@ class AppManager:
 
         :param name: the name of the type
         :param yaml_type: the type
+        :param lookup_path: override self.lookup_path default
         """
-        for path in self.lookup_path:
+        lookup_path = self.lookup_path if lookup_path is None else lookup_path
+
+        for path in lookup_path:
 
             # if type is base then find yaml in base dir
             if yaml_type == YamlType.BASE:
@@ -59,6 +64,23 @@ class AppManager:
 
             if search_yaml_path.is_file():
                 return search_yaml_path
+
+    def is_in_app_path(self, name: str, yaml_type: YamlType):
+        """
+        returns true if the base is defined in koursaros.bases
+        :param: args from get_yaml_path()
+        """
+        lookup_path = [self.root]
+        yaml_path = self.get_yaml_path(name, yaml_type, lookup_path=lookup_path)
+        if yaml_path is not None:
+            return True
+
+    def save_base_to_pkg(self, base_name: str):
+        lookup_path = [self.root]
+        base_yaml_path = self.get_yaml_path(base_name, YamlType.BASE, lookup_path=lookup_path)
+        root_base_dir = base_yaml_path.parent
+        pkg_base_dir = self.pkg_path.joinpath('bases')
+        print(root_base_dir, pkg_base_dir)
 
     def raise_if_app_root(self):
         if self.root is not None:

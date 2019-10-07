@@ -1,74 +1,69 @@
 
-from time import strftime
-from sys import stdout, stderr
-from inspect import stack
-from logging import basicConfig, ERROR
-
-basicConfig(stream=stderr, level=ERROR)
-
-
-BOLD = '\033[1m'
-GREEN = '\033[32m'
-RED = '\033[1;31m'
-
-BOLD_YELLOW = '\033[1;33m'
-RED_BACKGROUND = '\033[1;5;97;41m'
-ITALICIZED = '\033[3m'
-RESET = '\033[0m'
+import logging
+from logging import Formatter
+from termcolor import colored
+from copy import copy
+import os
 
 
-class KctlLogger:
-    stdout_write = stdout.write
-    stderr_write = stderr.write
-    newline = True
+class ColoredFormatter(Formatter):
+    MAPPING = {
+        'DEBUG': dict(color='white', on_color=None),
+        'INFO': dict(color=None, on_color=None),
+        'WARNING': dict(color='yellow', on_color=None),
+        'ERROR': dict(color='red', on_color=None),
+        'CRITICAL': dict(color='white', on_color='on_red'),
+    }
 
-    @classmethod
-    def init(cls):
-        stdout.write = cls.stdout_wrap
-        stderr.write = cls.stderr_wrap
-        print('Wrapping stdout with KctlLogger...')
+    PREFIX = '\033['
+    SUFFIX = '\033[0m'
 
-    @staticmethod
-    def timestamp():
-        return strftime("%Y-%m-%d %H:%M:%S")
-
-    @staticmethod
-    def stdout_wrap(record=''):
-        KctlLogger.format_line(record)
-
-    @staticmethod
-    def stderr_wrap(record=''):
-        KctlLogger.format_line(record, err=True)
-
-    @classmethod
-    def format_line(cls, record, err=False):
-        write = cls.stderr_write if err else cls.stdout_write
-
-        if err:
-            label = f' {BOLD}{RED}STDERR:{RESET} '
-        else:
-            s2 = stack()[2]
-            func = s2.function
-            lineno = s2.lineno
-            pack = s2.frame.f_globals.get('__package__', '')
-            call = s2.frame.f_locals.get("self", None)
-            call = f'.{call.__class__.__name__}.' if call else '.'
-            label = f' {BOLD}[{pack}{call}{func}({lineno})] {GREEN}STDOUT:{RESET} '
-
-        line = cls.timestamp() + label
-
-        if cls.newline:
-            write(line)
-            cls.newline = False
-
-        if record[-1] == '\n':
-            cls.newline = True
-            record = record[:-1]
-
-        write(record.replace('\n', '\n' + line))
-
-        if cls.newline:
-            write('\n')
+    def format(self, record):
+        cr = copy(record)
+        seq = self.MAPPING.get(cr.levelname, self.MAPPING['INFO'])  # default white
+        cr.msg = colored(cr.msg, **seq)
+        return super().format(cr)
 
 
+def set_logger(context, verbose=False):
+    if os.name == 'nt':  # for Windows
+        return NTLogger(context, verbose)
 
+    # Remove all handlers associated with the root logger object.
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    logger = logging.getLogger(context)
+    logger.propagate = False
+    if not logger.handlers:
+        logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+        formatter = ColoredFormatter(
+            '%(levelname)-.3s:\033[1m[' + context +
+            '.%(module)s]\033[0m:%(funcName)s-.5s:'
+            '%(lineno)3d:%(message)s')
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG if verbose else logging.INFO)
+        console_handler.setFormatter(formatter)
+        logger.handlers = []
+        logger.addHandler(console_handler)
+
+    return logger
+
+
+class NTLogger:
+    def __init__(self, context, verbose):
+        self.context = context
+        self.verbose = verbose
+
+    def info(self, msg, **kwargs):
+        print('I:%s:%s' % (self.context, msg), flush=True)
+
+    def debug(self, msg, **kwargs):
+        if self.verbose:
+            print('D:%s:%s' % (self.context, msg), flush=True)
+
+    def error(self, msg, **kwargs):
+        print('E:%s:%s' % (self.context, msg), flush=True)
+
+    def warning(self, msg, **kwargs):
+        print('W:%s:%s' % (self.context, msg), flush=True)
