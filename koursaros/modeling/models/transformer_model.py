@@ -108,6 +108,7 @@ class TransformerModel(Model):
         self.model.zero_grad()
         train_iterator = trange(int(epochs), desc="Epoch", disable=self.local_rank not in [-1, 0])
         num_correct = 0
+        label_count = [0] * len(self.config.labels)
         for _ in train_iterator:
             epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
             for step, batch in enumerate(epoch_iterator):
@@ -125,9 +126,12 @@ class TransformerModel(Model):
                 logits = outputs[1]
                 preds = logits.detach().cpu().numpy()
                 preds = np.argmax(preds, axis=1)
+                for pred in preds:
+                    label_count[pred] += 1
                 num_correct += np.sum(preds == correct_labels.numpy())
                 if step > 0:
-                    epoch_iterator.set_description("Accuracy: %.2f" % (num_correct / (step*self.batch_size)))
+                    epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
+                                                   % (num_correct / (step*self.batch_size), label_count))
                     epoch_iterator.refresh()  # to show immediately the update
 
                 if self.n_gpu > 1:
