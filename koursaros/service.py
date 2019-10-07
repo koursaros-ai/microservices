@@ -5,7 +5,7 @@ from grpc_tools import protoc
 from threading import Thread
 from pathlib import Path
 from .yamls import Yaml
-from sys import argv
+import json
 import sys
 import zmq
 import os
@@ -16,10 +16,10 @@ class Service:
 
     def __init__(self):
         # set yamls
-        self._service_yaml_path = Path(argv[1])
+        self._service_yaml_path = Path(sys.argv[1])
         self.service_yaml = Yaml(self._service_yaml_path)
         self._service_name = self._service_yaml_path.stem
-        _base_dir_path = Path(argv[0]).parent
+        _base_dir_path = Path(sys.argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
@@ -49,15 +49,10 @@ class Service:
         __slots__ = ['kwargs']
 
         def __init__(self, **kwargs):
-            x = set_logger('asf')
-            x.bold(kwargs)
             self.kwargs = kwargs
 
-        def __str__(self):
-            return repr(self)
-
         def __repr__(self):
-            return self.kwargs
+            return 'Message:\n' + json.dumps(self.kwargs, indent=4)
 
     def compile_messages_proto(self, path):
         self.logger.info(f'Compiling messages for "{path}"...')
@@ -76,6 +71,7 @@ class Service:
     def _protofy(self, msg, proto):
         """Checks whether the type is Message else it assumes it's a proto"""
         self.logger.bold(msg)
+        self.logger.bold(dir(msg))
         return proto(**msg.kwargs) if type(msg) == self.Message else msg
 
     def _check_rcv_proto(self, proto):
@@ -95,7 +91,7 @@ class Service:
         and then returned
 
         :param msg:
-        :return:
+        :return body:
         """
         proto = self._protofy(msg, self._rcv_proto)
         self._check_rcv_proto(proto)
