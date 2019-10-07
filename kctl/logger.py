@@ -13,7 +13,7 @@ def bold(self, message, *args, **kws):
         self._log(BOLD_LEVELNO, message, args, **kws)
 
 
-logging.Logger.debugv = bold
+logging.Logger.bold = bold
 
 
 class ColoredFormatter(Formatter):
