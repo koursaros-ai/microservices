@@ -84,6 +84,7 @@ class AppManager:
         pkg_base_dir = self.pkg_path.joinpath('bases').joinpath(base_name)
 
         if pkg_base_dir.is_dir():
+            print('Deleting base "%s" from koursaros.bases...' % pkg_base_dir)
             rmtree(str(pkg_base_dir))
 
         print('Saving base "{}" to "{}"...'.format(root_base_dir, pkg_base_dir))
