@@ -29,7 +29,7 @@ class Yaml:
         # if self.__type__ is None:
         #     raise ValueError('Invalid yaml type for %s' % self.__path__)
 
-        super().__init__(yaml)
+        super().__init__(self, yaml)
         import pdb; pdb.set_trace()
         # mount box attrs to Yaml instance
         # box = getattr(Box(yaml), self.__type__.name.lower())
