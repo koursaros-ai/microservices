@@ -119,7 +119,7 @@ class Service:
             msg = pull_socket.recv()
             self.logger.info('Received %s' % msg)
             body = self._stub(msg)
-            self.logger.info('Sending %s' % msg)
+            self.logger.info('Sending %s' % msg) 
             push_socket.send(body)
 
     def run(self, subs=None):
