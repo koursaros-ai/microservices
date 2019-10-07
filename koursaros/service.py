@@ -35,7 +35,7 @@ class Service:
         self._send_host = "tcp://127.0.0.1:" + self._out_port
         self._stub_f = None
 
-        # set logger
+        # set logge
         set_logger(self._service_name)
 
         print(f'Initializing "{self._service_name}"')
