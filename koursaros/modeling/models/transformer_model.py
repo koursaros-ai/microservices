@@ -254,7 +254,6 @@ class TransformerModel(Model):
                              label=ex[-1]) for i, ex in enumerate(data)
             ]
             label_map = {label: i for i, label in enumerate(label_list)}
-            print(label_map)
 
             features = []
             for (ex_index, example) in enumerate(examples):
@@ -286,7 +285,6 @@ class TransformerModel(Model):
                                                                                                     self.max_length)
                 if self.config.task == "classification":
                     label = label_map[example.label]
-                    print(label)
                 elif self.config.task == "regression":
                     label = float(example.label)
                 else:
