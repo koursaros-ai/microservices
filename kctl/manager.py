@@ -60,6 +60,7 @@ class AppManager:
             else:
                 raise TypeError('Invalid type: %s' % yaml_type)
 
+            import pdb;pdb.set_trace()
             search_yaml_path = path.joinpath(parent_dir).joinpath(name).with_suffix('.yaml')
 
             if search_yaml_path.is_file():
