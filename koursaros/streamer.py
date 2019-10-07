@@ -34,6 +34,7 @@ class Streamer:
         self.logger = set_logger(self._name)
 
         # set zeromq
+        self._context = zmq.Context()
         _, in_port = get_hash_ports(self._service_in, 2)
         out_port, _ = get_hash_ports(self._service_out, 2)
 
@@ -46,18 +47,19 @@ class Streamer:
         """
         Executes a push pull loop, executing the stub as a callback
         """
+        pull_socket = self._context.socket(zmq.PULL)
+        pull_socket.bind(self._rcv)
+        self.logger.bold('PULL socket created on %s' % self._rcv)
 
-        device = ProcessDevice(zmq.STREAMER, zmq.PULL, zmq.PUSH)
-        self.logger.bold('{} PULL on {} and PUSH on {}'.format(
-            self._name, self._rcv, self._send))
+        push_socket = self._context.socket(zmq.PUSH)
+        push_socket.bind(self._send)
+        self.logger.bold('PUSH socket created on %s' % self._send)
 
-        device.bind_in(self._rcv)
-        device.bind_out(self._send)
+        zmq.device(zmq.STREAMER, pull_socket, push_socket)
 
-        device.setsockopt_in(zmq.IDENTITY, 'PULL')
-        device.setsockopt_out(zmq.IDENTITY, 'PUSH')
-
-        device.start()
+        pull_socket.close()
+        push_socket.close()
+        self._context.term()
 
 
 if __name__ == "__main__":

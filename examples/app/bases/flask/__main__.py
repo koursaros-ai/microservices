@@ -13,14 +13,14 @@ def receive():
     text = request.args.get('q')
     if not text:
         return jsonify(FAILURE)
-    
+
     send(service.Message(text=text))
     return jsonify(SUCCESS)
 
 
 @service.stub
 def send(msg):
-    print('Sending %s' % msg)
+    service.logger.info('Sending %s' % msg)
     return msg
 
 
