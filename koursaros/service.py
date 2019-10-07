@@ -24,7 +24,7 @@ class Service:
         print(os.getcwd())
 
         # set messages
-        self.compile_messages_proto('.')
+        self.compile_messages_proto(_base_dir_path)
         import messages_pb2
         self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
