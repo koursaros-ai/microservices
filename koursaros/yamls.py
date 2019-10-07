@@ -32,5 +32,5 @@ def Yaml(path):
     box.__text__ = __text__
     box.__type__ = __type__
     box.hash = md5(__text__.encode()).hexdigest()
-
+    import pdb; pdb.set_trace()
     return box
