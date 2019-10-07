@@ -1,7 +1,6 @@
 
 from zmq.devices.basedevice import ProcessDevice
 from kctl.logger import set_logger
-from pathlib import Path
 from hashlib import sha1
 from typing import List
 from sys import argv

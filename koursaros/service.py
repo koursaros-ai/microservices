@@ -1,5 +1,5 @@
 
-from koursaros.streamer import get_hash_ports
+from koursaros.streamer import get_hash_ports, HOST
 from kctl.logger import set_logger
 from grpc_tools import protoc
 from threading import Thread
@@ -29,15 +29,15 @@ class Service:
 
         # set message
         self.compile_messages_proto(_base_dir_path)
-        import messages_pb2
-        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
+        messages = __import__('messages_pb2')
+        self._rcv_proto = messages.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto = messages.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
         self._in_port, self._out_port = get_hash_ports(self._service_name, 2)
-        self._rcv_host = "tcp://127.0.0.1:" + self._in_port
-        self._send_host = "tcp://127.0.0.1:" + self._out_port
+        self._rcv_host = HOST.format(self._in_port)
+        self._send_host = HOST.format(self._out_port)
         self._stub_f = None
 
         # set logger
