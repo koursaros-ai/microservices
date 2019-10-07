@@ -49,11 +49,13 @@ class Streamer:
         """
         pull_socket = self._context.socket(zmq.PULL)
         pull_socket.bind(self._rcv)
-        self.logger.bold('PULL socket created on %s' % self._rcv)
+        msg = 'Socket bound on {} to PULL from {}'
+        self.logger.bold(msg.format(self._rcv, self._service_in))
 
         push_socket = self._context.socket(zmq.PUSH)
         push_socket.bind(self._send)
-        self.logger.bold('PUSH socket created on %s' % self._send)
+        msg = 'Socket bound on {} to PUSH to {}'
+        self.logger.bold(msg.format(self._send, self._service_out))
 
         zmq.device(zmq.STREAMER, pull_socket, push_socket)
 

@@ -107,11 +107,11 @@ class Service:
 
         pull_socket = self._context.socket(zmq.PULL)
         pull_socket.connect(self._rcv)
-        self.logger.bold('PULL socket created on %s' % self._rcv)
+        self.logger.bold('PULL socket connected on %s' % self._rcv)
 
         push_socket = self._context.socket(zmq.PUSH)
         push_socket.connect(self._send)
-        self.logger.bold('PUSH socket created on %s' % self._send)
+        self.logger.bold('PUSH socket connected on %s' % self._send)
 
         while True:
             msg = pull_socket.recv()
