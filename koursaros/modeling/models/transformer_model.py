@@ -295,7 +295,11 @@ class TransformerModel(Model):
                 assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
                                                                                                     self.max_length)
                 if self.config.task == "classification":
-                    label = label_map[example.label]
+                    if example.label in label_map:
+                        label = label_map[example.label]
+                    else:
+                        print("UNKNOWN LABEL %s, ignoring" % example.label)
+                        continue
                 elif self.config.task == "regression":
                     label = float(example.label)
                 else:
