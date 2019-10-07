@@ -19,10 +19,10 @@ class Service:
         self._service_yaml_path = Path(argv[1])
         self.service_yaml = Yaml(self._service_yaml_path)
         self._service_name = self._service_yaml_path.stem
-        self.base_yaml = Yaml('base.yaml')
+        _base_dir_path = Path(argv[0]).parent
+        self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set working directory
-        _base_dir_path = Path(argv[0]).parent
         os.chdir(_base_dir_path)
         sys.path.insert(1, _base_dir_path)
 
