@@ -39,7 +39,6 @@ def pipeline(ctx, pipeline_name):
         t.join()
 
 
-
 @deploy.command()
 @click.argument('pipeline_name')
 @click.pass_obj

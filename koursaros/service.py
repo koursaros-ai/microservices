@@ -6,6 +6,7 @@ from threading import Thread
 from pathlib import Path
 from .yamls import Yaml
 from sys import argv
+import sys
 import zmq
 import os
 
@@ -20,9 +21,7 @@ class Service:
         self._service_name = self._service_yaml_path.stem
         _base_dir_path = Path(argv[0]).parent
         os.chdir(_base_dir_path)
-        print()
-        print(os.getcwd())
-        print()
+        sys.path.insert(1, _base_dir_path)
         self.base_yaml = Yaml('base.yaml')
 
         # set messages
