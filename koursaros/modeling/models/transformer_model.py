@@ -126,8 +126,9 @@ class TransformerModel(Model):
                 preds = logits.detach().cpu().numpy()
                 preds = np.argmax(preds, axis=1)
                 num_correct += np.sum(preds == correct_labels.numpy()) / len(preds)
-                epoch_iterator.set_description(f'accuracy: {(num_correct / (global_step*self.batch_size))}')
-                epoch_iterator.refresh()  # to show immediately the update
+                if step > 0:
+                    epoch_iterator.set_description("accuracy: %.2f" % (num_correct / (step*self.batch_size)))
+                    epoch_iterator.refresh()  # to show immediately the update
 
                 if self.n_gpu > 1:
                     loss = loss.mean()  # mean() to average on multi-gpu parallel training
