@@ -107,10 +107,10 @@ class TransformerModel(Model):
         tr_loss, logging_loss = 0.0, 0.0
         self.model.zero_grad()
         train_iterator = trange(int(epochs), desc="Epoch", disable=self.local_rank not in [-1, 0])
-        num_correct = 0
         label_count = [0] * len(self.config.labels)
         for _ in train_iterator:
             epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
+            num_correct = 0
             for step, batch in enumerate(epoch_iterator):
                 self.model.train()
                 correct_labels = batch[3]
