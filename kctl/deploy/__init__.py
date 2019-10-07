@@ -47,13 +47,14 @@ def streamers(app_manager, pipeline_name):
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
     cmds = []
-    service_names = iter(pipeline_yaml.services)
-    first_service = next(service_names)
-    service_in = first_service
+
+    service_names = pipeline_yaml.services
+    first_service = service_names[0]
+
     while True:
         cmd = []
         try:
-            print(service_names)
+            service_in = next(service_names)
             service_out = next(service_names)
             cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
         except StopIteration:
