@@ -19,9 +19,6 @@ class Yaml(Box):
     def __init__(self, path):
         self.__path__ = path
         self.__text__ = open(path).read()
-        self.__yaml__ = safe_load(self.__text__)
-        import pdb; pdb.set_trace()
-        self.__version__ = self.__yaml__.pop('version')
 
         if 'base' in self.__yaml__:
             self.__type__ = YamlType.BASE
@@ -32,7 +29,7 @@ class Yaml(Box):
         else:
             raise ValueError('Invalid yaml type for %s' % self.__path__)
 
-        super().__init__(self.__yaml__)
+        super().__init__(safe_load(self.__yaml__))
 
     @property
     def hash(self):
