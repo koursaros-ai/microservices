@@ -24,7 +24,7 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
 
     threads = []
-    cb = partial(ctx.invoke, streamers, app_manager, pipeline_name)
+    cb = partial(ctx.invoke, streamers, pipeline_name)
     t = Thread(target=cb)
     t.start()
     threads += [t]
@@ -32,7 +32,7 @@ def pipeline(ctx, pipeline_name):
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
-        cb = partial(ctx.invoke, service, app_manager, service_name)
+        cb = partial(ctx.invoke, service, service_name)
         t = Thread(target=cb)
         t.start()
 
