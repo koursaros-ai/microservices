@@ -97,6 +97,8 @@ class Service:
         self._check_rcv_proto(proto)
         msg = self._stub_f(proto)
         self._check_return_msg(msg)
+        self.logger.bold(msg)
+        self.logger.bold(dir(msg))
         proto = self._send_proto(**msg.kwargs)
         self._check_send_proto(proto)
         body = proto.SerializeToString()
