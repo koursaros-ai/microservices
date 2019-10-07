@@ -36,8 +36,8 @@ class Service:
         # set zeromq
         self._context = zmq.Context()
         self._in_port, self._out_port = get_hash_ports(self._service_name, 2)
-        self._rcv_host = HOST.format(self._in_port)
-        self._send_host = HOST.format(self._out_port)
+        self._rcv = HOST.format(self._in_port)
+        self._send = HOST.format(self._out_port)
         self._stub_f = None
 
         # set logger
@@ -105,12 +105,12 @@ class Service:
         """
 
         pull_socket = self._context.socket(zmq.PULL)
-        pull_socket.connect(self._rcv_host)
-        print('Socket created on %s' % pull_socket)
+        pull_socket.connect(self._rcv)
+        print('Socket created on %s' % self._rcv)
 
         push_socket = self._context.socket(zmq.PUSH)
-        push_socket.connect(self._send_host)
-        print('Socket created on %s' % push_socket)
+        push_socket.connect(self._send)
+        print('Socket created on %s' % self._send)
 
         while True:
             msg = pull_socket.recv()
