@@ -70,8 +70,6 @@ class Service:
 
     def _protofy(self, msg, proto):
         """Checks whether the type is Message else it assumes it's a proto"""
-        self.logger.bold(msg)
-        self.logger.bold(dir(msg))
         return proto(**msg.kwargs) if type(msg) == self.Message else msg
 
     def _check_rcv_proto(self, proto):
@@ -96,10 +94,8 @@ class Service:
         proto = self._protofy(msg, self._rcv_proto)
         self._check_rcv_proto(proto)
         msg = self._stub_f(proto)
-        self._check_return_msg(msg) 
-        self.logger.bold(msg)
-        self.logger.bold(dir(msg))
-        proto = self._send_proto(**msg.kwargs)
+        self._check_return_msg(msg)
+        self._protofy(msg, self._send_proto)
         self._check_send_proto(proto)
         body = proto.SerializeToString()
         return body
