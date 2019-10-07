@@ -26,7 +26,7 @@ class TransformerModel(Model):
         else:
             raise NotImplementedError()
 
-        self.model_config = config.from_pretraiend(self.checkpoint)
+        self.model_config = config.from_pretrained(self.checkpoint)
         self.model_config.num_labels = len(self.config.labels)
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
