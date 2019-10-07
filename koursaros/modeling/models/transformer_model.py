@@ -280,7 +280,6 @@ class TransformerModel(Model):
                                                                                                     self.max_length)
                 assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
                                                                                                     self.max_length)
-
                 if self.config.task == "classification":
                     label = label_map[example.label]
                 elif self.config.task == "regression":
