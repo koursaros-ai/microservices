@@ -19,10 +19,12 @@ class Service:
         self._service_yaml_path = Path(argv[1])
         self.service_yaml = Yaml(self._service_yaml_path)
         self._service_name = self._service_yaml_path.stem
+        self.base_yaml = Yaml('base.yaml')
+
+        # set working directory
         _base_dir_path = Path(argv[0]).parent
         os.chdir(_base_dir_path)
         sys.path.insert(1, _base_dir_path)
-        self.base_yaml = Yaml('base.yaml')
 
         # set messages
         self.compile_messages_proto(_base_dir_path)
@@ -37,7 +39,7 @@ class Service:
         self._send_host = "tcp://127.0.0.1:" + self._out_port
         self._stub_f = None
 
-        # set logge
+        # set logger
         set_logger(self._service_name)
 
         print(f'Initializing "{self._service_name}"')
