@@ -24,9 +24,8 @@ def send(msg):
     return msg
 
 
-
 if __name__ == "__main__":
-    service.run()
+    service.run(subs=[app.run])
 
 
 
