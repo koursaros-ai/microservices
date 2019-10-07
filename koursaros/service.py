@@ -51,7 +51,7 @@ class Service:
         def __init__(self, **kwargs):
             self.kwargs = kwargs
 
-        def __repr__(self):
+        def __str__(self):
             return self.kwargs
 
     def compile_messages_proto(self, path):
