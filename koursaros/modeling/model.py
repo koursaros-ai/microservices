@@ -23,15 +23,14 @@ class Model(object):
         self.config = config
         self.version = version
         self.ckpt_dir = f'.cache/{version}'
-        if not os.path.exists(self.ckpt_dir):
-            os.makedirs(self.ckpt_dir)
-        self.data_dir = os.path.join('.model-data', self.version)
-        if not os.path.exists(self.data_dir):
-            os.makedirs(self.data_dir)
-        if os.path.exists(self.ckpt_path): # else check if in model repo
-            self.checkpoint = self.ckpt_path
+        if os.path.exists(self.ckpt_dir): # else check if in model repo
+            self.checkpoint = self.ckpt_dir
             self.trained = True
         else:
+            self.data_dir = os.path.join('.model-data', self.version)
+            if not os.path.exists(self.data_dir):
+                os.makedirs(self.data_dir)
+            os.makedirs(self.ckpt_dir)
             self.checkpoint = config.training.checkpoint
             self.trained = False
 
