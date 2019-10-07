@@ -53,7 +53,7 @@ class TransformerModel(Model):
         tb_writer = SummaryWriter()
 
         train_dataset, test_dataset = self.get_data()
-        epochs = int(self.config.train.epochs)
+        epochs = int(self.config.training.epochs)
         optimizer = AdamW(self.model.parameters(), lr=float(self.config.training.learning_rate),
                           correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
         num_warmup_steps = int(0.06 * len(train_dataset))
