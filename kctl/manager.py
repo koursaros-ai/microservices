@@ -20,9 +20,9 @@ class AppManager:
 
     @property
     def root(self):
+        if self.base.joinpath('.kapp').is_dir():
+            return self.base
         for path in self.base.parents:
-            print(path)
-            import pdb;pdb.set_trace()
             if path.joinpath('.kapp').is_dir():
                 return path
 
