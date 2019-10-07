@@ -34,25 +34,25 @@ class Service:
         # compile messages
         self.compile_messages_proto(_base_dir_path)
         messages = __import__('messages_pb2')
-        self._rcv_proto = messages.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto = messages.__dict__.get(self.base_yaml.send_proto)
+        self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
         self._in_port, self._out_port = get_hash_ports(self._service_name, 2)
-        self._rcv = HOST.format(self._in_port)
-        self._send = HOST.format(self._out_port)
+        self._rcv_address = HOST.format(self._in_port)
+        self._send_address = HOST.format(self._out_port)
         self._stub_f = None
 
         self.logger.info(f'Initializing "{self._service_name}"')
 
         self._pull_socket = self._context.socket(zmq.PULL)
-        self._pull_socket.connect(self._rcv)
-        self.logger.bold('PULL socket connected on %s' % self._rcv)
+        self._pull_socket.connect(self._rcv_address)
+        self.logger.bold('PULL socket connected on %s' % self._rcv_address)
 
         self._push_socket = self._context.socket(zmq.PUSH)
-        self._push_socket.connect(self._send)
-        self.logger.bold('PUSH socket connected on %s' % self._send)
+        self._push_socket.connect(self._send_address)
+        self.logger.bold('PUSH socket connected on %s' % self._send_address)
 
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
@@ -78,9 +78,21 @@ class Service:
         self._stub_f = f
         return self._stub
 
-    def _protofy(self, msg, proto):
-        """Checks whether the type is Message else it assumes it's a proto"""
-        return proto(**msg.kwargs) if type(msg) == self.Message else msg
+    def _protofy(self, msg, proto_cls):
+        if isinstance(msg, self.Message):
+            return proto_cls(**msg.kwargs)
+        elif isinstance(msg, proto_cls):
+            return msg
+        else:
+            raise TypeError('Cannot cast type "%s" to protobuf' % type(msg))
+
+    @staticmethod
+    def _proto_to_bytes(proto):
+        return proto.SerializeToString()
+
+    @staticmethod
+    def _bytes_to_proto(byte, proto_cls):
+        return proto_cls.ParseFromString(byte)
 
     def _check_rcv_proto(self, proto):
         pass
@@ -102,34 +114,40 @@ class Service:
         :return body:
         """
         self.logger.info('Stub received %s' % msg)
-        proto = self._protofy(msg, self._rcv_proto)
+
+        proto = self._protofy(msg, self._rcv_proto_cls)
         self._check_rcv_proto(proto)
+
         msg = self._stub_f(proto)
         self.logger.info('Returned from stub: %s' % msg)
         self._check_return_msg(msg)
-        self._protofy(msg, self._send_proto)
+
+        proto = self._protofy(msg, self._send_proto_cls)
         self._check_send_proto(proto)
-        body = proto.SerializeToString()
-        self.logger.info('Sending msg body')
-        self._push(body)
+        self.logger.info('Sending proto')
+        self._push(proto)
 
     def _pull(self):
-        body = self._pull_socket.recv()
-        return self._protofy(body, self._rcv_proto)
-
-    def _push(self, body):
         """
-        :param body: binary protobuf message
+        :return: protobuf instance
+        """
+        body = self._pull_socket.recv()
+        proto = self._bytes_to_proto(body, self._rcv_proto_cls)
+        return proto
+
+    def _push(self, proto):
+        """
+        :param proto: protobuf instance
         """
         self.logger.info('Sending body')
+        body = self._proto_to_bytes(proto)
         self._push_socket.send(body)
 
     def _serve(self):
         """
         Executes a push pull loop, executing the stub as a callback
-        """ 
+        """
         while True:
-            # msg could be
             msg = self._pull()
             self.logger.info('Received %s' % msg)
             self._stub(msg)
