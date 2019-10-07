@@ -1,8 +1,5 @@
 
 from koursaros.yamls import YamlType, Yaml
-from koursaros.utils.misc import subproc
-from functools import partial
-from threading import Thread
 import click
 import sys
 
@@ -24,19 +21,12 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
     app_manager.raise_if_not_app_root()
 
-    threads = []
-    t = Thread(target=ctx.invoke, args=[streamers], kwargs=dict(pipeline_name=pipeline_name))
-    t.start()
-    threads += [t]
+    ctx.invoke(streamers, pipeline_name=pipeline_name)
 
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
-        t = Thread(target=ctx.invoke, args=[service], kwargs=dict(service_name=service_name))
-        t.start()
-
-    for t in threads:
-        t.join()
+        ctx.invoke(service, service_name=service_name)
 
 
 @deploy.command()
@@ -47,17 +37,12 @@ def streamers(app_manager, pipeline_name):
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
-    cmds = []
-
     service_names = pipeline_yaml.services
-
     service_in = service_names[0]
     for service_out in service_names[1:] + [service_in]:
         cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
         service_in = service_out
-        cmds += [cmd]
-
-    subproc(cmds)
+        app_manager.subproc(cmd)
 
 
 @deploy.command()
@@ -77,7 +62,7 @@ def service(app_manager, service_name, all=False):
         app_manager.save_base_to_pkg(service_yaml.base)
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, str(service_yaml_path)]
-    subproc([cmd])
+    app_manager.subproc(cmd)
 
 
 # else:

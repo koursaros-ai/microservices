@@ -1,9 +1,12 @@
-
+from threading import Thread, get_ident, Condition
 from koursaros.yamls import YamlType
 from shutil import copytree, rmtree
+from .logger import set_logger
 from pathlib import Path
 from typing import List
 from copy import copy
+import subprocess
+import atexit
 
 
 class AppManager:
@@ -18,6 +21,12 @@ class AppManager:
         self.base = Path(base).absolute()
         self.pkg_path = Path(__import__('koursaros').__path__[0])
         self.lookup_path = [self.root, self.pkg_path]
+        self.logger = set_logger('app_manager')
+        self.subprocs = set()
+        self.subproc_cb = Condition()
+
+        # wait for subprocesses to finish on exit
+        atexit.register(self.wait_for_subprocs)
 
     @property
     def root(self):
@@ -97,3 +106,38 @@ class AppManager:
     def raise_if_not_app_root(self):
         if self.root is None:
             raise NotADirectoryError(f'"%s" is not an app' % self.base)
+
+    def wait_for_subprocs(self):
+        """
+        Waits for subprocesses to finish. Add to exit stack command.
+        """
+        while self.subprocs:
+            self.subproc_cb.acquire()
+            self.subproc_cb.wait()
+            self.subproc_cb.release()
+
+    def subproc(self, cmd: List):
+        """
+        Subprocess a command. Each subprocessed command is
+        managed by the app manager and the stack does not exit
+        until all commands finish...
+
+        :param cmd: command to run
+        """
+
+        if not isinstance(cmd, list):
+            raise TypeError('"%s" must be list type')
+
+        self.logger.bold(f'Running "%s"..' % ' '.join(cmd))
+
+        t = Thread(target=self.subproc_thread, args=[cmd])
+        self.subprocs.add(t.ident)
+        t.start()
+
+    def subproc_thread(self, cmd):
+        subprocess.call(cmd)
+        self.subprocs.discard(get_ident())
+        self.logger.bold(f'Exiting "%s"..' % ' '.join(cmd))
+        self.subproc_cb.acquire()
+        self.subproc_cb.notify()
+        self.subproc_cb.release()
