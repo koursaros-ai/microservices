@@ -46,6 +46,14 @@ class Service:
 
         self.logger.info(f'Initializing "{self._service_name}"')
 
+        self._pull_socket = self._context.socket(zmq.PULL)
+        self._pull_socket.connect(self._rcv)
+        self.logger.bold('PULL socket connected on %s' % self._rcv)
+
+        self._push_socket = self._context.socket(zmq.PUSH)
+        self._push_socket.connect(self._send)
+        self.logger.bold('PUSH socket connected on %s' % self._send)
+
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
         __slots__ = ['kwargs']
@@ -86,7 +94,7 @@ class Service:
 
     def _stub(self, msg):
         """
-        The stub receives a binary message and casts it into a proto
+        The stub receives a message and casts it into a proto
         for the stub to receive. Whatever the stub returns is checked
         and then returned
 
@@ -103,28 +111,23 @@ class Service:
         self._check_send_proto(proto)
         body = proto.SerializeToString()
         self.logger.info('Sending msg body')
-        return body
+        self._push(body)
+
+    def _pull(self):
+        return self._pull_socket.recv()
+
+    def _push(self, body):
+        self.logger.info('Sending body')
+        self._push_socket.send(body)
 
     def _serve(self):
         """
         Executes a push pull loop, executing the stub as a callback
         """
-
-        pull_socket = self._context.socket(zmq.PULL)
-        pull_socket.connect(self._rcv)
-        self.logger.bold('PULL socket connected on %s' % self._rcv)
-
-        push_socket = self._context.socket(zmq.PUSH)
-        push_socket.connect(self._send)
-        self.logger.bold('PUSH socket connected on %s' % self._send)
-
         while True:
-            msg = pull_socket.recv()
+            msg = self._pull()
             self.logger.info('Received %s' % msg)
-            body = self._stub(msg)
-            raise SystemExit
-            self.logger.info('Sending %s' % msg)
-            push_socket.send(body)
+            self._stub(msg)
 
     def run(self, subs=None):
         """Takes optional sub functions to run in separate threads
