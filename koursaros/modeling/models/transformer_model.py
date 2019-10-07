@@ -127,8 +127,8 @@ class TransformerModel(Model):
                 preds = np.argmax(preds, axis=1)
                 num_correct += np.sum(preds == correct_labels.numpy()) / len(preds)
                 print(preds)
-                print(logits.numpy())
-                print(correct_labels.numpy())
+                print(logits.cpu().numpy())
+                print(correct_labels.cpu().numpy())
                 if step > 0:
                     epoch_iterator.set_description("accuracy: %.2f" % (num_correct / (step*self.batch_size)))
                     epoch_iterator.refresh()  # to show immediately the update
