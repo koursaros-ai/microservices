@@ -20,6 +20,8 @@ class AppManager:
 
     @property
     def root(self):
+        if self.base.joinpath('.kapp').is_dir():
+            return self.base
         for path in self.base.parents:
             if path.joinpath('.kapp').is_dir():
                 return path
@@ -83,8 +85,8 @@ class AppManager:
 
     def raise_if_app_root(self):
         if self.root is not None:
-            raise IsADirectoryError(f'"{self.base}" is already a pipeline')
+            raise IsADirectoryError(f'"{self.base}" is already an app')
 
-    def raise_if_no_app_root(self):
+    def raise_if_not_app_root(self):
         if self.root is None:
-            raise NotADirectoryError(f'"{self.base}" is not a pipeline')
+            raise NotADirectoryError(f'"{self.base}" is not an app')
