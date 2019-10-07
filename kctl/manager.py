@@ -48,6 +48,7 @@ class AppManager:
 
         for path in lookup_path:
 
+
             # if type is base then find yaml in base dir
             if yaml_type == YamlType.BASE:
                 parent_dir = 'bases'
