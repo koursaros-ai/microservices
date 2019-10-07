@@ -98,7 +98,7 @@ class Service:
         for the stub to receive. Whatever the stub returns is checked
         and then returned
 
-        :param msg:
+        :param msg: Service.Message or Proto Class
         :return body:
         """
         self.logger.info('Stub received %s' % msg)
@@ -114,9 +114,13 @@ class Service:
         self._push(body)
 
     def _pull(self):
-        return self._pull_socket.recv()
+        body = self._pull_socket.recv()
+        return self._protofy(body, self._rcv_proto)
 
     def _push(self, body):
+        """
+        :param body: binary protobuf message
+        """
         self.logger.info('Sending body')
         self._push_socket.send(body)
 
@@ -125,6 +129,7 @@ class Service:
         Executes a push pull loop, executing the stub as a callback
         """
         while True:
+            # msg could be
             msg = self._pull()
             self.logger.info('Received %s' % msg)
             self._stub(msg)
