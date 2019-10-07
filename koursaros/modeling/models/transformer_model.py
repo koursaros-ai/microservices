@@ -151,11 +151,9 @@ class TransformerModel(Model):
 
                     if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
                         # Save model checkpoint
-                        if not os.path.exists(self.ckpt_dir):
-                            os.makedirs(self.ckpt_dir)
                         model_to_save = self.model.module if hasattr(self.model,
                                                                 'module') else self.model
-                        model_to_save.save_pretrained(self.ckpt_path)
+                        model_to_save.save_pretrained(self.ckpt_dir)
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
