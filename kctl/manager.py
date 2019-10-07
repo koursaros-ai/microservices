@@ -48,13 +48,10 @@ class AppManager:
 
         for path in lookup_path:
 
-
             # if type is base then find yaml in base dir
             if yaml_type == YamlType.BASE:
-                parent_dir = 'bases'
+                parent_dir = Path('bases').joinpath(name)
                 name = 'base'
-                print()
-                import pdb; pdb.set_trace()
 
             elif yaml_type == YamlType.PIPELINE:
                 parent_dir = 'pipelines'
