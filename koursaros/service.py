@@ -25,6 +25,7 @@ class Service:
         # set directories
         os.chdir(_base_dir_path)
         sys.path.insert(1, _base_dir_path)
+        print(sys.path)
 
         # set message
         self.compile_messages_proto(_base_dir_path)
