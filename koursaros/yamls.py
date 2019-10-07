@@ -33,7 +33,7 @@ class Yaml:
 
     def __getattribute__(self, item):
         print(item)
-        return self.box.__dict__[item]
+        return self.__dict__['box'].__dict__[item]
 
     @property
     def hash(self):
