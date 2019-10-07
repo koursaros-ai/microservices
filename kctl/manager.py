@@ -81,7 +81,7 @@ class AppManager:
         lookup_path = [self.root]
         base_yaml_path = self.get_yaml_path(base_name, YamlType.BASE, lookup_path=lookup_path)
         root_base_dir = base_yaml_path.parent
-        pkg_base_dir = self.pkg_path.joinpath('bases')
+        pkg_base_dir = self.pkg_path.joinpath('bases').joinpath(base_name)
         print(root_base_dir, pkg_base_dir)
 
     def raise_if_app_root(self):
