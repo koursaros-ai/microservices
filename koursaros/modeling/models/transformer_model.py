@@ -36,7 +36,7 @@ class TransformerModel(Model):
         self.n_gpu = 1
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
-        self.fp16 = False
+        self.fp16 = True
         self.logging_steps = 1000
         self.save_steps = 1000
         self.max_length=512
@@ -127,7 +127,7 @@ class TransformerModel(Model):
                 preds = np.argmax(preds, axis=1)
                 num_correct += np.sum(preds == correct_labels.numpy())
                 if step > 0:
-                    epoch_iterator.set_description("accuracy: %.2f" % (num_correct / (step*self.batch_size)))
+                    epoch_iterator.set_description("Accuracy: %.2f" % (num_correct / (step*self.batch_size)))
                     epoch_iterator.refresh()  # to show immediately the update
 
                 if self.n_gpu > 1:
