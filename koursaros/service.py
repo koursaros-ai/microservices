@@ -20,14 +20,16 @@ class Service:
         self._service_name = self._service_yaml_path.stem
         _base_dir_path = Path(argv[0]).parent
         os.chdir(_base_dir_path)
-        self.base_yaml = Yaml('base.yaml')
+        print()
         print(os.getcwd())
+        print()
+        self.base_yaml = Yaml('base.yaml')
 
         # set messages
         self.compile_messages_proto(_base_dir_path)
-        import messages_pb2
-        self._rcv_proto = messages_pb2.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto = messages_pb2.__dict__.get(self.base_yaml.send_proto)
+        messages = __import__('messages_pb2')
+        self._rcv_proto = messages.__dict__.get(self.base_yaml.rcv_proto)
+        self._send_proto = messages.__dict__.get(self.base_yaml.send_proto)
 
         # set zeromq
         self._context = zmq.Context()
@@ -36,7 +38,7 @@ class Service:
         self._send_host = "tcp://127.0.0.1:" + self._out_port
         self._stub_f = None
 
-        # set logger
+        # set logge
         set_logger(self._service_name)
 
         print(f'Initializing "{self._service_name}"')
@@ -50,7 +52,7 @@ class Service:
 
     @staticmethod
     def compile_messages_proto(path):
-        print(f'Compiling messages for {path}')
+        print(f'Compiling messages for "{path}"...')
 
         protoc.main((
             '',
