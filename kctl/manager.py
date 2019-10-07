@@ -8,7 +8,7 @@ from copy import copy
 import subprocess
 import atexit
 
- 
+
 class AppManager:
     """Manager that keeps track of all of the koursaros
     paths and packages. Passed around at runtime to make

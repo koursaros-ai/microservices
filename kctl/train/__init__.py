@@ -1,14 +1,14 @@
 import click
-from koursaros.utils.misc import subproc
 import sys
-import os
+
 
 @click.command()
 @click.argument('name')
 @click.pass_obj
-def train(appmanager, name):
+def train(app_manager, name):
     cmd = [sys.executable, '-m', 'koursaros.trainer',  name]
-    subproc([cmd])
+    app_manager.subproc(cmd)
+
 
 @click.command()
 @click.pass_obj
