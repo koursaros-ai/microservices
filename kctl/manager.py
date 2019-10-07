@@ -1,8 +1,9 @@
 
 from koursaros.yamls import YamlType
+from shutil import copytree
 from pathlib import Path
 from typing import List
-from shutil import copytree
+from copy import copy
 
 
 class AppManager:
@@ -50,7 +51,7 @@ class AppManager:
 
             # if type is base then find yaml in base dir
             if yaml_type == YamlType.BASE:
-                parent_dir = Path('bases').joinpath(name)
+                parent_dir = Path('bases').joinpath(copy(name))
                 name = 'base'
 
             elif yaml_type == YamlType.PIPELINE:
