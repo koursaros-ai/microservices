@@ -14,15 +14,15 @@ def select_all(schema, table):
 
 class Model(object):
 
-    def __init__(self, config, version):
+    def __init__(self, config):
         # load configs from yaml
         if gb_free_space() < 2:
             print("There is not enough space on your disk, please allocate more!")
             raise SystemError
 
         self.config = config
-        self.version = version
-        self.ckpt_dir = f'.cache/{version}/'
+        self.version = config.hash
+        self.ckpt_dir = f'.cache/{self.version}/'
         if os.path.exists(self.ckpt_dir + 'config.json'): # else check if in model repo
             self.checkpoint = self.ckpt_dir
             self.trained = True

@@ -1,5 +1,4 @@
 service:
-  name: mnli
   base: bert
   repo: gs://poloma-models
   task: classification

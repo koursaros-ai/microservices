@@ -1,17 +1,17 @@
-name: fever
-base: bert
-repo: gs://poloma-models
-task: classification
-data:
-  source: postgres
-  schema: sets
-  train: train_fever
-  test: test_fever
-labels:
-  - SUPPORTS
-  - REFUTES
-  - NEI
-training:
-  checkpoint: bert-base-uncased
-  epochs: 3
-  learning_rate: 1e-05
+service:
+  base: bert
+  repo: gs://poloma-models
+  task: classification
+  data:
+    source: postgres
+    schema: sets
+    train: train_fever
+    test: test_fever
+  labels:
+    - SUPPORTS
+    - REFUTES
+    - NEI
+  training:
+    checkpoint: bert-base-uncased
+    epochs: 3
+    learning_rate: 1e-05
