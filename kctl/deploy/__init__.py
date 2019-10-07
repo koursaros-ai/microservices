@@ -67,9 +67,9 @@ def streamers(app_manager, pipeline_name):
 
 @deploy.command()
 @click.argument('service_name')
-@click.option('-a', '--all')
+@click.option('-a', '--all', is_flag=True)
 @click.pass_obj
-def service(app_manager, service_name, a):
+def service(app_manager, service_name, all=False):
     """Deploy a service"""
     service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
     service_yaml = Yaml(service_yaml_path)
