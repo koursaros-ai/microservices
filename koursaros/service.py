@@ -92,8 +92,9 @@ class Service:
 
     @staticmethod
     def _bytes_to_proto(byte, proto_cls):
-        import pdb; pdb.set_trace()
-        return proto_cls.ParseFromString(byte)
+        proto = proto_cls()
+        proto.ParseFromString(byte)
+        return proto
 
     def _check_rcv_proto(self, proto):
         pass
