@@ -1,11 +1,13 @@
 import os
-# from kctl.utils import BOLD
+from typing import Iterable, List
 from subprocess import Popen
 import signal
+
 
 def gb_free_space():
     statvfs = os.statvfs(os.getcwd())
     return statvfs.f_frsize * statvfs.f_bfree / 1e+9      # Actual number of free bytes
+
 
 def batch_fn(batch_size, call_fn, items):
     buffer = []
@@ -17,21 +19,21 @@ def batch_fn(batch_size, call_fn, items):
     if len(buffer) > 0:
         yield call_fn(buffer), buffer
 
-def subproc(cmds):
-    """Subprocess a list of commands from specified
-     directories and cleanup procs when done
 
-    :param cmds: iterable list of tuples (directory, cmd)
+def subproc(cmds: Iterable[List]):
+    """Subprocess a list of commands from specified
+     and cleanup procs when done...
+
+    :param cmds: iterable of commands (commands should be list)
     """
     procs = []
 
     try:
-        for path, cmd in cmds:
-            os.chdir(path)
+        for cmd in cmds:
             # formatted = BOLD.format(' '.join(cmd))
             formatted = ' '.join(cmd)
 
-            print(f'''Running "{formatted}" from "{path}"...''')
+            print(f'''Running "{formatted}"..''')
             p = Popen(cmd)
             procs.append((p, formatted))
 
@@ -49,6 +51,7 @@ def subproc(cmds):
                 print(f'Killing pid {p.pid}: {formatted}')
             else:
                 print(f'Process {p.pid}: "{formatted}" ended...')
+
 
 def batch_list(arr, n):
     buffer = []
