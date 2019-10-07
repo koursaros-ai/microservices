@@ -1,5 +1,3 @@
-
-
 def decorator_group(decorators):
     """returns a decorator which bundles the given decorators
 
