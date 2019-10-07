@@ -1,95 +1,81 @@
-from koursaros import Type, Yaml
-from grpc_tools import protoc
-from typing import List
-from pathlib import Path
-import random
+from koursaros.streamer import get_hash_ports
+from koursaros.yamls import YamlType, Yaml
+from koursaros import subproc
+from functools import partial
+from threading import Thread
 import click
 import sys
-
-MIN_PORT = 49152
-MAX_PORT = 65536
-
-
-def get_random_ports(num_ports: int) -> List[int]:
-    return random.sample(range(MIN_PORT, MAX_PORT), num_ports)
-
-
-def compile_messages_proto(path):
-    print(f'Compiling messages for {path}')
-
-    protoc.main((
-        '',
-        f'-I={path}',
-        f'--python_out={path}',
-        f'{path}/messages.proto',
-    ))
 
 
 @click.group()
 @click.pass_context
 def deploy(ctx):
-    """Deploy a pipeline or service"""
+    """Deploy a pipeline, service, or streamers"""
 
 
-@click.command()
-@click.argument('pipeline_yaml_filename')
-@click.pass_obj
-def pipeline(app_manager, pipeline_yaml_filename):
-    """Deploy a pipeline yaml"""
-    pipeline_name = Path(pipeline_yaml_filename).stem
-    build(app_manager, pipeline_yaml_filename)
-    build_yaml = app_manager.search_for_yaml(pipeline_name, Type.BUILD)
-
-    for service in build_yaml.services:
-        print(service.entrypoint)
-
-@click.command()
-@click.argument('base_name', 'build_yaml_path')
-@click.pass_obj
-def service():
-    
-
-
-def build(app_manager, pipeline_yaml_filename):
+@deploy.command()
+@deploy.argument('pipeline_name')
+@deploy.pass_context
+def pipeline(ctx, pipeline_name):
     """
-    Receives a pipeline yaml path and creates a build yaml.
-    Saves the build yaml with the pipeline name.
+    Deploy a pipeline by threading the deployment
+    of streamers and each service.
     """
+    app_manager = ctx.obj
 
-    # find pipeline
-    pipeline_name = pipeline_yaml_filename.stem
-    pipeline_yaml = app_manager.search_for_yaml(pipeline_name, Type.PIPELINE)
+    threads = []
+    cb = partial(ctx.invoke, streamers, app_manager, pipeline_name)
+    t = Thread(target=cb)
+    t.start()
+    threads += [t]
 
-    # assign n * 2 ports for the routers
-    number_of_services = len(pipeline_yaml.services)
-    ports = iter(get_random_ports(number_of_services * 2))
-    current_port = next(ports)
-
-    # assign build yaml location
-    build_yaml_dir = app_manager.root.joinpath('build')
-    build_yaml_dir.mkdir(exist_ok=True)
-    build_yaml_path = build_yaml_dir.joinpath(pipeline_yaml_filename)
+    pipeline_yaml = Yaml(app_manager.search_for_yaml(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
+        cb = partial(ctx.invoke, service, app_manager, service_name)
+        t = Thread(target=cb)
+        t.start()
 
-        # find each service
-        service_yaml_path = app_manager.search_for_yaml_path(service_name, Type.SERVICE)
-        service_yaml = Yaml(service_yaml_path)
-
-        # find respective base
-        base_yaml_path = app_manager.search_for_yaml_path(service_yaml.base, Type.BASE)
-        base_yaml = Yaml(base_yaml_path)
-
-        # validate service yaml with base schema
-        app_manager.validate_yaml(service_yaml, base_yaml)
-
-        port_in = current_port
-        port_out = next(ports)
-        entrypoint = 'kctl deploy service {} {}'.format(service_yaml.base, build_yaml_path)
+    for t in threads:
+        t.join()
 
 
-        # compile messages for that service
-        # compile_messages_proto(service_path)
+@deploy.command()
+@deploy.argument('pipeline_name')
+@deploy.pass_obj
+def streamers(app_manager, pipeline_name):
+    """Deploy streamers for specified pipeline"""
+    pipeline_yaml_path = app_manager.search_for_yaml(pipeline_name, YamlType.PIPELINE)
+    pipeline_yaml = Yaml(pipeline_yaml_path)
+
+    cmds = []
+    service_names = iter(pipeline_yaml.services)
+    first_service = next(service_names)
+    service_in = first_service
+    while service_names:
+        cmd = []
+        try:
+            service_out = next(service_names)
+            cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
+        except StopIteration:
+            # last service's streamer sends back to the first service
+            cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, first_service]
+        finally:
+            cmds += [cmd]
+
+    subproc(cmds)
+
+
+@deploy.command()
+@deploy.argument('service_name')
+@click.option('-a', '--all')
+@deploy.pass_obj
+def service(app_manager, service_name):
+    """Deploy a service"""
+    service_yaml_path = app_manager.search_for_yaml(service_name, YamlType.SERVICE)
+    service_yaml = Yaml(service_yaml_path)
+    cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, service_yaml_path]
+    subproc(cmd)
 
 # else:
 #     from .create import build_trigger

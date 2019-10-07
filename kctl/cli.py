@@ -7,11 +7,11 @@ Find more information at: https://github.com/koursaros-ai/koursaros
 ."""
 
 
-from .utils import AppManager
+from .manager import AppManager
 from .create import create
 from .deploy import deploy
-from .pull import pull
 from .train import train
+from .pull import pull
 import click
 
 
@@ -29,6 +29,7 @@ kctl.add_command(train)
 
 def cli():
     kctl(prog_name=__package__)
+
 
 if __name__ == "__main__":
     cli()
