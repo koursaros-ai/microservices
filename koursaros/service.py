@@ -151,6 +151,7 @@ class Service:
         """
         :param proto: protobuf instance
         """
+        self.logger.info(msg_tag)
         body = self._proto_to_bytes(proto)
         self._push_socket.send(msg_tag + body)
 
