@@ -355,7 +355,7 @@ class TransformerModel(Model):
             inputs[k] = torch.tensor([v]).to(self.device) if v is not None else None
         outputs = self.model(**inputs)
         print(outputs)
-        logits = outputs[0][1]
+        logits = outputs[0]
         preds = logits.detach().cpu().numpy()
         preds = np.argmax(preds, axis=1)
         return self.model(self.label_map[preds[0]])
