@@ -5,4 +5,4 @@ base:
   image: example/image
   replicas: 1
   rcv_proto: TextQuery
-  send_proto: LabeledTextQuery
+  send_proto: TextQuery
