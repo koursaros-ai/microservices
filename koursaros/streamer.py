@@ -33,7 +33,7 @@ class Streamer:
 
         self.push_socket = self.context.socket(zmq.PUSH)
         self.push_socket.bind(send_address)
-        logger.bold('Socket bound on {} to PUSH to {}'
+        logger.bold('Socket bound on {} to PUSH to {}' 
                     .format(send_address, service_out))
 
     def stream(self):
