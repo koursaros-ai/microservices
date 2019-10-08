@@ -181,7 +181,7 @@ class Service:
         Executes a push pull loop, executing the stub as a callback
         """
         while True:
-            body, proto = self._pull()
+            body = self._pull()
             msg_tag, body = self._pop_msg_tag(body)
             proto = self._bytes_to_proto(body, self._rcv_proto_cls)
 
