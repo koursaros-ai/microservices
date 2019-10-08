@@ -46,6 +46,14 @@ def streamers(app_manager, pipeline_name):
 
 
 @deploy.command()
+@click.pass_obj
+def router(app_manager):
+    """Deploy the router"""
+    cmd = [sys.executable, '-m', 'koursaros.router']
+    app_manager.subproc(cmd)
+
+
+@deploy.command()
 @click.argument('service_name')
 @click.option('-a', '--all', is_flag=True)
 @click.pass_obj

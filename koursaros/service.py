@@ -133,7 +133,7 @@ class Service:
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
-                    self._router_socket.send()
+                    self._router_socket.send('%s acknowledged.' % self.name)
 
                 # not sent from router
                 elif command == b'0':

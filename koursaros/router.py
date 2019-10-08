@@ -87,3 +87,8 @@ class Router:
     def run(self):
         app = self.create_flask_app()
         app.run(port=5000, threaded=True, host='0.0.0.0')
+
+
+if __name__ == "__main__":
+    r = Router()
+    r.run()
