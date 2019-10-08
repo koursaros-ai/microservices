@@ -351,7 +351,7 @@ class TransformerModel(Model):
             inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
                                                                   ['bert', 'xlnet'] else None
 
-        for k, v in inputs:
+        for k, v in inputs.items():
             inputs[k] = torch.tensor([v]).to(self.device)
         print(inputs)
         outputs = self.model(**inputs)
