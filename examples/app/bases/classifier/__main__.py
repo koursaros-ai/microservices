@@ -8,7 +8,7 @@ model = model_from_config(service.service_yaml)
 def classify(text_query):
     label = model.run(*text_query.text)
     return service.Message(
-        query=text_query,
+        text=text_query.text,
         label=label
     )
 

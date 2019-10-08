@@ -20,7 +20,7 @@ def receive():
     if not (texta and textb):
         return jsonify(FAILURE)
 
-    send(service.Message(text=[texta, textb]))
+    send(service.Message(text=[texta, textb], label=None))
     return jsonify(dict(status='success', msg=queue.get()))
 
 
