@@ -183,6 +183,7 @@ class TransformerModel(Model):
                         model_to_save = self.model.module if hasattr(self.model,
                                                                 'module') else self.model
                         model_to_save.save_pretrained(self.ckpt_dir)
+                        self.tokenizer.save_pretrained(self.ckpt_dir)
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
