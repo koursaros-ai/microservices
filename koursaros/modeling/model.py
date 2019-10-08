@@ -27,6 +27,7 @@ class Model(object):
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
         self.ckpt_dir = f'{self.dir}/{self.version}/'
+        print(self.ckpt_dir)
         if not 'training' in self.config: # use a default model
             print('Loading model from default checkpoint')
             self.checkpoint = self.config.checkpoint
