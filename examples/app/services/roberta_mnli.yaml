@@ -1,9 +1,10 @@
 service:
-  base: bert
+  base: classifier
+  arch: roberta
   repo: gs://poloma-models
   task: classification
   labels:
-    - neutral
     - contradiction
+    - neutral
     - entailment
   checkpoint: roberta-large-mnli

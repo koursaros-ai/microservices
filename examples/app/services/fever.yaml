@@ -1,5 +1,6 @@
 service:
-  base: bert
+  base: classifier
+  arch: bert
   repo: gs://poloma-models
   task: classification
   labels:

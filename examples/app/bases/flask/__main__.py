@@ -15,11 +15,12 @@ queue = Queue()
 def receive():
     global queue
 
-    text = request.args.get('q')
-    if not text:
+    texta = request.args.get('a')
+    textb = request.args.get('b')
+    if not (texta and textb):
         return jsonify(FAILURE)
 
-    send(service.Message(text=text))
+    send(service.Message(text=[texta, textb], label=None))
     return jsonify(dict(status='success', msg=queue.get()))
 
 
@@ -32,7 +33,7 @@ def send(msg):
 @service.callback
 def callback(msg):
     global queue
-    queue.put(msg.text)
+    queue.put(msg.label)
 
 
 if __name__ == "__main__":

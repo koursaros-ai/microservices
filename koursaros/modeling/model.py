@@ -14,20 +14,34 @@ def select_all(schema, table):
 
 class Model(object):
 
-    def __init__(self, config):
+    def __init__(self, config, training):
         # load configs from yaml
-        if gb_free_space() < 2:
+        if gb_free_space() < 3:
             print("There is not enough space on your disk, please allocate more!")
             raise SystemError
 
         self.config = config
         self.version = config.hash
-        self.ckpt_dir = f'.cache/{self.version}/'
-        if os.path.exists(self.ckpt_dir + 'config.json') or not 'training' in self.config:
+        self.dir = '.model-data'
+
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
+        self.ckpt_dir = f'{self.dir}/{self.version}/'
+        print("ckpt dir=", self.ckpt_dir)
+        if not 'training' in self.config: # use a default model
+            print('Loading model from default checkpoint')
+            self.checkpoint = self.config.checkpoint
+            self.trained = True
+        elif os.path.exists(self.ckpt_dir + 'config.json'): # model already trained
+            print('Loading trained model')
             self.checkpoint = self.ckpt_dir
             self.trained = True
-        else:
-            self.data_dir = os.path.join('.model-data', self.version)
+        else: # init model for training
+            print('Initializing model for training')
+            if not training:
+                print('PLEASE TRAIN MODEL BEFORE DEPLOYING')
+                raise SystemError
+            self.data_dir = os.path.join(self.dir, self.version)
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
             if not os.path.exists(self.ckpt_dir):

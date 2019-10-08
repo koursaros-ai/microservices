@@ -16,20 +16,21 @@ MODEL_CLASSES = {
     'distilbert': (DistilBertConfig, DistilBertForSequenceClassification, DistilBertTokenizer)
 }
 
-
 class TransformerModel(Model):
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args)
         if self.config.task == 'classification' or self.config.task == 'regression':
-            config, model, tokenizer = MODEL_CLASSES[self.config.base]
+            config, model, tokenizer = MODEL_CLASSES[self.config.arch]
         else:
             raise NotImplementedError()
 
-        self.model_config = config.from_pretrained(self.checkpoint)
+        self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.model_config.num_labels = len(self.config.labels)
-        self.model = model.from_pretrained(self.checkpoint, config=self.model_config)
-        self.tokenizer = tokenizer.from_pretrained(self.checkpoint)
+        self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
+                                           cache_dir=self.dir, **kwargs)
+
+        self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.batch_size = 8
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
@@ -41,14 +42,34 @@ class TransformerModel(Model):
         self.save_steps = 1000
         self.max_length=512
         self.evaluate_during_training = True
-        self.pad_token_segment_id = 4 if self.config.base == 'xlnet' else 0
+        self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
         self.pad_token = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
+        self.label_map = {label: i for i, label in enumerate(self.config.labels)}
+        if self.trained:
+            self.model.eval()
 
-    def extract_features(self, data):
-        return [self.tokenizer.encode(*b[:2], add_special_tokens=True) for b in data]
+    def inputs_from_batch(self, batch):
+        inputs = {'input_ids': batch[0],
+                  'attention_mask': batch[1],
+                  'labels': batch[3]}
+        if self.config.arch != 'distilbert':
+            inputs['token_type_ids'] = batch[2] if self.config.arch in ['bert',
+                                                                        'xlnet'] else None
+        return inputs
+
+    def inputs_from_features(self, features):
+        inputs = {'input_ids': features.input_ids,
+                  'attention_mask': features.attention_mask}
+        if self.config.arch != 'distilbert':
+            inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
+                                                                  ['bert', 'xlnet'] else None
+
+        for k, v in inputs.items():
+            inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
+        return inputs
 
     def train(self):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
@@ -115,12 +136,8 @@ class TransformerModel(Model):
                 self.model.train()
                 correct_labels = batch[3]
                 batch = tuple(t.to(self.device) for t in batch)
-                inputs = {'input_ids': batch[0],
-                          'attention_mask': batch[1],
-                          'labels': batch[3]}
-                if self.config.base != 'distilbert':
-                    inputs['token_type_ids'] = batch[2] if self.config.base in ['bert',
-                                                                               'xlnet'] else None
+
+                inputs = self.inputs_from_batch(batch)
                 outputs = self.model(**inputs)
                 loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
                 logits = outputs[1]
@@ -167,6 +184,7 @@ class TransformerModel(Model):
                         model_to_save = self.model.module if hasattr(self.model,
                                                                 'module') else self.model
                         model_to_save.save_pretrained(self.ckpt_dir)
+                        self.tokenizer.save_pretrained(self.ckpt_dir)
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
@@ -202,8 +220,8 @@ class TransformerModel(Model):
                 inputs = {'input_ids': batch[0],
                           'attention_mask': batch[1],
                           'labels': batch[3]}
-                if self.config.base != 'distilbert':
-                    inputs['token_type_ids'] = batch[2] if self.config.base in ['bert',
+                if self.config.arch != 'distilbert':
+                    inputs['token_type_ids'] = batch[2] if self.config.arch in ['bert',
                                                                                'xlnet'] else None
                 outputs = self.model(**inputs)
                 tmp_eval_loss, logits = outputs[:2]
@@ -244,7 +262,47 @@ class TransformerModel(Model):
             max_length=self.max_length,
             truncate_first_sequence=True  # We're truncating the first sequence in priority
         )
-        return inputs["input_ids"], inputs["token_type_ids"]
+        input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
+        # The mask has 1 for real tokens and 0 for padding tokens. Only real
+        # tokens are attended to.
+        attention_mask = [1] * len(input_ids)
+
+        # Zero-pad up to the sequence length.
+        padding_length = self.max_length - len(input_ids)
+        if self.pad_on_left:
+            input_ids = ([self.pad_token] * padding_length) + input_ids
+            attention_mask = ([0] * padding_length) + attention_mask
+            token_type_ids = ([self.pad_token_segment_id] * padding_length) + token_type_ids
+        else:
+            input_ids = input_ids + ([self.pad_token] * padding_length)
+            attention_mask = attention_mask + ([0] * padding_length)
+            token_type_ids = token_type_ids + ([self.pad_token_segment_id] * padding_length)
+
+        assert len(input_ids) == self.max_length, "Error with input length {} vs {}".format(len(input_ids),
+                                                                                            self.max_length)
+        assert len(attention_mask) == self.max_length, "Error with input length {} vs {}".format(len(attention_mask),
+                                                                                                 self.max_length)
+        assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
+                                                                                                 self.max_length)
+        if example.label is not None:
+            if self.config.task == "classification":
+                if example.label in self.label_map:
+                    label = self.label_map[example.label]
+                else:
+                    print("UNKNOWN LABEL %s, ignoring" % example.label)
+                    return
+            elif self.config.task == "regression":
+                label = float(example.label)
+            else:
+                print("Only supported tasks are classification and regression")
+                raise NotImplementedError()
+        else:
+            label = None
+
+        return InputFeatures(input_ids=input_ids,
+                          attention_mask=attention_mask,
+                          token_type_ids=token_type_ids,
+                          label=label)
 
     def load_and_cache_examples(self, data, evaluate=False):
         if self.local_rank not in [-1, 0] and not evaluate:
@@ -256,7 +314,6 @@ class TransformerModel(Model):
             features = torch.load(cached_features_file)
         else:
             print("Creating features from dataset file at %s", cached_features_file)
-            label_list = self.config.labels
 
             examples = [
                 InputExample(guid=i,
@@ -264,61 +321,13 @@ class TransformerModel(Model):
                              text_b=ex[1] if len(ex) == 3 else None,
                              label=ex[-1]) for i, ex in enumerate(data)
             ]
-            label_map = {label: i for i, label in enumerate(label_list)}
 
             features = []
             for (ex_index, example) in enumerate(examples):
                 if ex_index % 10000 == 0:
                     print("Writing example %d" % (ex_index))
+                features.append(self.convert_example(example))
 
-                input_ids, token_type_ids = self.convert_example(example)
-
-                # The mask has 1 for real tokens and 0 for padding tokens. Only real
-                # tokens are attended to.
-                attention_mask = [1] * len(input_ids)
-
-                # Zero-pad up to the sequence length.
-                padding_length = self.max_length - len(input_ids)
-                if self.pad_on_left:
-                    input_ids = ([self.pad_token] * padding_length) + input_ids
-                    attention_mask = ([1] * padding_length) + attention_mask
-                    token_type_ids = ([self.pad_token_segment_id] * padding_length) + token_type_ids
-                else:
-                    input_ids = input_ids + ([self.pad_token] * padding_length)
-                    attention_mask = attention_mask + ([1] * padding_length)
-                    token_type_ids = token_type_ids + ([self.pad_token_segment_id] * padding_length)
-
-                assert len(input_ids) == self.max_length, "Error with input length {} vs {}".format(len(input_ids),
-                                                                                               self.max_length)
-                assert len(attention_mask) == self.max_length, "Error with input length {} vs {}".format(len(attention_mask),
-                                                                                                    self.max_length)
-                assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
-                                                                                                    self.max_length)
-                if self.config.task == "classification":
-                    if example.label in label_map:
-                        label = label_map[example.label]
-                    else:
-                        print("UNKNOWN LABEL %s, ignoring" % example.label)
-                        continue
-                elif self.config.task == "regression":
-                    label = float(example.label)
-                else:
-                    print("Only supported tasks are classification and regression")
-                    raise NotImplementedError()
-
-                if ex_index < 5:
-                    print("*** Example ***")
-                    print("guid: %s" % (example.guid))
-                    print("input_ids: %s" % " ".join([str(x) for x in input_ids]))
-                    print("attention_mask: %s" % " ".join([str(x) for x in attention_mask]))
-                    print("token_type_ids: %s" % " ".join([str(x) for x in token_type_ids]))
-                    print("label: %s (id = %d)" % (example.label, label))
-
-                features.append(
-                    InputFeatures(input_ids=input_ids,
-                                  attention_mask=attention_mask,
-                                  token_type_ids=token_type_ids,
-                                  label=label))
             if self.local_rank in [-1, 0]:
                 print("Saving features into cached file %s", cached_features_file)
                 torch.save(features, cached_features_file)
@@ -340,10 +349,31 @@ class TransformerModel(Model):
         dataset = TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_labels)
         return dataset
 
+    def pred_from_output(self, outputs):
+        logits = outputs[0]
+        preds = logits.detach().cpu().numpy()
+        if self.config.task == 'classification':
+            pred = np.argmax(preds, axis=1)
+            return self.config.labels[int(pred[0])]
+        elif self.config.task == 'regression':
+            return np.squeeze(preds)
+        else:
+            raise NotImplementedError()
+
+
     def run(self, *args):
-        # Protobuffs in and protobuffs out
-        batch = self.tokenizer(args[0], args[1])
-        return self.model(batch)
+        if type(args[0]) is not list:
+            example = InputExample(
+                guid='sample-1',
+                text_a=args[0],
+                text_b=None if len(args) < 2 else args[1]
+            )
+        else:
+            raise NotImplementedError()
+        features = self.convert_example(example)
+        inputs = self.inputs_from_features(features)
+        outputs = self.model(**inputs)
+        return self.pred_from_output(outputs)
 
     @staticmethod
     def architectures():

@@ -3,3 +3,4 @@ python-box
 tqdm
 torch
 transformers
+termcolor
