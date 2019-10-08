@@ -26,10 +26,10 @@ class Model(object):
         if not 'training' in self.config: # use a default model
             self.checkpoint = self.config.checkpoint
             self.trained = True
-        elif os.path.exists(self.ckpt_dir + 'config.json'):
+        elif os.path.exists(self.ckpt_dir + 'config.json'): # model already trained
             self.checkpoint = self.ckpt_dir
             self.trained = True
-        else:
+        else: # init model for training
             self.data_dir = os.path.join('.model-data', self.version)
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
