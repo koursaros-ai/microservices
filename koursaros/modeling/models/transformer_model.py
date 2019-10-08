@@ -301,7 +301,6 @@ class TransformerModel(Model):
             features = torch.load(cached_features_file)
         else:
             print("Creating features from dataset file at %s", cached_features_file)
-            label_list = self.config.labels
 
             examples = [
                 InputExample(guid=i,
@@ -340,10 +339,11 @@ class TransformerModel(Model):
     def run(self, *args):
         # Protobuffs in and protobuffs out
         example = InputExample(
-            guid=1,
+            guid='sample-1',
             text_a=args[0],
             text_b=None if len(args) < 2 else args[1]
         )
+        print(args[0], args[1])
         features = self.convert_example(example)
         inputs = {'input_ids': features.input_ids,
                   'attention_mask': features.attention_mask }
