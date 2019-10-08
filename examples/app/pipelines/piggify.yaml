@@ -3,5 +3,5 @@ version: '3.7'
 pipeline:
   services:
     - flask
-    - pig
+    - roberta_mnli
 sc
