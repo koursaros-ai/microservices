@@ -258,11 +258,11 @@ class TransformerModel(Model):
         padding_length = self.max_length - len(input_ids)
         if self.pad_on_left:
             input_ids = ([self.pad_token] * padding_length) + input_ids
-            attention_mask = ([1] * padding_length) + attention_mask
+            attention_mask = ([0] * padding_length) + attention_mask
             token_type_ids = ([self.pad_token_segment_id] * padding_length) + token_type_ids
         else:
             input_ids = input_ids + ([self.pad_token] * padding_length)
-            attention_mask = attention_mask + ([1] * padding_length)
+            attention_mask = attention_mask + ([0] * padding_length)
             token_type_ids = token_type_ids + ([self.pad_token_segment_id] * padding_length)
 
         assert len(input_ids) == self.max_length, "Error with input length {} vs {}".format(len(input_ids),
