@@ -22,7 +22,10 @@ class Model(object):
 
         self.config = config
         self.version = config.hash
-        self.ckpt_dir = f'.cache/{self.version}/'
+
+        if not os.path.exists('.model-data'):
+            os.makedirs('.model-data')
+        self.ckpt_dir = f'.model-data/{self.version}/'
         if not 'training' in self.config: # use a default model
             self.checkpoint = self.config.checkpoint
             self.trained = True
