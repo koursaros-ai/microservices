@@ -3,3 +3,12 @@ syntax = "proto3";
 message Message {
     string text = 1;
 }
+
+message TextQuery {
+    repeated string text = 1;
+}
+
+message LabeledTextQuery {
+    TextQuery query = 1;
+    string label = 2;
+}
