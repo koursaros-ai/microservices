@@ -10,7 +10,7 @@ def model_from_yaml(filename):
     config = Yaml(filename)
     return model_from_config(config)
 
-def model_from_config(config):
+def model_from_config(config, training=False):
     for model_class in MODELS:
         if config.arch in model_class.architectures():
             model = model_class(config)

@@ -16,7 +16,7 @@ class Model(object):
 
     def __init__(self, config):
         # load configs from yaml
-        if gb_free_space() < 5:
+        if gb_free_space() < 3:
             print("There is not enough space on your disk, please allocate more!")
             raise SystemError
 
