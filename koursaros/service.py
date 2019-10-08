@@ -33,7 +33,7 @@ class Service:
         sys.path.insert(1, str(_base_dir_path))
 
         # compile messages
-        self.compile_messages_proto(_base_dir_path)
+        self._compile_messages_proto(_base_dir_path)
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
@@ -67,7 +67,7 @@ class Service:
         def __repr__(self):
             return 'Message:\n' + json.dumps(self.kwargs, indent=4)
 
-    def compile_messages_proto(self, path):
+    def _compile_messages_proto(self, path):
         self.logger.info(f'Compiling messages for "{path}"...')
 
         protoc.main((
@@ -79,29 +79,27 @@ class Service:
 
     def stub(self, f):
         self._stub_f = f
-        return self._stub
+        return self._rcv
 
     def callback(self, f):
         self._cb_f = f
-        return self._callback
+        return f
 
     def _protofy(self, msg, proto_cls):
-        if isinstance(msg, self.Message):
-            return proto_cls(**msg.kwargs)
-        elif isinstance(msg, proto_cls):
+        if isinstance(msg, proto_cls):
             return msg
+        elif isinstance(msg, self.Message):
+            return proto_cls(**msg.kwargs)
+        elif isinstance(msg, bytes):
+            proto = proto_cls()
+            proto.ParseFromString(msg)
+            return proto
         else:
             raise TypeError('Cannot cast type "%s" to protobuf' % type(msg))
 
     @staticmethod
     def _proto_to_bytes(proto):
         return proto.SerializeToString()
-
-    @staticmethod
-    def _bytes_to_proto(byte, proto_cls):
-        proto = proto_cls()
-        proto.ParseFromString(byte)
-        return proto
 
     def _check_rcv_proto(self, proto):
         pass
@@ -113,7 +111,7 @@ class Service:
         if msg is None:
             raise ValueError('Send stub must return...')
 
-    def _stub(self, msg, msg_tag=b''):
+    def _rcv(self, msg, msg_tag=b''):
         """
         The stub receives a message and casts it into a proto
         for the stub to receive. Whatever the stub returns is checked
@@ -124,41 +122,32 @@ class Service:
         proto = self._protofy(msg, self._rcv_proto_cls)
         self._check_rcv_proto(proto)
 
-        msg = self._stub_f(proto)
-        self._check_return_msg(msg)
+        if msg_tag == self._msg_tag:
+            self._cb_f(proto)
+        else:
+            msg = self._stub_f(proto)
+            self._check_return_msg(msg)
 
-        proto = self._protofy(msg, self._send_proto_cls)
-        self._check_send_proto(proto)
-        self._push(proto, msg_tag)
+            proto = self._protofy(msg, self._send_proto_cls)
+            self._check_send_proto(proto)
+            self._send(proto, msg_tag)
 
-    def _callback(self, proto):
+    def _send(self, proto, msg_tag):
         """
-        Same deal as _stub but does not return. Called directly
-        if the message tag matches the service (in the case of a full loop).
+        Append the current service's msg tag if
+        the message didn't come with one...
 
-        :param proto: Proto Class
-        """
-        self._cb_f(proto)
-
-    def _pull(self):
-        """
-        :return: body, protobuf instance
-        """
-        body = self._pull_socket.recv()
-        return body
-
-    def _push(self, proto, msg_tag):
-        """
         :param proto: protobuf instance
         """
         if msg_tag == b'':
             msg_tag = self._msg_tag
-            
+
         body = self._proto_to_bytes(proto)
         self._push_socket.send(msg_tag + body)
 
     @staticmethod
     def find_nth(string, substr, n):
+        """find nth occurrence of substring"""
         start = string.find(substr)
         while start >= 0 and n > 1:
             start = string.find(substr, start + len(substr))
@@ -185,17 +174,13 @@ class Service:
         Executes a push pull loop, executing the stub as a callback
         """
         while True:
-            body = self._pull()
+            body = self._pull_socket.recv()
             msg_tag, body = self._pop_msg_tag(body)
-            proto = self._bytes_to_proto(body, self._rcv_proto_cls)
-
-            if msg_tag == self._msg_tag:
-                self._callback(proto)
-            else:
-                self._stub(proto, msg_tag=msg_tag)
+            self._rcv(body, msg_tag=msg_tag)
 
     def run(self, subs=None):
-        """Takes optional sub functions to run in separate threads
+        """
+        Takes optional sub functions to run in separate threads
 
         :param subs: optional iterable of callback funcs
         """
