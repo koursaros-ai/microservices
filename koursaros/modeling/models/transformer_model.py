@@ -283,6 +283,8 @@ class TransformerModel(Model):
             else:
                 print("Only supported tasks are classification and regression")
                 raise NotImplementedError()
+        else:
+            label = None
 
         return InputFeatures(input_ids=input_ids,
                           attention_mask=attention_mask,
