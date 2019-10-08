@@ -8,6 +8,9 @@ def model_filename_resolver(name):
 
 def model_from_yaml(filename):
     config = Yaml(filename)
+    return model_from_config(config)
+
+def model_from_config(config):
     for model_class in MODELS:
         if config.base in model_class.architectures():
             model = model_class(config)
