@@ -16,7 +16,7 @@ class Model(object):
 
     def __init__(self, config):
         # load configs from yaml
-        if gb_free_space() < 2:
+        if gb_free_space() < 5:
             print("There is not enough space on your disk, please allocate more!")
             raise SystemError
 
@@ -28,12 +28,15 @@ class Model(object):
             os.makedirs(self.dir)
         self.ckpt_dir = f'{self.dir}/{self.version}/'
         if not 'training' in self.config: # use a default model
+            print('Loading model from default checkpoint')
             self.checkpoint = self.config.checkpoint
             self.trained = True
         elif os.path.exists(self.ckpt_dir + 'config.json'): # model already trained
+            print('Loading trained model')
             self.checkpoint = self.ckpt_dir
             self.trained = True
         else: # init model for training
+            print('Initializing model for training')
             self.data_dir = os.path.join(self.dir, self.version)
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
