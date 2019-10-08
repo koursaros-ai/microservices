@@ -47,9 +47,8 @@ class TransformerModel(Model):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.label_map = {label: i for i, label in enumerate(self.config.labels)}
-
-    def extract_features(self, data):
-        return [self.tokenizer.encode(*b[:2], add_special_tokens=True) for b in data]
+        if self.trained:
+            self.model.eval()
 
     def inputs_from_batch(self, batch):
         inputs = {'input_ids': batch[0],
@@ -125,6 +124,7 @@ class TransformerModel(Model):
                 self.model.train()
                 correct_labels = batch[3]
                 batch = tuple(t.to(self.device) for t in batch)
+
                 inputs = self.inputs_from_batch(batch)
                 outputs = self.model(**inputs)
                 loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
@@ -350,6 +350,9 @@ class TransformerModel(Model):
         if self.config.arch != 'distilbert':
             inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
                                                                   ['bert', 'xlnet'] else None
+
+        for k, v in inputs:
+            inputs[k] = torch.tensor([v]).to(self.device)
         print(inputs)
         outputs = self.model(**inputs)
         logits = outputs[1]
