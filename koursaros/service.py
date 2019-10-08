@@ -175,7 +175,7 @@ class Service:
             msg_tag = body[:second_colon + 1]
             return msg_tag, body[second_colon + 1:]
         else:
-            return None, body
+            return b'', body
 
     def _serve(self):
         """
