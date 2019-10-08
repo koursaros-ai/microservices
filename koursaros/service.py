@@ -175,6 +175,8 @@ class Service:
             second_colon = self.find_nth(body, b':', 2)
             msg_tag = body[:second_colon + 1]
             return msg_tag, body[second_colon + 1:]
+        else:
+            return None, body
 
     def _serve(self):
         """
