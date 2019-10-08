@@ -11,6 +11,7 @@ import zmq
 import os
 
 HOST = "tcp://127.0.0.1:{}"
+MSG_BASE = b'koursaros:'
 
 
 class Service:
@@ -36,6 +37,7 @@ class Service:
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
+        self._msg_tag = MSG_BASE + (self._service_name + ':').encode()
 
         # set zeromq
         self._context = zmq.Context()
@@ -43,6 +45,7 @@ class Service:
         self._rcv_address = HOST.format(self._in_port)
         self._send_address = HOST.format(self._out_port)
         self._stub_f = None
+        self._cb_f = None
 
         self.logger.info(f'Initializing "{self._service_name}"')
 
@@ -77,6 +80,10 @@ class Service:
     def stub(self, f):
         self._stub_f = f
         return self._stub
+
+    def callback(self, f):
+        self._cb_f = f
+        return self._callback
 
     def _protofy(self, msg, proto_cls):
         if isinstance(msg, self.Message):
@@ -114,46 +121,74 @@ class Service:
         and then returned
 
         :param msg: Service.Message or Proto Class
-        :return body:
         """
-        self.logger.info('Stub received %s' % msg)
-
         proto = self._protofy(msg, self._rcv_proto_cls)
         self._check_rcv_proto(proto)
 
         msg = self._stub_f(proto)
-        self.logger.info('Returned from stub: %s' % msg)
         self._check_return_msg(msg)
 
         proto = self._protofy(msg, self._send_proto_cls)
         self._check_send_proto(proto)
-        self.logger.info('Sending proto')
         self._push(proto)
+
+    def _callback(self, proto):
+        """
+        Same deal as _stub but does not return. Called directly
+        if the message tag matches the service (in the case of a full loop).
+
+        :param proto: Proto Class
+        """
+        self._cb_f(proto)
 
     def _pull(self):
         """
-        :return: protobuf instance
+        :return: body, protobuf instance
         """
         body = self._pull_socket.recv()
-        proto = self._bytes_to_proto(body, self._rcv_proto_cls)
-        return proto
+        return body
 
     def _push(self, proto):
         """
         :param proto: protobuf instance
         """
-        self.logger.info('Sending body')
         body = self._proto_to_bytes(proto)
         self._push_socket.send(body)
+
+    @staticmethod
+    def find_nth(string, substr, n):
+        start = string.find(substr)
+        while start >= 0 and n > 1:
+            start = string.find(substr, start + len(substr))
+            n -= 1
+        return start
+
+    def _pop_msg_tag(self, body):
+        """
+        Pops off the message tag and returns it with the
+        rest of the body.
+
+        :param body: binary protobuf message
+        :return: msg_tag, body
+        """
+        if body.startswith(MSG_BASE):
+            second_colon = self.find_nth(body, b':', 2)
+            msg_tag = body[:second_colon + 1]
+            return msg_tag, body[second_colon + 1:]
 
     def _serve(self):
         """
         Executes a push pull loop, executing the stub as a callback
         """
         while True:
-            msg = self._pull()
-            self.logger.info('Received %s' % msg)
-            self._stub(msg)
+            body, proto = self._pull()
+            msg_tag, body = self._pop_msg_tag(body)
+            proto = self._bytes_to_proto(body, self._rcv_proto_cls)
+
+            if msg_tag == self._msg_tag:
+                self._callback(proto)
+            else:
+                self._stub(proto)
 
     def run(self, subs=None):
         """Takes optional sub functions to run in separate threads
