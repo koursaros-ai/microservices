@@ -16,7 +16,6 @@ MODEL_CLASSES = {
     'distilbert': (DistilBertConfig, DistilBertForSequenceClassification, DistilBertTokenizer)
 }
 
-
 class TransformerModel(Model):
 
     def __init__(self, *args):
