@@ -271,17 +271,18 @@ class TransformerModel(Model):
                                                                                                  self.max_length)
         assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
                                                                                                  self.max_length)
-        if self.config.task == "classification":
-            if example.label in self.label_map:
-                label = self.label_map[example.label]
+        if example.label is not None:
+            if self.config.task == "classification":
+                if example.label in self.label_map:
+                    label = self.label_map[example.label]
+                else:
+                    print("UNKNOWN LABEL %s, ignoring" % example.label)
+                    return
+            elif self.config.task == "regression":
+                label = float(example.label)
             else:
-                print("UNKNOWN LABEL %s, ignoring" % example.label)
-                return
-        elif self.config.task == "regression":
-            label = float(example.label)
-        else:
-            print("Only supported tasks are classification and regression")
-            raise NotImplementedError()
+                print("Only supported tasks are classification and regression")
+                raise NotImplementedError()
 
         return InputFeatures(input_ids=input_ids,
                           attention_mask=attention_mask,
