@@ -23,7 +23,10 @@ class Model(object):
         self.config = config
         self.version = config.hash
         self.ckpt_dir = f'.cache/{self.version}/'
-        if os.path.exists(self.ckpt_dir + 'config.json') or not 'training' in self.config:
+        if not 'training' in self.config: # use a default model
+            self.checkpoint = self.config.checkpoint
+            self.trained = True
+        elif os.path.exists(self.ckpt_dir + 'config.json'):
             self.checkpoint = self.ckpt_dir
             self.trained = True
         else:
