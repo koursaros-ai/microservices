@@ -15,6 +15,8 @@ def model_from_config(config):
         if config.arch in model_class.architectures():
             model = model_class(config)
             return model
+    print('unsupported model architecture {}'.format(config.arch))
+    raise NotImplementedError()
 
 def get_model(name):
     filename = model_filename_resolver(name)
