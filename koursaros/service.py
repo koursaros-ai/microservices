@@ -19,14 +19,15 @@ class Service:
 
     def __init__(self):
         # set yamls
-        self._service_yaml_path = Path(sys.argv[1])
-        self.service_yaml = Yaml(self._service_yaml_path)
-        self._service_name = self._service_yaml_path.stem
+        service_yaml_path = Path(sys.argv[1])
+        self.service_yaml = Yaml(service_yaml_path)
+        service_name = service_yaml_path.stem
         _base_dir_path = Path(sys.argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
-        self.logger = set_logger(self._service_name)
+        self.logger = set_logger(service_name)
+        self.logger.info(f'Initializing "%s"' % service_name)
 
         # set directories
         os.chdir(_base_dir_path)
@@ -37,25 +38,21 @@ class Service:
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
-        self._msg_tag = MSG_BASE + (self._service_name + ':').encode()
+        self._msg_tag = MSG_BASE + (service_name + ':').encode()
 
         # set zeromq
-        self._context = zmq.Context()
-        self._in_port, self._out_port = get_hash_ports(self._service_name, 2)
-        self._rcv_address = HOST.format(self._in_port)
-        self._send_address = HOST.format(self._out_port)
+        context = zmq.Context()
+        in_port, out_port = get_hash_ports(service_name, 2)
+        rcv_address = HOST.format(in_port)
+        send_address = HOST.format(out_port)
+        self._pull_socket = context.socket(zmq.PULL)
+        self._pull_socket.connect(rcv_address)
+        self.logger.bold('PULL socket connected on %s' % rcv_address)
+        self._push_socket = context.socket(zmq.PUSH)
+        self._push_socket.connect(send_address)
+        self.logger.bold('PUSH socket connected on %s' % send_address)
         self._stub_f = None
         self._cb_f = None
-
-        self.logger.info(f'Initializing "{self._service_name}"')
-
-        self._pull_socket = self._context.socket(zmq.PULL)
-        self._pull_socket.connect(self._rcv_address)
-        self.logger.bold('PULL socket connected on %s' % self._rcv_address)
-
-        self._push_socket = self._context.socket(zmq.PUSH)
-        self._push_socket.connect(self._send_address)
-        self.logger.bold('PUSH socket connected on %s' % self._send_address)
 
     class Message:
         """Class to hold key word arguments for sending via protobuf"""
@@ -117,7 +114,7 @@ class Service:
         for the stub to receive. Whatever the stub returns is checked
         and then returned
 
-        :param msg: Service.Message or Proto Class
+        :param msg: Service.Message, Proto Class, or binary message
         """
         proto = self._protofy(msg, self._rcv_proto_cls)
         self._check_rcv_proto(proto)
@@ -171,7 +168,7 @@ class Service:
 
     def _serve(self):
         """
-        Executes a push pull loop, executing the stub as a callback
+        Executes a push pull loop, executing _rcv as a callback
         """
         while True:
             body = self._pull_socket.recv()
