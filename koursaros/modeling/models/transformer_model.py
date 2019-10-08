@@ -59,6 +59,17 @@ class TransformerModel(Model):
                                                                         'xlnet'] else None
         return inputs
 
+    def inputs_from_features(self, features):
+        inputs = {'input_ids': features.input_ids,
+                  'attention_mask': features.attention_mask}
+        if self.config.arch != 'distilbert':
+            inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
+                                                                  ['bert', 'xlnet'] else None
+
+        for k, v in inputs.items():
+            inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
+        return inputs
+
     def train(self):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
 
@@ -336,29 +347,31 @@ class TransformerModel(Model):
         dataset = TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_labels)
         return dataset
 
-    def run(self, *args):
-        # Protobuffs in and protobuffs out
-        example = InputExample(
-            guid='sample-1',
-            text_a=args[0],
-            text_b=None if len(args) < 2 else args[1]
-        )
-        print(args[0], args[1])
-        features = self.convert_example(example)
-        inputs = {'input_ids': features.input_ids,
-                  'attention_mask': features.attention_mask }
-        if self.config.arch != 'distilbert':
-            inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
-                                                                  ['bert', 'xlnet'] else None
-
-        for k, v in inputs.items():
-            inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
-
-        outputs = self.model(**inputs)
+    def pred_from_output(self, outputs):
         logits = outputs[0]
         preds = logits.detach().cpu().numpy()
-        pred = np.argmax(preds, axis=1)
-        return self.config.labels[int(pred[0])]
+        if self.config.task == 'classification':
+            pred = np.argmax(preds, axis=1)
+            return self.config.labels[int(pred[0])]
+        elif self.config.task == 'regression':
+            return np.squeeze(preds)
+        else:
+            raise NotImplementedError()
+
+
+    def run(self, *args):
+        if type(args[0]) is not list:
+            example = InputExample(
+                guid='sample-1',
+                text_a=args[0],
+                text_b=None if len(args) < 2 else args[1]
+            )
+        else:
+            raise NotImplementedError()
+        features = self.convert_example(example)
+        inputs = self.inputs_from_features(features)
+        outputs = self.model(**inputs)
+        return self.pred_from_output(outputs)
 
     @staticmethod
     def architectures():
