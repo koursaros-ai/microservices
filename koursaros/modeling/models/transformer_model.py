@@ -22,7 +22,7 @@ class TransformerModel(Model):
     def __init__(self, *args):
         super().__init__(*args)
         if self.config.task == 'classification' or self.config.task == 'regression':
-            config, model, tokenizer = MODEL_CLASSES[self.config.base]
+            config, model, tokenizer = MODEL_CLASSES[self.config.arch]
         else:
             raise NotImplementedError()
 
@@ -41,7 +41,7 @@ class TransformerModel(Model):
         self.save_steps = 1000
         self.max_length=512
         self.evaluate_during_training = True
-        self.pad_token_segment_id = 4 if self.config.base == 'xlnet' else 0
+        self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
         self.pad_token = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -118,8 +118,8 @@ class TransformerModel(Model):
                 inputs = {'input_ids': batch[0],
                           'attention_mask': batch[1],
                           'labels': batch[3]}
-                if self.config.base != 'distilbert':
-                    inputs['token_type_ids'] = batch[2] if self.config.base in ['bert',
+                if self.config.arch != 'distilbert':
+                    inputs['token_type_ids'] = batch[2] if self.config.arch in ['bert',
                                                                                'xlnet'] else None
                 outputs = self.model(**inputs)
                 loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
@@ -202,8 +202,8 @@ class TransformerModel(Model):
                 inputs = {'input_ids': batch[0],
                           'attention_mask': batch[1],
                           'labels': batch[3]}
-                if self.config.base != 'distilbert':
-                    inputs['token_type_ids'] = batch[2] if self.config.base in ['bert',
+                if self.config.arch != 'distilbert':
+                    inputs['token_type_ids'] = batch[2] if self.config.arch in ['bert',
                                                                                'xlnet'] else None
                 outputs = self.model(**inputs)
                 tmp_eval_loss, logits = outputs[:2]
