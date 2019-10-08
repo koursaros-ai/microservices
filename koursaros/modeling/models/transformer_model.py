@@ -351,7 +351,7 @@ class TransformerModel(Model):
         logits = outputs[1]
         preds = logits.detach().cpu().numpy()
         preds = np.argmax(preds, axis=1)
-        return self.model(self.label_map[preds[0])
+        return self.model(self.label_map[preds[0]])
 
     @staticmethod
     def architectures():
