@@ -152,7 +152,12 @@ class Service:
         :param proto: protobuf instance
         """
         body = self._proto_to_bytes(proto)
-        self._push_socket.send(body)
+
+        msg_tag = proto.DESCRIPTOR.__ktag__
+        if msg_tag is None:
+            msg_tag = self._msg_tag
+
+        self._push_socket.send(msg_tag + body)
 
     @staticmethod
     def find_nth(string, substr, n):
@@ -185,7 +190,8 @@ class Service:
             body = self._pull()
             msg_tag, body = self._pop_msg_tag(body)
             proto = self._bytes_to_proto(body, self._rcv_proto_cls)
-            import pdb; pdb.set_trace()
+            proto.DESCRIPTOR.__ktag__ = msg_tag
+
             if msg_tag == self._msg_tag:
                 self._callback(proto)
             else:
