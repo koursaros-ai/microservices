@@ -29,10 +29,10 @@ class TransformerModel(Model):
         self.model_config.num_labels = len(self.config.labels)
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
                                            cache_dir=self.dir, **kwargs)
-        try:
-            self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
-        except:
-            self.tokenizer = AutoTokenizer.from_pretrained(self.config.arch)
+
+        self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
+        if self.tokenizer is None:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.config.arch, cache_dir=self.dir)
         self.batch_size = 8
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
