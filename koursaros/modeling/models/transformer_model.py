@@ -26,10 +26,10 @@ class TransformerModel(Model):
         else:
             raise NotImplementedError()
 
-        self.model_config = config.from_pretrained(self.checkpoint, cache_dir='./cache')
+        self.model_config = config.from_pretrained(self.checkpoint, cache_dir='./.cache')
         self.model_config.num_labels = len(self.config.labels)
-        self.model = model.from_pretrained(self.checkpoint, config=self.model_config, cache_dir='./cache')
-        self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir='./cache')
+        self.model = model.from_pretrained(self.checkpoint, config=self.model_config, cache_dir='./.cache')
+        self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir='./.cache')
         self.batch_size = 8
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
@@ -348,8 +348,9 @@ class TransformerModel(Model):
         inputs = {'input_ids': features.input_ids,
                   'attention_mask': features.attention_mask }
         if self.config.arch != 'distilbert':
-            inputs['token_type_ids'] = features.token_type_ids if self.config.arch in ['bert',
-                                                                        'xlnet'] else None
+            inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
+                                                                  ['bert', 'xlnet'] else None
+        print(inputs)
         outputs = self.model(**inputs)
         logits = outputs[1]
         preds = logits.detach().cpu().numpy()
