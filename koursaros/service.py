@@ -118,7 +118,7 @@ class Service:
         """
         proto = self._protofy(msg, self._rcv_proto_cls)
         self._check_rcv_proto(proto)
-
+        self.logger.info(msg_tag)
         if msg_tag == self._msg_tag:
             self._cb_f(proto)
         else:
