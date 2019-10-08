@@ -14,7 +14,7 @@ def select_all(schema, table):
 
 class Model(object):
 
-    def __init__(self, config):
+    def __init__(self, config, training):
         # load configs from yaml
         if gb_free_space() < 3:
             print("There is not enough space on your disk, please allocate more!")
@@ -37,6 +37,9 @@ class Model(object):
             self.trained = True
         else: # init model for training
             print('Initializing model for training')
+            if not training:
+                print('PLEASE TRAIN MODEL BEFORE DEPLOYING')
+                raise SystemError
             self.data_dir = os.path.join(self.dir, self.version)
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
