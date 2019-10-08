@@ -1,18 +1,16 @@
 
-from koursaros.streamer import get_hash_ports
-from koursaros.router import ROUTER_PUSH_PORT
+from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage
+from koursaros.router import RouterCmd
 from kctl.logger import set_logger
+from koursaros.helpers import *
 from grpc_tools import protoc
-from threading import Thread
-from pathlib import Path
 from .yamls import Yaml
-import json
+import pathlib
 import sys
 import zmq
 import os
 
-HOST = "tcp://127.0.0.1:{}"
-MSG_BASE = b'koursaros:'
+HOST = "tcp://127.0.0.1:%s"
 
 
 class Service:
@@ -20,15 +18,15 @@ class Service:
 
     def __init__(self):
         # set yamls
-        service_yaml_path = Path(sys.argv[1])
-        self.service_yaml = Yaml(service_yaml_path)
-        service_name = service_yaml_path.stem
-        _base_dir_path = Path(sys.argv[0]).parent
+        yaml_path = pathlib.Path(sys.argv[1])
+        self.yaml = Yaml(yaml_path)
+        self.name = yaml_path.stem
+        _base_dir_path = pathlib.Path(sys.argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
-        self.logger = set_logger(service_name)
-        self.logger.info(f'Initializing "%s"' % service_name)
+        self.logger = set_logger(self.name)
+        self.logger.info(f'Initializing "%s"' % self.name)
 
         # set directories
         os.chdir(_base_dir_path)
@@ -39,31 +37,30 @@ class Service:
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
-        self._msg_tag = MSG_BASE + (service_name + ':').encode()
 
         # set zeromq
         context = zmq.Context()
-        in_port, out_port = get_hash_ports(service_name, 2)
-        rcv_address = HOST.format(in_port)
-        send_address = HOST.format(out_port)
+        rcv_address, send_address = self.default_addresses
         self._pull_socket = context.socket(zmq.PULL)
         self._pull_socket.connect(rcv_address)
         self.logger.bold('PULL socket connected on %s' % rcv_address)
+
         self._push_socket = context.socket(zmq.PUSH)
         self._push_socket.connect(send_address)
         self.logger.bold('PUSH socket connected on %s' % send_address)
+
+        self._router_socket = context.socket(zmq.PULL)
+        self._router_socket.connect(ROUTER_ADDRESS)
+        self.logger.bold('ROUTER socket connected on %s' % send_address)
+
+        # defaults
         self._stub_f = None
-        self._cb_f = None
+        self._bound = False
 
-    class Message:
-        """Class to hold key word arguments for sending via protobuf"""
-        __slots__ = ['kwargs']
-
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-
-        def __repr__(self):
-            return 'Message:\n' + json.dumps(self.kwargs, indent=4)
+    @property
+    def default_addresses(self):
+        in_port, out_port = get_hash_ports(self.name, 2)
+        return HOST % in_port, HOST % out_port
 
     def _compile_messages_proto(self, path):
         self.logger.info(f'Compiling messages for "{path}"...')
@@ -77,133 +74,73 @@ class Service:
 
     def stub(self, f):
         self._stub_f = f
-        return self._rcv
+        return
 
-    def callback(self, f):
-        self._cb_f = f
-        return f
+    def _send_to_stub(self, proto):
+        # hand proto to stub
+        returned = self._stub_f(proto)
 
-    def _protofy(self, msg, proto_cls):
-        if isinstance(msg, proto_cls):
-            return msg
-        elif isinstance(msg, self.Message):
-            return proto_cls(**msg.kwargs)
-        elif isinstance(msg, bytes):
-            proto = proto_cls()
-            proto.ParseFromString(msg)
-            return proto
-        else:
-            raise TypeError('Cannot cast type "%s" to protobuf' % type(msg))
-
-    @staticmethod
-    def _proto_to_bytes(proto):
-        return proto.SerializeToString()
-
-    def _check_rcv_proto(self, proto):
-        pass
-
-    def _check_send_proto(self, proto):
-        pass
-
-    def _check_return_msg(self, msg):
-        if msg is None:
+        # cast returned type to proto
+        if returned is None:
             raise ValueError('Send stub must return...')
-
-    @staticmethod
-    def find_nth(string, substr, n):
-        """find nth occurrence of substring"""
-        start = string.find(substr)
-        while start >= 0 and n > 1:
-            start = string.find(substr, start + len(substr))
-            n -= 1
-        return start
-
-    def _pop_msg_tag(self, body):
-        """
-        Pops off the message tag and returns it with the
-        rest of the body.
-
-        :param body: binary protobuf message
-        :return: msg_tag, body
-        """
-        if body.startswith(MSG_BASE):
-            second_colon = self.find_nth(body, b':', 2)
-            msg_tag = body[:second_colon + 1]
-            return msg_tag, body[second_colon + 1:]
+        elif isinstance(returned, dict):
+            return self._send_proto_cls(**returned)
+        elif isinstance(returned, self._send_proto_cls):
+            return returned
         else:
-            return b'', body
+            raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
 
-    def _rcv(self, msg, msg_tag=b''):
+    def _send_to_router(self, msg_id, proto):
+        msg = b'0' + msg_id + MessageToJson(proto)
+        self._router_socket.send(msg)
+
+    def _send_to_next_service(self, msg_id, proto):
+        msg = b'0' + msg_id + proto.SerializeToString()
+        self._push_socket.send(msg)
+
+    def _protofy_rcv_msg(self, msg):
+        proto = self._rcv_proto_cls()
+        proto.ParseFromString(msg)
+        return proto
+
+    def run(self):
         """
         The stub receives a message and casts it into a proto
         for the stub to receive. Whatever the stub returns is checked
         and then returned
 
-        :param msg: Service.Message, Proto Class, or binary message
-        """
-        proto = self._protofy(msg, self._rcv_proto_cls)
-        self._check_rcv_proto(proto)
-
-        if msg_tag == self._msg_tag:
-            self._cb_f(proto)
-        else:
-            msg = self._stub_f(proto)
-            self._check_return_msg(msg)
-
-            proto = self._protofy(msg, self._send_proto_cls)
-            self._check_send_proto(proto)
-            self._send(proto, msg_tag)
-
-    def _send(self, proto, msg_tag):
-        """
-        Append the current service's msg tag if
-        the message didn't come with one...
-
-        :param proto: protobuf instance
-        """
-        if msg_tag == b'':
-            msg_tag = self._msg_tag
-
-        body = self._proto_to_bytes(proto)
-        self._push_socket.send(msg_tag + body)
-
-    def _serve(self):
-        """
-        Receives the message body, parses the tag,
-        and sends to _rcv
+        :param: binary message
         """
         while True:
             body = self._pull_socket.recv()
-            msg_tag, body = self._pop_msg_tag(body)
-            self._rcv(body, msg_tag=msg_tag)
 
-    def _reroute(self):
-        """
-        Reroute the current service to pull from the router.
-        :return:
-        """
-        self._pull_socket.close()
-        self._pull_socket = self.context.socket(zmq.PULL)
-        self._pull_socket.connect(ROUTER_PUSH_PORT)
+            command, msg_id, msg = _parse_msg(body)
 
-    def run(self, subs=None):
-        """
-        Takes optional sub functions to run in separate threads
+            if self._bound:
+                if command == RouterCmd.RESET.value:
+                    self._bound = False
 
-        :param subs: optional iterable of callback funcs
-        """
-        threads = []
+                elif command == RouterCmd.SEND.value:
+                    proto_in = JsonToMessage(msg, self._rcv_proto_cls)
+                    proto_out = self._send_to_stub(proto_in)
+                    self._send_to_next_service(msg_id, proto_out)
 
-        if subs is not None:
-            for sub in subs:
-                self.logger.info('Running thread "%s"' % sub.__name__)
-                t = Thread(target=sub)
-                t.start()
-                threads += [t]
+                # not sent from router
+                elif command == b'0':
+                    proto_in = self._protofy_rcv_msg(msg)
+                    self._send_to_router(msg_id, proto_in)
 
-        t = Thread(target=self._serve)
-        t.start()
-        threads += [t]
+            else:
+                if command == RouterCmd.BIND.value:
+                    self._bound = True
+                    self._router_socket.send()
 
-        for t in threads:
-            t.join()
+                # not sent from router
+                elif command == b'0':
+                    proto_in = self._protofy_rcv_msg(msg)
+                    proto_out = self._send_to_stub(proto_in)
+                    self._send_to_next_service(msg_id, proto_out)
+
+
+
+
