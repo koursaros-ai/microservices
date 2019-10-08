@@ -25,7 +25,7 @@ def receive():
 
 @service.stub
 def send(msg):
-    # service.logger.info('Sending %s' % msg)
+    service.logger.info('Sending %s' % msg)
     return msg
 
 

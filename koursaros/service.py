@@ -113,7 +113,7 @@ class Service:
         if msg is None:
             raise ValueError('Send stub must return...')
 
-    def _stub(self, msg):
+    def _stub(self, msg, msg_tag=b''):
         """
         The stub receives a message and casts it into a proto
         for the stub to receive. Whatever the stub returns is checked
@@ -129,7 +129,7 @@ class Service:
 
         proto = self._protofy(msg, self._send_proto_cls)
         self._check_send_proto(proto)
-        self._push(proto)
+        self._push(proto, msg_tag)
 
     def _callback(self, proto):
         """
@@ -147,16 +147,11 @@ class Service:
         body = self._pull_socket.recv()
         return body
 
-    def _push(self, proto):
+    def _push(self, proto, msg_tag):
         """
         :param proto: protobuf instance
         """
         body = self._proto_to_bytes(proto)
-
-        msg_tag = proto.DESCRIPTOR.__ktag__
-        if msg_tag is None:
-            msg_tag = self._msg_tag
-
         self._push_socket.send(msg_tag + body)
 
     @staticmethod
@@ -190,12 +185,11 @@ class Service:
             body = self._pull()
             msg_tag, body = self._pop_msg_tag(body)
             proto = self._bytes_to_proto(body, self._rcv_proto_cls)
-            proto.DESCRIPTOR.__ktag__ = msg_tag
 
             if msg_tag == self._msg_tag:
                 self._callback(proto)
             else:
-                self._stub(proto)
+                self._stub(proto, msg_tag=msg_tag)
 
     def run(self, subs=None):
         """Takes optional sub functions to run in separate threads
