@@ -4,5 +4,5 @@ base:
   base: python3-slim:latest
   image: example/image
   replicas: 1
-  rcv_proto: TextQuery
-  send_proto: LabeledTextQuery
+  rcv_proto: LabeledTextQuery
+  send_proto: TextQuery
