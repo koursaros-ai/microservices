@@ -12,7 +12,7 @@ def model_from_yaml(filename):
 
 def model_from_config(config):
     for model_class in MODELS:
-        if config.base in model_class.architectures():
+        if config.arch in model_class.architectures():
             model = model_class(config)
             return model
 
