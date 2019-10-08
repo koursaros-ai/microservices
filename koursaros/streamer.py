@@ -44,9 +44,6 @@ class Streamer:
         self.logger.info('Initializing {} streamer'.format(self._name))
 
     def stream(self):
-        """
-        Executes a push pull loop, executing the stub as a callback
-        """
         pull_socket = self._context.socket(zmq.PULL)
         pull_socket.bind(self._rcv)
         msg = 'Socket bound on {} to PULL from {}'
