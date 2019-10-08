@@ -352,7 +352,7 @@ class TransformerModel(Model):
                                                                   ['bert', 'xlnet'] else None
 
         for k, v in inputs.items():
-            inputs[k] = torch.tensor([v]).to(self.device)
+            inputs[k] = torch.tensor([v]).to(self.device) if v is not None else None
         print(inputs)
         outputs = self.model(**inputs)
         logits = outputs[1]
