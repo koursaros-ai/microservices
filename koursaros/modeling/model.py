@@ -22,10 +22,11 @@ class Model(object):
 
         self.config = config
         self.version = config.hash
+        self.dir = '.model-data'
 
-        if not os.path.exists('.model-data'):
-            os.makedirs('.model-data')
-        self.ckpt_dir = f'.model-data/{self.version}/'
+        if not os.path.exists(self.dir):
+            os.makedirs(self.dir)
+        self.ckpt_dir = f'{self.dir}/{self.version}/'
         if not 'training' in self.config: # use a default model
             self.checkpoint = self.config.checkpoint
             self.trained = True
@@ -33,7 +34,7 @@ class Model(object):
             self.checkpoint = self.ckpt_dir
             self.trained = True
         else: # init model for training
-            self.data_dir = os.path.join('.model-data', self.version)
+            self.data_dir = os.path.join(self.dir, self.version)
             if not os.path.exists(self.data_dir):
                 os.makedirs(self.data_dir)
             if not os.path.exists(self.ckpt_dir):

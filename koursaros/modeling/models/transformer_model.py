@@ -26,10 +26,10 @@ class TransformerModel(Model):
         else:
             raise NotImplementedError()
 
-        self.model_config = config.from_pretrained(self.checkpoint, cache_dir='./.cache')
+        self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.model_config.num_labels = len(self.config.labels)
-        self.model = model.from_pretrained(self.checkpoint, config=self.model_config, cache_dir='./.cache')
-        self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir='./.cache')
+        self.model = model.from_pretrained(self.checkpoint, config=self.model_config, cache_dir=self.dir)
+        self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.batch_size = 8
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
