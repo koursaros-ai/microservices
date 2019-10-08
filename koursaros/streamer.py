@@ -26,41 +26,43 @@ class Streamer:
 
     def __init__(self):
         # set yamls
-        self._service_in = argv[1]
-        self._service_out = argv[2]
+        self.service_in = argv[1]
+        self.service_out = argv[2]
 
         # set logger
-        self._name = "{}->{}".format(self._service_in[:5], self._service_out[:5])
-        self.logger = set_logger(self._name)
+        self.name = "{}->{}".format(self.service_in[:5], self.service_out[:5])
+        self.logger = set_logger(self.name)
 
         # set zeromq
         self._context = zmq.Context()
-        _, in_port = get_hash_ports(self._service_in, 2)
-        out_port, _ = get_hash_ports(self._service_out, 2)
+        _, in_port = get_hash_ports(self.service_in, 2)
+        out_port, _ = get_hash_ports(self.service_out, 2)
 
         self._rcv = HOST.format(in_port)
         self._send = HOST.format(out_port)
 
-        self.logger.info('Initializing {} streamer'.format(self._name))
+        self.logger.info('Initializing {} streamer'.format(self.name))
+
+        self.pull_socket = self._context.socket(zmq.PULL)
+        self.pull_socket.bind(self._rcv)
+        self.logger.bold(
+            'Socket bound on {} to PULL from {}'.format(self._rcv, self.service_in))
+
+        self.push_socket = self._context.socket(zmq.PUSH)
+        self.push_socket.bind(self._send)
+        self.logger.bold(
+            'Socket bound on {} to PUSH to {}'.format(self._send, self.service_out))
+
+
 
     def stream(self):
-        pull_socket = self._context.socket(zmq.PULL)
-        pull_socket.bind(self._rcv)
-        msg = 'Socket bound on {} to PULL from {}'
-        self.logger.bold(msg.format(self._rcv, self._service_in))
-
-        push_socket = self._context.socket(zmq.PUSH)
-        push_socket.bind(self._send)
-        msg = 'Socket bound on {} to PUSH to {}'
-        self.logger.bold(msg.format(self._send, self._service_out))
-
-        zmq.device(zmq.STREAMER, pull_socket, push_socket)
-
-        pull_socket.close()
-        push_socket.close()
+        zmq.device(zmq.STREAMER, self.pull_socket, self.push_socket)
+        self.pull_socket.close()
+        self.push_socket.close()
         self._context.term()
 
 
 if __name__ == "__main__":
     s = Streamer()
+    s.expose()
     s.stream()

@@ -1,50 +1,33 @@
-
 from koursaros.streamer import get_hash_ports
+from flask import Flask, request, jsonify
 from kctl.logger import set_logger
-from grpc_tools import protoc
 from threading import Thread
-from pathlib import Path
-from .yamls import Yaml
 import json
-import sys
 import zmq
-import os
 
 HOST = "tcp://127.0.0.1:{}"
 MSG_BASE = b'koursaros:'
 
 
-class Service:
-    """The base service class"""
+class Router:
+    """
+    The router serves as an endpoint as a client. It receives
+    requests from the client to send to the loop starting
+    from a specific loop. It then redirects the network through it.
+    """
 
     def __init__(self):
-        # set yamls
-        service_yaml_path = Path(sys.argv[1])
-        self.service_yaml = Yaml(service_yaml_path)
-        service_name = service_yaml_path.stem
-        _base_dir_path = Path(sys.argv[0]).parent
-        self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
-
         # set logger
-        self.logger = set_logger(service_name)
-        self.logger.info(f'Initializing "%s"' % service_name)
-
-        # set directories
-        os.chdir(_base_dir_path)
-        sys.path.insert(1, str(_base_dir_path))
-
-        # compile messages
-        self._compile_messages_proto(_base_dir_path)
-        messages = __import__('messages_pb2')
-        self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
-        self._msg_tag = MSG_BASE + (service_name + ':').encode()
+        self.logger = set_logger('router')
+        self.logger.info(f'Initializing "router"')
 
         # set zeromq
         context = zmq.Context()
         in_port, out_port = get_hash_ports(service_name, 2)
         rcv_address = HOST.format(in_port)
         send_address = HOST.format(out_port)
+        self.out_port = None
+
         self._pull_socket = context.socket(zmq.PULL)
         self._pull_socket.connect(rcv_address)
         self.logger.bold('PULL socket connected on %s' % rcv_address)
@@ -53,26 +36,6 @@ class Service:
         self.logger.bold('PUSH socket connected on %s' % send_address)
         self._stub_f = None
         self._cb_f = None
-
-    class Message:
-        """Class to hold key word arguments for sending via protobuf"""
-        __slots__ = ['kwargs']
-
-        def __init__(self, **kwargs):
-            self.kwargs = kwargs
-
-        def __repr__(self):
-            return 'Message:\n' + json.dumps(self.kwargs, indent=4)
-
-    def _compile_messages_proto(self, path):
-        self.logger.info(f'Compiling messages for "{path}"...')
-
-        protoc.main((
-            '',
-            f'-I={path}',
-            f'--python_out={path}',
-            f'{path}/messages.proto',
-        ))
 
     def stub(self, f):
         self._stub_f = f
@@ -143,15 +106,33 @@ class Service:
         proto = self._protofy(msg, self._rcv_proto_cls)
         self._check_rcv_proto(proto)
 
-        if msg_tag == self._msg_tag:
-            self._cb_f(proto)
-        else:
-            msg = self._stub_f(proto)
-            self._check_return_msg(msg)
+        self._send(proto, msg_tag)
 
-            proto = self._protofy(msg, self._send_proto_cls)
-            self._check_send_proto(proto)
-            self._send(proto, msg_tag)
+    @classmethod
+    def reroute(cls, service):
+        cls.out_port, _ = get_hash_ports(service, 2)
+
+
+    def expose(self):
+        app = Flask(__name__)
+
+        @app.route('/reroute')
+        def reroute():
+            data = request.form if request.form else request.json
+            req = json.loads(data)
+            service = req.pop('service')
+            Router.reroute(service)
+
+            return jsonify(dict(status='success', msg=queue.get()))
+
+        @app.route('/')
+        def receive():
+            jso = request.args.get('q')
+            req = json.loads(jso)
+            msg_id = req.pop('id')
+
+
+            return jsonify(dict(status='success', msg=queue.get()))
 
     def _send(self, proto, msg_tag):
         """
@@ -160,10 +141,6 @@ class Service:
 
         :param proto: protobuf instance
         """
-        if msg_tag == b'':
-            msg_tag = self._msg_tag
-
-        body = self._proto_to_bytes(proto)
         self._push_socket.send(msg_tag + body)
 
     def _serve(self):
