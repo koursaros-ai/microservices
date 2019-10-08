@@ -101,7 +101,6 @@ class Service:
     def _bytes_to_proto(byte, proto_cls):
         proto = proto_cls()
         proto.ParseFromString(byte)
-        import pdb; pdb.set_trace()
         return proto
 
     def _check_rcv_proto(self, proto):
