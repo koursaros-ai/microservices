@@ -353,6 +353,8 @@ class TransformerModel(Model):
 
         for k, v in inputs.items():
             inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
+
+        print(inputs)
         outputs = self.model(**inputs)
         logits = outputs[0]
         print(logits)
