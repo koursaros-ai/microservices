@@ -1,5 +1,6 @@
 
 from koursaros.streamer import get_hash_ports
+from koursaros.router import ROUTER_PUSH_PORT
 from kctl.logger import set_logger
 from grpc_tools import protoc
 from threading import Thread
@@ -175,6 +176,15 @@ class Service:
             body = self._pull_socket.recv()
             msg_tag, body = self._pop_msg_tag(body)
             self._rcv(body, msg_tag=msg_tag)
+
+    def _reroute(self):
+        """
+        Reroute the current service to pull from the router.
+        :return:
+        """
+        self._pull_socket.close()
+        self._pull_socket = self.context.socket(zmq.PULL)
+        self._pull_socket.connect(ROUTER_PUSH_PORT)
 
     def run(self, subs=None):
         """

@@ -7,7 +7,7 @@ import zmq
 
 HOST = "tcp://*:{}"
 
-MIN_PORT = 49152
+MIN_PORT = 49153
 MAX_PORT = 65536
 
 
@@ -34,21 +34,21 @@ class Streamer:
         self.logger = set_logger(self.name)
 
         # set zeromq
-        self._context = zmq.Context()
-        _, in_port = get_hash_ports(self.service_in, 2)
-        out_port, _ = get_hash_ports(self.service_out, 2)
+        self.context = zmq.Context()
+        _, self.in_port = get_hash_ports(self.service_in, 2)
+        self.out_port, _ = get_hash_ports(self.service_out, 2)
 
         self._rcv = HOST.format(in_port)
         self._send = HOST.format(out_port)
 
         self.logger.info('Initializing {} streamer'.format(self.name))
 
-        self.pull_socket = self._context.socket(zmq.PULL)
+        self.pull_socket = self.context.socket(zmq.PULL)
         self.pull_socket.bind(self._rcv)
         self.logger.bold(
             'Socket bound on {} to PULL from {}'.format(self._rcv, self.service_in))
 
-        self.push_socket = self._context.socket(zmq.PUSH)
+        self.push_socket = self.context.socket(zmq.PUSH)
         self.push_socket.bind(self._send)
         self.logger.bold(
             'Socket bound on {} to PUSH to {}'.format(self._send, self.service_out))
@@ -59,7 +59,7 @@ class Streamer:
         zmq.device(zmq.STREAMER, self.pull_socket, self.push_socket)
         self.pull_socket.close()
         self.push_socket.close()
-        self._context.term()
+        self.context.term()
 
 
 if __name__ == "__main__":

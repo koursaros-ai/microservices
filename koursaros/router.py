@@ -1,12 +1,18 @@
 from koursaros.streamer import get_hash_ports
 from flask import Flask, request, jsonify
 from kctl.logger import set_logger
+from .helpers import _parse_msg, _int_to_16byte
 from threading import Thread
+from pathlib import Path
+from .yamls import Yaml
+from queue import Queue
 import json
 import zmq
+import sys
 
 HOST = "tcp://127.0.0.1:{}"
 MSG_BASE = b'koursaros:'
+ROUTER_PUSH_PORT = 49152
 
 
 class Router:
@@ -15,124 +21,64 @@ class Router:
     requests from the client to send to the loop starting
     from a specific loop. It then redirects the network through it.
     """
+    in_port = None
+    out_port = None
+    expose_port = 5000
+    pull_socket = None
+    push_socket = None
 
     def __init__(self):
+        # set yaml
+        pipeline_yaml_path = Path(sys.argv[1])
+        self.pipeline_yaml = Yaml(pipeline_yaml_path)
+
         # set logger
         self.logger = set_logger('router')
         self.logger.info(f'Initializing "router"')
 
         # set zeromq
-        context = zmq.Context()
-        in_port, out_port = get_hash_ports(service_name, 2)
-        rcv_address = HOST.format(in_port)
-        send_address = HOST.format(out_port)
-        self.out_port = None
+        self.context = zmq.Context()
+        send_address = HOST.format(ROUTER_PUSH_PORT)
+        self.push_socket = self.context.socket(zmq.PUSH)
+        self.push_socket.bind(send_address)
 
-        self._pull_socket = context.socket(zmq.PULL)
-        self._pull_socket.connect(rcv_address)
-        self.logger.bold('PULL socket connected on %s' % rcv_address)
-        self._push_socket = context.socket(zmq.PUSH)
-        self._push_socket.connect(send_address)
         self.logger.bold('PUSH socket connected on %s' % send_address)
-        self._stub_f = None
-        self._cb_f = None
+        self.queues = dict()
 
-    def stub(self, f):
-        self._stub_f = f
-        return self._rcv
+    def _rcv(self, body):
+        method, msg_id, msg = _parse_msg(body)
+        self.queues[msg_id].put(msg)
 
-    def callback(self, f):
-        self._cb_f = f
-        return f
+    def reroute(self, service):
+        # send to pull port of desired service
+        self.out_port, _ = get_hash_ports(service, 2)
+        self.service_socket = self.context.socket(zmq.PUSH)
+        self.service_socket.send(b'RER' + _int_to_16byte(0))
 
-    def _protofy(self, msg, proto_cls):
-        if isinstance(msg, proto_cls):
-            return msg
-        elif isinstance(msg, self.Message):
-            return proto_cls(**msg.kwargs)
-        elif isinstance(msg, bytes):
-            proto = proto_cls()
-            proto.ParseFromString(msg)
-            return proto
-        else:
-            raise TypeError('Cannot cast type "%s" to protobuf' % type(msg))
-
-    @staticmethod
-    def _proto_to_bytes(proto):
-        return proto.SerializeToString()
-
-    def _check_rcv_proto(self, proto):
-        pass
-
-    def _check_send_proto(self, proto):
-        pass
-
-    def _check_return_msg(self, msg):
-        if msg is None:
-            raise ValueError('Send stub must return...')
-
-    @staticmethod
-    def find_nth(string, substr, n):
-        """find nth occurrence of substring"""
-        start = string.find(substr)
-        while start >= 0 and n > 1:
-            start = string.find(substr, start + len(substr))
-            n -= 1
-        return start
-
-    def _pop_msg_tag(self, body):
-        """
-        Pops off the message tag and returns it with the
-        rest of the body.
-
-        :param body: binary protobuf message
-        :return: msg_tag, body
-        """
-        if body.startswith(MSG_BASE):
-            second_colon = self.find_nth(body, b':', 2)
-            msg_tag = body[:second_colon + 1]
-            return msg_tag, body[second_colon + 1:]
-        else:
-            return b'', body
-
-    def _rcv(self, msg, msg_tag=b''):
-        """
-        The stub receives a message and casts it into a proto
-        for the stub to receive. Whatever the stub returns is checked
-        and then returned
-
-        :param msg: Service.Message, Proto Class, or binary message
-        """
-        proto = self._protofy(msg, self._rcv_proto_cls)
-        self._check_rcv_proto(proto)
-
-        self._send(proto, msg_tag)
-
-    @classmethod
-    def reroute(cls, service):
-        cls.out_port, _ = get_hash_ports(service, 2)
-
+        self._push_socket.connect(send_address)
 
     def expose(self):
+
         app = Flask(__name__)
+        router = self
 
         @app.route('/reroute')
         def reroute():
             data = request.form if request.form else request.json
             req = json.loads(data)
             service = req.pop('service')
-            Router.reroute(service)
+            router.reroute(service)
 
-            return jsonify(dict(status='success', msg=queue.get()))
+            return jsonify(dict(status='success'))
 
         @app.route('/')
         def receive():
             jso = request.args.get('q')
             req = json.loads(jso)
             msg_id = req.pop('id')
-
-
-            return jsonify(dict(status='success', msg=queue.get()))
+            queue = Queue()
+            router.queues[msg_id] = queue
+            return jsonify(dict(msg=queue.get()))
 
     def _send(self, proto, msg_tag):
         """
