@@ -241,7 +241,7 @@ class TransformerModel(Model):
 
         return result
 
-    def convert_example(self, example, label_map=None):
+    def convert_example(self, example):
         inputs = self.tokenizer.encode_plus(
             example.text_a,
             example.text_b,
@@ -272,8 +272,8 @@ class TransformerModel(Model):
         assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
                                                                                                  self.max_length)
         if self.config.task == "classification":
-            if example.label in label_map:
-                label = label_map[example.label]
+            if example.label in self.label_map:
+                label = self.label_map[example.label]
             else:
                 print("UNKNOWN LABEL %s, ignoring" % example.label)
                 return
