@@ -5,11 +5,13 @@ service = Service()
 pretrained = service.yaml.pretrained
 model = torch.hub.load('pytorch/fairseq', pretrained, tokenizer='moses')
 
+
 @service.stub
 def translate(translate_query):
     return dict(
-        text = 'hello world' # model.translate(translate_query.text)
+        text=model.translate(translate_query.text)
     )
+
 
 if __name__ == '__main__':
     service.run()
