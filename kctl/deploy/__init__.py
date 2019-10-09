@@ -21,7 +21,7 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
     app_manager.raise_if_not_app_root()
 
-    ctx.invoke(router)
+    ctx.invoke(router, pipeline_name=pipeline_name)
     ctx.invoke(streamers, pipeline_name=pipeline_name)
 
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
