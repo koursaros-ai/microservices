@@ -45,8 +45,9 @@ class Router:
         to the router instead of the next service.
         The router will send json versions of the protobuf.
         """
-        self.send_service_command(RouterCmd.RESET)
-        self.service_socket.close()
+        if self.service_socket is not None:
+            self.send_service_command(RouterCmd.RESET)
+            self.service_socket.close()
         self.connect_service_socket(service)
         self.send_service_command(RouterCmd.BIND)
 
