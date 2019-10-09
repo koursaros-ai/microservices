@@ -1,22 +1,15 @@
 
 from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage, ParseError
-from koursaros.router import RouterCmd
 from kctl.logger import set_logger
 from traceback import format_exc
 from koursaros.helpers import *
 from grpc_tools import protoc
 from .yamls import Yaml
-from enum import Enum
 import pathlib
 import json
 import sys
 import zmq
 import os
-
-
-class ProtoType(Enum):
-    RCV = 0
-    SEND = 1
 
 
 class Service:

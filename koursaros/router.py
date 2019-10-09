@@ -1,19 +1,10 @@
 
 from flask import Flask, request, jsonify
 from kctl.logger import set_logger
-from enum import IntEnum
 from .helpers import *
 import json
 import zmq
 import sys
-
-
-class RouterCmd(IntEnum):
-    PASS = b'0'
-    SEND = b'1'
-    BIND = b'2'
-    RESET = b'3'
-    ACK = b'4'
 
 
 class Router:
