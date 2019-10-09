@@ -43,7 +43,7 @@ class TransformerModel(Model):
         self.fp16 = True
         self.logging_steps = 1000
         self.save_steps = 1000
-        self.max_length=100
+        self.max_length=128
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
@@ -274,7 +274,7 @@ class TransformerModel(Model):
             max_length=self.max_length,
             truncate_first_sequence=True  # We're truncating the first sequence in priority
         )
-        input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
+        input_ids, token_type_ids = inputs["input_ids"][:self.max_length], inputs["token_type_ids"][:self.max_length]
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
         attention_mask = [1] * len(input_ids)
