@@ -150,8 +150,6 @@ class Service:
                         self._send_to_next_service(msg_id, proto_out)
                     except ParseError as e:
                         self._send_error_to_router(msg_id, repr(e))
-                    except JSONDecodeError as e:
-                        self._send_error_to_router(msg_id, repr(e))
                     except TypeError as e:
                         self._send_error_to_router(msg_id, repr(e))
                     except ValueError as e:
