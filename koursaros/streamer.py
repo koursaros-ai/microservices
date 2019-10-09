@@ -33,11 +33,11 @@ class Streamer:
         # pull
         self.pull_socket.bind(rcv_address)
         self.logger.bold('Socket bound on {} to PULL from {}'
-                    .format(rcv_address, self.service_in))
+                         .format(rcv_address, self.service_in))
 
         self.push_socket.bind(send_address)
         self.logger.bold('Socket bound on {} to PUSH to {}'
-                    .format(send_address, self.service_out))
+                         .format(send_address, self.service_out))
 
         zmq.device(zmq.STREAMER, self.pull_socket, self.push_socket)
         self.pull_socket.close()

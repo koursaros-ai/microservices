@@ -28,8 +28,6 @@ class Router:
         # set zeromq
         self.context = zmq.Context()
         self.router_socket = self.context.socket(zmq.PUSH)
-        self.router_socket.bind(ROUTER_ADDRESS)
-        self.logger.bold('PUSH socket connected on %s' % ROUTER_ADDRESS)
         self.service_socket = None
 
     def connect_service_socket(self, service):
@@ -85,6 +83,9 @@ class Router:
         return app
 
     def run(self):
+        self.router_socket.bind(ROUTER_ADDRESS)
+        self.logger.bold('PUSH socket connected on %s' % ROUTER_ADDRESS)
+
         app = self.create_flask_app()
         self.logger.info('Starting flask on port %s' % FLASK_PORT)
         app.run(port=5000, threaded=True, host='0.0.0.0')
