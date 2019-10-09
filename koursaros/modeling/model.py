@@ -3,6 +3,9 @@ import hashlib
 import os
 from koursaros.utils.database.psql import Conn
 from koursaros.utils.misc import gb_free_space
+from kctl.logger import set_logger
+
+logger = set_logger('MODELS')
 
 def get_rows_from_tsv(fname):
     samples = []
@@ -15,9 +18,8 @@ def select_all(schema, table):
 class Model(object):
 
     def __init__(self, config, training):
-        # load configs from yaml
         if gb_free_space() < 3:
-            print("There is not enough space on your disk, please allocate more!")
+            logger.error("There is not enough space on your disk, please allocate more!")
             raise SystemError
 
         self.config = config
@@ -27,19 +29,19 @@ class Model(object):
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
         self.ckpt_dir = f'{self.dir}/{self.version}/'
-        print("ckpt dir=", self.ckpt_dir)
+        logger.info("Local model cache dir %s" %self.ckpt_dir)
         if not 'training' in self.config: # use a default model
-            print('Loading model from default checkpoint')
+            logger.info('Loading model from default checkpoint')
             self.checkpoint = self.config.checkpoint
             self.trained = True
         elif os.path.exists(self.ckpt_dir + 'config.json'): # model already trained
-            print('Loading trained model')
+            logger.info('Loading trained model')
             self.checkpoint = self.ckpt_dir
             self.trained = True
         else: # init model for training
-            print('Initializing model for training')
+            logger.info('Initializing model for training')
             if not training:
-                print('PLEASE TRAIN MODEL BEFORE DEPLOYING')
+                logger.error('Please train model before deploying')
                 raise SystemError
             self.data_dir = os.path.join(self.dir, self.version)
             if not os.path.exists(self.data_dir):
@@ -49,9 +51,6 @@ class Model(object):
             self.checkpoint = config.training.checkpoint
             self.trained = False
 
-    # train_data and test_data are either URL to download from
-    # conn.query_fn = (query) -> of form text1, <optional text2>, label
-    # returns train_data, test data iterable of rows
     def get_data(self):
         """
         Get training data based on yaml config and connection
@@ -66,7 +65,6 @@ class Model(object):
         else:
             return get_rows_from_tsv(data.train), get_rows_from_tsv(data.test)
 
-    # train_data and test_data both lists of rows
     def train(self):
         """
         Runs training as defined in the model yaml. Saves model to directory

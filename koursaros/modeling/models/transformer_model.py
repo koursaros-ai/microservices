@@ -7,6 +7,9 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm, trange
 import numpy as np
 import os
+from kctl.logger import set_logger
+
+logger = set_logger('MODELS')
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
@@ -31,22 +34,21 @@ class TransformerModel(Model):
                                            cache_dir=self.dir, **kwargs)
 
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
-        self.batch_size = 8
+        self.batch_size = self.config.training.batch_size
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
         self.n_gpu = 1
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
         self.fp16 = True
-        self.logging_steps = 1000
-        self.save_steps = 1000
-        self.max_length=512
+        self.max_length = 256
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
         self.pad_token = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
+        self.pad = True
         self.label_map = {label: i for i, label in enumerate(self.config.labels)}
         if self.trained:
             self.model.eval()
@@ -71,13 +73,21 @@ class TransformerModel(Model):
             inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
         return inputs
 
-    def train(self):
+    def train(self, force_build_features=False):
+        try:
+            self.do_train(force_build_features=force_build_features)
+        except:
+            logger.warning('Error during training, decreasing batch size and trying again')
+            self.batch_size = self.batch_size // 2 # back off batch_size
+            self.train(force_build_features=True)
+
+    def do_train(self, force_build_features=False):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
 
         tb_writer = SummaryWriter()
 
         train_dataset, test_dataset = self.get_data()
-        train_dataset = self.load_and_cache_examples(train_dataset)
+        train_dataset = self.load_and_cache_examples(train_dataset, force_build_features=force_build_features)
         epochs = int(self.config.training.epochs)
         optimizer = AdamW(self.model.parameters(), lr=float(self.config.training.learning_rate),
                           correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
@@ -116,75 +126,81 @@ class TransformerModel(Model):
         #                                                       find_unused_parameters=True)
 
         # Train!
-        print("***** Running training *****")
-        print("  Num examples = ", len(train_dataset))
-        print("  Num Epochs = ", epochs)
-        print("  Total train batch size (w. parallel, distributed & accumulation) = ",
+        logger.info("***** Running training *****")
+        logger.info("  Num examples = %d" % len(train_dataset))
+        logger.info("  Num Epochs = %d" % epochs)
+        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d" %
                     self.batch_size * (
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
-        print("  Total optimization steps = ", t_total)
+        logger.info("  Total optimization steps = %d" % t_total)
+
+        if not 'eval_freq' in self.config.training:
+            self.eval_freq = 2
+        else:
+            self.eval_freq = self.config.training.eval_freq
+
+        self.logging_steps = len(train_dataset) // self.batch_size // self.eval_freq
+        self.save_steps = len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
         self.model.zero_grad()
-        train_iterator = trange(int(epochs), desc="Epoch", disable=self.local_rank not in [-1, 0])
         label_count = [0] * len(self.config.labels)
-        for _ in train_iterator:
-            epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
-            num_correct = 0
-            for step, batch in enumerate(epoch_iterator):
-                self.model.train()
-                correct_labels = batch[3]
-                batch = tuple(t.to(self.device) for t in batch)
+        epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
+        num_correct = 0
+        for step, batch in enumerate(epoch_iterator):
+            self.model.train()
+            correct_labels = batch[3]
+            batch = tuple(t.to(self.device) for t in batch)
 
-                inputs = self.inputs_from_batch(batch)
-                outputs = self.model(**inputs)
-                loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
-                logits = outputs[1]
-                preds = logits.detach().cpu().numpy()
-                preds = np.argmax(preds, axis=1)
-                for pred in preds:
-                    label_count[pred] += 1
-                num_correct += np.sum(preds == correct_labels.numpy())
-                if step > 0:
-                    epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
-                                                   % (num_correct / (step*self.batch_size), label_count))
-                    epoch_iterator.refresh()  # to show immediately the update
+            inputs = self.inputs_from_batch(batch)
+            outputs = self.model(**inputs)
+            loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+            logits = outputs[1]
+            preds = logits.detach().cpu().numpy()
+            preds = np.argmax(preds, axis=1)
+            for pred in preds:
+                label_count[pred] += 1
+            num_correct += np.sum(preds == correct_labels.numpy())
+            if step > 0:
+                epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
+                                               % (num_correct / (step*self.batch_size), label_count))
+                epoch_iterator.refresh()  # to show immediately the update
 
-                if self.n_gpu > 1:
-                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
+            if self.n_gpu > 1:
+                loss = loss.mean()  # mean() to average on multi-gpu parallel training
 
-                if self.fp16:
-                    with amp.scale_loss(loss, optimizer) as scaled_loss:
-                        scaled_loss.backward()
-                    torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), self.max_grad_norm)
-                else:
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
+            if self.fp16:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), self.max_grad_norm)
+            else:
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
 
-                tr_loss += loss.item()
-                if (step + 1) % self.gradient_accumulation_steps == 0:
-                    optimizer.step()
-                    scheduler.step()  # Update learning rate schedule
-                    self.model.zero_grad()
-                    global_step += 1
+            tr_loss += loss.item()
+            if (step + 1) % self.gradient_accumulation_steps == 0:
+                optimizer.step()
+                scheduler.step()  # Update learning rate schedule
+                self.model.zero_grad()
+                global_step += 1
 
-                    if self.local_rank in [-1, 0] and self.logging_steps > 0 and global_step % self.logging_steps == 0:
-                        # Log metrics
-                        if self.local_rank == -1 and self.evaluate_during_training:
-                            results = self.evaluate(test_dataset)
-                            for key, value in results.items():
-                                tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-                        tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
-                        logging_loss = tr_loss
+                if self.local_rank in [-1, 0] and self.logging_steps > 0 and global_step % self.logging_steps == 0:
+                    # Log metrics
+                    if self.local_rank == -1 and self.evaluate_during_training:
+                        results = self.evaluate(test_dataset)
+                        for key, value in results.items():
+                            tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+                    tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+                    tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
+                    logging_loss = tr_loss
 
-                    if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
-                        # Save model checkpoint
-                        model_to_save = self.model.module if hasattr(self.model,
-                                                                'module') else self.model
-                        model_to_save.save_pretrained(self.ckpt_dir)
-                        self.tokenizer.save_pretrained(self.ckpt_dir)
+                if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
+                    # Save model checkpoint
+                    model_to_save = self.model.module if hasattr(self.model,
+                                                            'module') else self.model
+                    model_to_save.save_pretrained(self.ckpt_dir)
+                    self.tokenizer.save_pretrained(self.ckpt_dir)
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
@@ -205,9 +221,9 @@ class TransformerModel(Model):
         eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=self.batch_size)
 
         # Eval!
-        print("***** Running evaluation *****")
-        print("  Num examples = ", len(eval_dataset))
-        print("  Batch size = ", self.batch_size)
+        logger.info("***** Running evaluation *****")
+        logger.info("  Num examples = %d" % len(eval_dataset))
+        logger.info("  Batch size = %d" % self.batch_size)
         eval_loss = 0.0
         nb_eval_steps = 0
         preds = None
@@ -247,9 +263,9 @@ class TransformerModel(Model):
 
         output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
-            print("***** Eval results *****")
+            logger.info("***** Eval results *****")
             for key in sorted(result.keys()):
-                print("  %s = %s", key, str(result[key]))
+                logger.info("  %s = %s" % (key, str(result[key])))
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
         return result
@@ -262,39 +278,40 @@ class TransformerModel(Model):
             max_length=self.max_length,
             truncate_first_sequence=True  # We're truncating the first sequence in priority
         )
-        input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
+        input_ids, token_type_ids = inputs["input_ids"][:self.max_length], inputs["token_type_ids"][:self.max_length]
         # The mask has 1 for real tokens and 0 for padding tokens. Only real
         # tokens are attended to.
         attention_mask = [1] * len(input_ids)
 
         # Zero-pad up to the sequence length.
-        padding_length = self.max_length - len(input_ids)
-        if self.pad_on_left:
-            input_ids = ([self.pad_token] * padding_length) + input_ids
-            attention_mask = ([0] * padding_length) + attention_mask
-            token_type_ids = ([self.pad_token_segment_id] * padding_length) + token_type_ids
-        else:
-            input_ids = input_ids + ([self.pad_token] * padding_length)
-            attention_mask = attention_mask + ([0] * padding_length)
-            token_type_ids = token_type_ids + ([self.pad_token_segment_id] * padding_length)
+        if self.pad:
+            padding_length = self.max_length - len(input_ids)
+            if self.pad_on_left:
+                input_ids = ([self.pad_token] * padding_length) + input_ids
+                attention_mask = ([0] * padding_length) + attention_mask
+                token_type_ids = ([self.pad_token_segment_id] * padding_length) + token_type_ids
+            else:
+                input_ids = input_ids + ([self.pad_token] * padding_length)
+                attention_mask = attention_mask + ([0] * padding_length)
+                token_type_ids = token_type_ids + ([self.pad_token_segment_id] * padding_length)
 
-        assert len(input_ids) == self.max_length, "Error with input length {} vs {}".format(len(input_ids),
-                                                                                            self.max_length)
-        assert len(attention_mask) == self.max_length, "Error with input length {} vs {}".format(len(attention_mask),
-                                                                                                 self.max_length)
-        assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
+            assert len(input_ids) == self.max_length, "Error with input length {} vs {}".format(len(input_ids),
+                                                                                                self.max_length)
+            assert len(attention_mask) == self.max_length, "Error with input length {} vs {}".format(len(attention_mask),
+                                                                                                     self.max_length)
+            assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
                                                                                                  self.max_length)
         if example.label is not None:
             if self.config.task == "classification":
                 if example.label in self.label_map:
                     label = self.label_map[example.label]
                 else:
-                    print("UNKNOWN LABEL %s, ignoring" % example.label)
+                    logger.warning("UNKNOWN LABEL %s, ignoring" % example.label)
                     return
             elif self.config.task == "regression":
                 label = float(example.label)
             else:
-                print("Only supported tasks are classification and regression")
+                logger.error("Only supported tasks are classification and regression")
                 raise NotImplementedError()
         else:
             label = None
@@ -304,16 +321,16 @@ class TransformerModel(Model):
                           token_type_ids=token_type_ids,
                           label=label)
 
-    def load_and_cache_examples(self, data, evaluate=False):
+    def load_and_cache_examples(self, data, evaluate=False, force_build_features=False):
         if self.local_rank not in [-1, 0] and not evaluate:
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
 
         cached_features_file = os.path.join(self.data_dir, 'features' if not evaluate else 'eval-features')
-        if os.path.exists(os.path.join(cached_features_file)):
-            print("Loading features from cached file ", cached_features_file)
+        if os.path.exists(os.path.join(cached_features_file)) and not force_build_features:
+            logger.info("Loading features from cached file %s" % cached_features_file)
             features = torch.load(cached_features_file)
         else:
-            print("Creating features from dataset file at %s", cached_features_file)
+            logger.info("Creating features from dataset file at %s" % cached_features_file)
 
             examples = [
                 InputExample(guid=i,
@@ -325,11 +342,11 @@ class TransformerModel(Model):
             features = []
             for (ex_index, example) in enumerate(examples):
                 if ex_index % 10000 == 0:
-                    print("Writing example %d" % (ex_index))
+                    logger.info("Writing example %d" % (ex_index))
                 features.append(self.convert_example(example))
 
             if self.local_rank in [-1, 0]:
-                print("Saving features into cached file %s", cached_features_file)
+                logger.info("Saving features into cached file %s" % cached_features_file)
                 torch.save(features, cached_features_file)
 
         if self.local_rank == 0 and not evaluate:
