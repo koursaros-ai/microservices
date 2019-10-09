@@ -105,7 +105,7 @@ class Service:
         context = zmq.Context()
         pull_socket = context.socket(zmq.PULL)
         push_socket = context.socket(zmq.PUSH)
-        router_socket = context.socket(zmq.PULL)
+        router_socket = context.socket(zmq.PUSH)
 
         rcv_address, send_address = self.default_addresses
         # pull
