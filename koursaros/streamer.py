@@ -27,7 +27,6 @@ class Streamer:
         logger.info('Initializing {} streamer'.format(name))
 
         self.pull_socket = self.context.socket(zmq.PULL)
-        import pdb; pdb.set_trace()
         self.pull_socket.bind(rcv_address)
         logger.bold('Socket bound on {} to PULL from {}'
                     .format(rcv_address, service_in))
