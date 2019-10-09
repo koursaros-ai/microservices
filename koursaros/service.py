@@ -143,6 +143,7 @@ class Service:
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
+                    self.logger.debug('Acknowledging BIND request.')
                     router_socket.send('%s acknowledged.' % self.name)
 
                 # not sent from router and not going to router

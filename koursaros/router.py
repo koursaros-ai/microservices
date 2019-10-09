@@ -39,7 +39,7 @@ class Router:
         _, service_port = get_hash_ports(service, 2)
         service_address = HOST % service_port
         self.service_socket = self.context.socket(zmq.PUSH)
-        self.logger.bold('Connecting PUSH socket to "{}" service on {}'
+        self.logger.bold('Connecting PUSH socket to {}'
                          .format(service, service_address))
         self.service_socket.connect(service_address)
 
@@ -95,7 +95,7 @@ class Router:
 
     def run(self):
         self.router_socket.bind(ROUTER_ADDRESS)
-        self.logger.bold('PUSH socket connected on %s' % ROUTER_ADDRESS)
+        self.logger.bold('PULL socket connected on %s' % ROUTER_ADDRESS)
 
         app = self.create_flask_app()
         self.logger.info('Starting flask on port %s' % FLASK_PORT)
