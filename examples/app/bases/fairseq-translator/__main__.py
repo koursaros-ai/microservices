@@ -8,7 +8,7 @@ model = torch.hub.load('pytorch/fairseq', pretrained, tokenizer='moses')
 @service.stub
 def translate(translate_query):
     return dict(
-        text = model.translate(translate_query.text)
+        text = 'hello world' # model.translate(translate_query.text)
     )
 
 if __name__ == '__main__':
