@@ -3,7 +3,7 @@ from koursaros.service import Service
 
 service = Service()
 pretrained = service.yaml.pretrained
-model = torch.hub.load('pytorch/fairseq', pretrained, tokenizer='moses', bpe='subword_nmt')
+model = torch.hub.load('pytorch/fairseq', pretrained, tokenizer='moses')
 
 @service.stub
 def translate(translate_query):
