@@ -134,8 +134,8 @@ class TransformerModel(Model):
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
         logger.info("  Total optimization steps = %d" % t_total)
 
-        self.logging_steps = len(train_dataset) // self.batch_size // 2
-        self.logging_steps = len(train_dataset) // self.batch_size // 2
+        self.logging_steps = len(train_dataset) // self.batch_size // self.eval_freq
+        self.save_steps = len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
