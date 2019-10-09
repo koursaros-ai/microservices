@@ -72,6 +72,12 @@ class Router:
         @app.route('/bind')
         def bind():
             service = request.args.get('service')
+            if service is None:
+                return jsonify(dict(
+                    status='failure',
+                    msg='please request service (/service param)')
+                )
+
             res = router.bind(service)
             return jsonify(dict(status='success', msg=res))
 
