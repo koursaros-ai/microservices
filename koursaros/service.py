@@ -1,10 +1,10 @@
 
 from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage, ParseError
-from json.decoder import JSONDecodeError
 from koursaros.router import RouterCmd
 from kctl.logger import set_logger
 from traceback import format_exc
 from koursaros.helpers import *
+from inspect import signature
 from grpc_tools import protoc
 from .yamls import Yaml
 import pathlib
@@ -30,7 +30,6 @@ class Service:
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
-
         self.logger = set_logger(self.name, verbose=verbose)
         self.logger.info('Initializing "{}", verbose: {}'.format(self.name, verbose))
 
@@ -43,6 +42,8 @@ class Service:
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
+        self.logger.debug('Receive proto spec: %s' % signature(self._rcv_proto_cls.__init__))
+        self.logger.debug('Send proto spec: %s' % signature(self._send_proto_cls.__init__))
 
         # defaults
         self._stub_f = None
