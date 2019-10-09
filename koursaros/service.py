@@ -148,6 +148,7 @@ class Service:
 
                 elif command == RouterCmd.SEND.value:
                     try:
+                        import pdb; pdb.set_trace()
                         proto_in = JsonToMessage(msg, self._rcv_proto_cls)
                         proto_out = self._send_to_stub(proto_in)
                         self._send_to_next_service(msg_id, proto_out)
