@@ -88,7 +88,7 @@ class Service:
             raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
 
     def _send_to_router(self, msg_id, proto):
-        msg = RouterCmd.PASS.value + msg_id + MessageToJson(proto)
+        msg = RouterCmd.PASS.value + msg_id + MessageToJson(proto).encode()
         self.router_socket.send(msg)
 
     def _send_to_next_service(self, msg_id, proto):
