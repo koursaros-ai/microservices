@@ -12,7 +12,7 @@ import click
 @click.pass_context
 def kctl(ctx):
     """
-    kctl controls the \033[1;4mKoursaros\033[0m platform.
+    kctl controls the \033[1;3;4;34mKoursaros\033[0m platform.
     Find more information at: https://github.com/koursaros-ai/koursaros
     """
     ctx.obj = AppManager()
