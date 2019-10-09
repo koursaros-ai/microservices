@@ -40,7 +40,7 @@ class Router:
         service_address = HOST % service_port
         self.service_socket = self.context.socket(zmq.PUSH)
         self.logger.bold('Connecting PUSH socket to %s' % service_address)
-        self.service_socket.bind(service_address)
+        self.service_socket.connect(service_address)
 
     def send_service_command(self, command):
         self.logger.debug('Sending service command %s.' % command)
