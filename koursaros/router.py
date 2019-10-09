@@ -34,6 +34,7 @@ class Router:
         self.context = zmq.Context()
         self.router_socket = self.context.socket(zmq.PULL)
         self.service_socket = None
+        self.msg_count = 0
 
     def connect_service_socket(self, service):
         _, service_port = get_hash_ports(service, 2)
@@ -65,13 +66,17 @@ class Router:
         return self.router_socket.recv()
 
     def send_msg(self, dict_):
-        msg_id = _int_to_16byte(dict_.pop('id'))
+        self.msg_count += 1
+
+        # use message count if no id is found in data
+        msg_id = _int_to_16byte(dict_.pop('id') if 'id' in dict_ else self.msg_count)
         self.service_socket.send(RouterCmd.SEND.value + msg_id + json.dumps(dict_).encode())
 
         # wait for response from service
         body = self.router_socket.recv()
         _, msg_id, msg = _parse_msg(body)
         res = json.loads(msg)
+
         res['id'] = _16byte_to_int(msg_id)
         return res
 
