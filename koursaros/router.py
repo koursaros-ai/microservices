@@ -83,7 +83,7 @@ class Router:
         def bind():
             # send to the out port of the last service
             res = router.bind(router.services[-1])
-            return jsonify(dict(status='success', msg=res))
+            return jsonify(dict(status='success', msg=res.decode()))
 
         @app.route('/send')
         def receive():
