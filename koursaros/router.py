@@ -88,8 +88,7 @@ class Router:
         @app.route('/send')
         def receive():
             data = request.form if request.form else request.json
-            res = router.send_msg(json.loads(data))
-            return jsonify(res)
+            return jsonify(data)
 
         return app
 
