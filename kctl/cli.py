@@ -1,11 +1,3 @@
-""".
-
-kctl controls the \033[1;4mKoursaros\033[0m platform.
-Find more information at: https://github.com/koursaros-ai/koursaros
-
-
-."""
-
 
 from .manager import AppManager
 from .create import create
@@ -19,6 +11,13 @@ import click
 @click.group()
 @click.pass_context
 def kctl(ctx):
+    """.
+
+    kctl controls the \033[1;4mKoursaros\033[0m platform.
+    Find more information at: https://github.com/koursaros-ai/koursaros
+
+
+    ."""
     ctx.obj = AppManager()
 
 
