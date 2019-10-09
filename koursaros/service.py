@@ -122,9 +122,9 @@ class Service:
 
         while True:
             body = pull_socket.recv()
-            self.logger.debug('Received "%s"' % body)
-
             command, msg_id, msg = _parse_msg(body)
+            self.logger.debug('Received cmd: {} | id: {} | msg: {}'
+                              .format(command, msg_id, msg))
 
             if self._bound:
                 if command == RouterCmd.RESET.value:
