@@ -10,8 +10,6 @@ import sys
 import zmq
 import os
 
-HOST = "tcp://127.0.0.1:%s"
-
 
 class Service:
     """The base service class"""
@@ -37,21 +35,6 @@ class Service:
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
-
-        # set zeromq
-        context = zmq.Context()
-        rcv_address, send_address = self.default_addresses
-        self._pull_socket = context.socket(zmq.PULL)
-        self._pull_socket.connect(rcv_address)
-        self.logger.bold('PULL socket connected on %s' % rcv_address)
-
-        self._push_socket = context.socket(zmq.PUSH)
-        self._push_socket.connect(send_address)
-        self.logger.bold('PUSH socket connected on %s' % send_address)
-
-        self._router_socket = context.socket(zmq.PULL)
-        self._router_socket.connect(ROUTER_ADDRESS)
-        self.logger.bold('ROUTER socket connected on %s' % send_address)
 
         # defaults
         self._stub_f = None
@@ -90,14 +73,6 @@ class Service:
         else:
             raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
 
-    def _send_to_router(self, msg_id, proto):
-        msg = b'0' + msg_id + MessageToJson(proto)
-        self._router_socket.send(msg)
-
-    def _send_to_next_service(self, msg_id, proto):
-        msg = b'0' + msg_id + proto.SerializeToString()
-        self._push_socket.send(msg)
-
     def _protofy_rcv_msg(self, msg):
         proto = self._rcv_proto_cls()
         proto.ParseFromString(msg)
@@ -111,8 +86,27 @@ class Service:
 
         :param: binary message
         """
+        # set zeromq
+        context = zmq.Context()
+        pull_socket = context.socket(zmq.PULL)
+        push_socket = context.socket(zmq.PUSH)
+        router_socket = context.socket(zmq.PULL)
+
+        rcv_address, send_address = self.default_addresses
+        # pull
+        pull_socket.connect(rcv_address)
+        self.logger.bold('PULL socket connected on %s' % rcv_address)
+
+        # push
+        push_socket.connect(send_address)
+        self.logger.bold('PUSH socket connected on %s' % send_address)
+
+        # router
+        router_socket.connect(ROUTER_ADDRESS)
+        self.logger.bold('ROUTER socket connected on %s' % send_address)
+
         while True:
-            body = self._pull_socket.recv()
+            body = pull_socket.recv()
 
             command, msg_id, msg = _parse_msg(body)
 
@@ -123,23 +117,26 @@ class Service:
                 elif command == RouterCmd.SEND.value:
                     proto_in = JsonToMessage(msg, self._rcv_proto_cls)
                     proto_out = self._send_to_stub(proto_in)
-                    self._send_to_next_service(msg_id, proto_out)
+                    msg = b'0' + msg_id + proto_out.SerializeToString()
+                    push_socket.send(msg)
 
                 # not sent from router
                 elif command == b'0':
                     proto_in = self._protofy_rcv_msg(msg)
-                    self._send_to_router(msg_id, proto_in)
+                    msg = b'0' + msg_id + MessageToJson(proto_in)
+                    router_socket.send(msg)
 
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
-                    self._router_socket.send('%s acknowledged.' % self.name)
+                    router_socket.send('%s acknowledged.' % self.name)
 
                 # not sent from router
                 elif command == b'0':
                     proto_in = self._protofy_rcv_msg(msg)
                     proto_out = self._send_to_stub(proto_in)
-                    self._send_to_next_service(msg_id, proto_out)
+                    msg = b'0' + msg_id + proto_out.SerializeToString()
+                    push_socket.send(msg)
 
 
 
