@@ -75,13 +75,21 @@ class TransformerModel(Model):
             inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
         return inputs
 
-    def train(self):
+    def train(self, force_build_features=False):
+        try:
+            self.do_train(force_build_features=force_build_features)
+        except:
+            logger.warning('Error during training, decreasing batch size and trying again')
+            self.batch_size = self.batch_size // 2 # back off batch_size
+            self.train(force_build_features=True)
+
+    def do_train(self, force_build_features=False):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
 
         tb_writer = SummaryWriter()
 
         train_dataset, test_dataset = self.get_data()
-        train_dataset = self.load_and_cache_examples(train_dataset)
+        train_dataset = self.load_and_cache_examples(train_dataset, force_build_features=force_build_features)
         epochs = int(self.config.training.epochs)
         optimizer = AdamW(self.model.parameters(), lr=float(self.config.training.learning_rate),
                           correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
@@ -309,12 +317,12 @@ class TransformerModel(Model):
                           token_type_ids=token_type_ids,
                           label=label)
 
-    def load_and_cache_examples(self, data, evaluate=False):
+    def load_and_cache_examples(self, data, evaluate=False, force_build_features=False):
         if self.local_rank not in [-1, 0] and not evaluate:
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
 
         cached_features_file = os.path.join(self.data_dir, 'features' if not evaluate else 'eval-features')
-        if os.path.exists(os.path.join(cached_features_file)):
+        if os.path.exists(os.path.join(cached_features_file)) and not force_build_features:
             logger.info("Loading features from cached file %s" % cached_features_file)
             features = torch.load(cached_features_file)
         else:
