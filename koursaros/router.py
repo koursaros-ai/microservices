@@ -5,12 +5,13 @@ from .helpers import *
 from enum import Enum
 import json
 import zmq
+import sys
 
 
 class RouterCmd(Enum):
-    SEND = b'1'
-    BIND = b'2'
-    RESET = b'3'
+    SEND = b'\x01'
+    BIND = b'\x02'
+    RESET = b'\x03'
 
 
 class Router:
@@ -22,22 +23,30 @@ class Router:
 
     def __init__(self):
         # set logger
-        self.logger = set_logger('router')
-        self.logger.info(f'Initializing "router"')
+        cmd = sys.argv
+        verbose = True if '--verbose' in cmd else False
+        if verbose: cmd.remove('--verbose')
+        self.services = cmd[1:]
+        self.logger = set_logger('router', verbose=verbose)
+        self.logger.info(f'Initializing "router", verbose: %s' % verbose)
 
         # set zeromq
         self.context = zmq.Context()
-        self.router_socket = self.context.socket(zmq.PUSH)
+        self.router_socket = self.context.socket(zmq.PULL)
         self.service_socket = None
 
     def connect_service_socket(self, service):
-        service_port, _ = get_hash_ports(service, 2)
-        service_address = HOST.format(service_port)
+        _, service_port = get_hash_ports(service, 2)
+        service_address = HOST % service_port
         self.service_socket = self.context.socket(zmq.PUSH)
+        self.logger.bold('Connecting PUSH socket to {}'
+                         .format(service, service_address))
         self.service_socket.connect(service_address)
 
     def send_service_command(self, command):
+        self.logger.debug('Sending service command %s.' % command)
         self.service_socket.send(command.value + _int_to_16byte(0))
+        self.logger.debug('Sent service command.')
 
     def bind(self, service):
         """
@@ -45,12 +54,14 @@ class Router:
         to the router instead of the next service.
         The router will send json versions of the protobuf.
         """
-        self.send_service_command(RouterCmd.RESET)
-        self.service_socket.close()
+        if self.service_socket is not None:
+            self.send_service_command(RouterCmd.RESET)
+            self.service_socket.close()
+
         self.connect_service_socket(service)
         self.send_service_command(RouterCmd.BIND)
 
-        # wait for response from service
+        self.logger.debug('Waiting for bind acknowledgement from service')
         return self.router_socket.recv()
 
     def send_msg(self, dict_):
@@ -70,25 +81,24 @@ class Router:
 
         @app.route('/bind')
         def bind():
-            service = request.args.get('service')
-            res = router.bind(service)
-            return jsonify(dict(status='success', msg=res))
+            # send to the out port of the last service
+            res = router.bind(router.services[-1])
+            return jsonify(dict(status='success', msg=res.decode()))
 
         @app.route('/send')
         def receive():
             data = request.form if request.form else request.json
-            res = router.send_msg(json.loads(data))
-            return jsonify(res)
+            return jsonify(data)
 
         return app
 
     def run(self):
         self.router_socket.bind(ROUTER_ADDRESS)
-        self.logger.bold('PUSH socket connected on %s' % ROUTER_ADDRESS)
+        self.logger.bold('PULL socket connected on %s' % ROUTER_ADDRESS)
 
         app = self.create_flask_app()
         self.logger.info('Starting flask on port %s' % FLASK_PORT)
-        app.run(port=5000, threaded=True, host='0.0.0.0')
+        app.run(port=FLASK_PORT, threaded=True, host='0.0.0.0')
 
 
 if __name__ == "__main__":

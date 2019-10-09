@@ -15,16 +15,21 @@ class Service:
     """The base service class"""
 
     def __init__(self):
+        cmd = sys.argv
+        verbose = True if '--verbose' in cmd else False
+        if verbose: cmd.remove('--verbose')
+
         # set yamls
-        yaml_path = pathlib.Path(sys.argv[1])
+        yaml_path = pathlib.Path(cmd[1])
         self.yaml = Yaml(yaml_path)
         self.name = yaml_path.stem
-        _base_dir_path = pathlib.Path(sys.argv[0]).parent
+        _base_dir_path = pathlib.Path(cmd[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
-        self.logger = set_logger(self.name)
-        self.logger.info(f'Initializing "%s"' % self.name)
+
+        self.logger = set_logger(self.name, verbose=verbose)
+        self.logger.info('Initializing "{}", verbose: {}'.format(self.name, verbose))
 
         # set directories
         os.chdir(_base_dir_path)
@@ -75,12 +80,12 @@ class Service:
 
     @staticmethod
     def _send_to_router(router_socket, msg_id, proto):
-        msg = b'0' + msg_id + MessageToJson(proto)
+        msg = b'\x00' + msg_id + MessageToJson(proto)
         router_socket.send(msg)
 
     @staticmethod
     def _send_to_next_service(push_socket, msg_id, proto):
-        msg = b'0' + msg_id + proto.SerializeToString()
+        msg = b'\x00' + msg_id + proto.SerializeToString()
         push_socket.send(msg)
 
     def _protofy_rcv_msg(self, msg):
@@ -100,7 +105,7 @@ class Service:
         context = zmq.Context()
         pull_socket = context.socket(zmq.PULL)
         push_socket = context.socket(zmq.PUSH)
-        router_socket = context.socket(zmq.PULL)
+        router_socket = context.socket(zmq.PUSH)
 
         rcv_address, send_address = self.default_addresses
         # pull
@@ -117,8 +122,9 @@ class Service:
 
         while True:
             body = pull_socket.recv()
-
             command, msg_id, msg = _parse_msg(body)
+            self.logger.debug('Received cmd: {} | id: {} | msg: {}'
+                              .format(command, msg_id, msg))
 
             if self._bound:
                 if command == RouterCmd.RESET.value:
@@ -130,17 +136,18 @@ class Service:
                     self._send_to_next_service(push_socket, msg_id, proto_out)
 
                 # not sent from router and going to router
-                elif command == b'0':
+                elif command == b'\x00':
                     proto_in = self._protofy_rcv_msg(msg)
                     self._send_to_router(router_socket, msg_id, proto_in)
 
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
-                    router_socket.send('%s acknowledged.' % self.name)
+                    self.logger.debug('Acknowledging BIND request.')
+                    router_socket.send(b'%s acknowledged.' % self.name.encode())
 
                 # not sent from router and not going to router
-                elif command == b'0':
+                elif command == b'\x00':
                     proto_in = self._protofy_rcv_msg(msg)
                     proto_out = self._send_to_stub(proto_in)
                     self._send_to_next_service(push_socket, msg_id, proto_out)

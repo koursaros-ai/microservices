@@ -15,13 +15,13 @@ FLASK_PORT = 5000
 
 def _parse_msg(body):
     """
-    first three characters is the router command, next
+    first character is the router command, next
     sixteen are id, and last the rest is the message.
 
     :param body: bytes message
     :return command, msg_id, msg
     """
-    return body[:3], body[4:19], body[19:]
+    return body[:1], body[1:17], body[18:]
 
 
 def _int_to_16byte(integer):
