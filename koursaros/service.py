@@ -118,7 +118,7 @@ class Service:
 
         # router
         router_socket.connect(ROUTER_ADDRESS)
-        self.logger.bold('ROUTER socket connected on %s' % send_address)
+        self.logger.bold('ROUTER socket connected on %s' % ROUTER_ADDRESS)
 
         while True:
             body = pull_socket.recv()
