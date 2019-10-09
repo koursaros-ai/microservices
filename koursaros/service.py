@@ -81,8 +81,6 @@ class Service:
         if returned is None:
             raise ValueError('Send stub must return...')
         elif isinstance(returned, dict):
-            import pdb;
-            pdb.set_trace()
             return self._send_proto_cls(**returned)
         elif isinstance(returned, self._send_proto_cls):
             return returned
