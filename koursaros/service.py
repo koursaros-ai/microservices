@@ -2,13 +2,11 @@
 from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage, ParseError
 from kctl.logger import set_logger
 from traceback import format_exc
-from koursaros.helpers import *
+from .network import Network, Route, SocketType, Command
 from grpc_tools import protoc
 from .yamls import Yaml
 import pathlib
-import json
 import sys
-import zmq
 import os
 
 
@@ -16,20 +14,17 @@ class Service:
     """The base service class"""
 
     def __init__(self):
-        cmd = sys.argv
-        verbose = True if '--verbose' in cmd else False
-        if verbose: cmd.remove('--verbose')
 
         # set yamls
-        yaml_path = pathlib.Path(cmd[1])
+        yaml_path = pathlib.Path(sys.argv[1])
         self.yaml = Yaml(yaml_path)
         self.name = yaml_path.stem
-        _base_dir_path = pathlib.Path(cmd[0]).parent
+        _base_dir_path = pathlib.Path(sys.argv[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
-        self.logger = set_logger(self.name, verbose=verbose)
-        self.logger.info('Initializing "{}", verbose: {}'.format(self.name, verbose))
+        self.logger = set_logger(self.name)
+        self.logger.info('Initializing "{}"')
 
         # set directories
         os.chdir(_base_dir_path)
@@ -38,27 +33,23 @@ class Service:
         # compile messages
         self._compile_protobufs(_base_dir_path)
         messages = __import__('messages_pb2')
-        self.rcv_proto = getattr(messages, self.base_yaml.rcv_proto)
+        self.recv_proto = getattr(messages, self.base_yaml.recv_proto)
         self.send_proto = getattr(messages, self.base_yaml.send_proto)
 
         # defaults
         self._stub_f = None
         self._bound = False
-        self.push_socket = None
-        self.pull_socket = None
-        self.router_socket = None
+
+    @staticmethod
+    def protobuf_fields(proto):
+        return proto.__name__, list(proto.DESCRIPTOR.fields_by_name)
 
     @property
-    def protobuf_fields(self):
-        return {
-            '%s (%s)' % (self.rcv_proto.__name__, 'rcv_proto'): get_proto_fields(self.rcv_proto),
-            '%s (%s)' % (self.send_proto.__name__, 'send_proto'): get_proto_fields(self.send_proto)
-        }
+    def specs(self):
+        recv_name, recv_fields = self.protobuf_fields(self.recv_proto)
+        send_name, send_fields = self.protobuf_fields(self.send_proto)
 
-    @property
-    def default_addresses(self):
-        in_port, out_port = get_hash_ports(self.name, 2)
-        return HOST % in_port, HOST % out_port
+        return {'recv: "%s"' % recv_name: recv_fields, 'SEND: "%s' % send_name: send_fields}
 
     def _compile_protobufs(self, path):
         self.logger.info(f'Compiling messages for "{path}"...')
@@ -72,9 +63,8 @@ class Service:
 
     def stub(self, f):
         self._stub_f = f
-        return
 
-    def _send_to_stub(self, proto):
+    def _stub(self, proto):
         # hand proto to stub
         returned = self._stub_f(proto)
 
@@ -88,96 +78,57 @@ class Service:
         else:
             raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
 
-    def _send_to_router(self, msg_id, proto):
-        msg = RouterCmd.PASS.value + msg_id + MessageToJson(proto).encode()
-        self.router_socket.send(msg)
-
-    def _send_to_next_service(self, msg_id, proto):
-        msg = RouterCmd.PASS.value + msg_id + proto.SerializeToString()
-        self.push_socket.send(msg)
-
-    def _send_error_to_router(self, msg_id, error):
-        err = dict(status='failure', error=error)
-        msg = RouterCmd.PASS.value + msg_id + json.dumps(err).encode()
-        self.router_socket.send(msg)
-
-    def _protofy_rcv_msg(self, msg):
-        proto = self.rcv_proto()
-        proto.ParseFromString(msg)
-        return proto
-
-    def connect(self):
-        # set zeromq
-        context = zmq.Context()
-        self.pull_socket = context.socket(zmq.PULL)
-        self.push_socket = context.socket(zmq.PUSH)
-        self.router_socket = context.socket(zmq.PUSH)
-
-        rcv_address, send_address = self.default_addresses
-        # pull
-        self.pull_socket.connect(rcv_address)
-        self.logger.bold('PULL socket connected on %s' % rcv_address)
-
-        # push
-        self.push_socket.connect(send_address)
-        self.logger.bold('PUSH socket connected on %s' % send_address)
-
-        # router
-        self.router_socket.connect(ROUTER_ADDRESS)
-        self.logger.bold('ROUTER socket connected on %s' % ROUTER_ADDRESS)
-
     def run(self):
         """
         The stub receives a message and casts it into a proto
         for the stub to receive. Whatever the stub returns is checked
         and then returned
-
-        :param: binary message
         """
-        self.connect()
+        net = Network()
+        net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
+        net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
+        net.build_socket(SocketType.PUSH_CONNECT, Route.CTRL, name=self.name)
 
         while True:
-            body = self.pull_socket.recv()
-            command, msg_id, msg = _unpack_msg(body)
-            self.logger.debug('Received cmd: {} | id: {} | msg: {}'
-                              .format(command, msg_id, msg))
+            net = Network()
+            cmd, msg_id, msg = net.sockets[Route.IN].recv()
 
             if self._bound:
-                if command == RouterCmd.RESET:
-                    self.logger.debug('Acknowledging RESET request.')
-                    self._bound = False
-
-                elif command == RouterCmd.SEND:
+                if cmd == Command.SEND:
                     try:
-                        proto_in = self.rcv_proto()
+                        proto_in = self.recv_proto()
                         JsonToMessage(msg, proto_in)
-                        proto_out = self._send_to_stub(proto_in)
-                        self._send_to_next_service(msg_id, proto_out)
+                        proto_out = self._stub(proto_in)
+                        msg = proto_out.SerializeToString()
+                        net.sockets[Route.OUT].send(Command.PASS, msg_id, msg)
                     except ParseError as e:
-                        self._send_error_to_router(msg_id, repr(e))
+                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, repr(e).encode())
                     except TypeError as e:
-                        self._send_error_to_router(msg_id, repr(e))
+                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, repr(e).encode())
                     except ValueError as e:
-                        self._send_error_to_router(msg_id, repr(e))
+                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, repr(e).encode())
                     except:
-                        self._send_error_to_router(msg_id, format_exc())
+                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, format_exc().encode())
 
                 # not sent from router and going to router
-                elif command == RouterCmd.PASS.value:
-                    proto_in = self._protofy_rcv_msg(msg)
-                    self._send_to_router(msg_id, proto_in)
+                elif cmd == Command.PASS:
+                    proto = self.recv_proto()
+                    proto.ParseFromString(msg)
+                    msg = MessageToJson(proto).encode()
+                    net.sockets[Route.CTRL].send(Command.PASS, msg_id, msg)
 
             else:
-                if command == RouterCmd.BIND.value:
+                if cmd == Command.BIND:
                     self._bound = True
-                    self.logger.debug('Acknowledging BIND request.')
-                    self.router_socket.send(_pack_msg(RouterCmd.ACK, 0, b''))
+                    net.sockets[Route.CTRL].send(Command.ACK, msg_id, msg)
 
-                # not sent from router and not going to router
-                elif command == RouterCmd.PASS.value:
-                    proto_in = self._protofy_rcv_msg(msg)
-                    proto_out = self._send_to_stub(proto_in)
-                    self._send_to_next_service(msg_id, proto_out)
+                # not sent from router and going to next service
+                elif cmd == Command.BIND:
+                    proto_in = self.recv_proto()
+                    proto_in.ParseFromString(msg)
+                    proto_out = self._stub(proto_in)
+                    msg = proto_out.SerializeToString()
+                    net.sockets[Route.OUT].send(Command.PASS, msg_id, msg)
 
 
 
