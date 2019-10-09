@@ -1,8 +1,5 @@
-from psycopg2 import extensions, extras, pool
-import sys, time, os
-# from psutil import cpu_percent, virtual_memory
-from threading import Thread, Lock
-from multiprocessing import cpu_count, Queue, Process, Value, Condition
+from psycopg2 import extensions, extras
+import os
 
 
 def is_nested(nested):
