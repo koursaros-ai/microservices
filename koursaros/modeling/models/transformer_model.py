@@ -7,6 +7,9 @@ from tensorboardX import SummaryWriter
 from tqdm import tqdm, trange
 import numpy as np
 import os
+from kctl.logger import set_logger
+
+logger = set_logger('MODELS')
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForSequenceClassification, BertTokenizer),
@@ -31,7 +34,7 @@ class TransformerModel(Model):
                                            cache_dir=self.dir, **kwargs)
 
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
-        self.batch_size = 8
+        self.batch_size = self.config.training.batch_size
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
         self.n_gpu = 1
@@ -116,13 +119,13 @@ class TransformerModel(Model):
         #                                                       find_unused_parameters=True)
 
         # Train!
-        print("***** Running training *****")
-        print("  Num examples = ", len(train_dataset))
-        print("  Num Epochs = ", epochs)
-        print("  Total train batch size (w. parallel, distributed & accumulation) = ",
+        logger.info("***** Running training *****")
+        logger.info("  Num examples = ", len(train_dataset))
+        logger.info("  Num Epochs = ", epochs)
+        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = ",
                     self.batch_size * (
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
-        print("  Total optimization steps = ", t_total)
+        logger.info("  Total optimization steps = ", t_total)
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -205,9 +208,9 @@ class TransformerModel(Model):
         eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=self.batch_size)
 
         # Eval!
-        print("***** Running evaluation *****")
-        print("  Num examples = ", len(eval_dataset))
-        print("  Batch size = ", self.batch_size)
+        logger.info("***** Running evaluation *****")
+        logger.info("  Num examples = ", len(eval_dataset))
+        logger.info("  Batch size = ", self.batch_size)
         eval_loss = 0.0
         nb_eval_steps = 0
         preds = None
@@ -247,9 +250,9 @@ class TransformerModel(Model):
 
         output_eval_file = os.path.join(eval_output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
-            print("***** Eval results *****")
+            logger.info("***** Eval results *****")
             for key in sorted(result.keys()):
-                print("  %s = %s", key, str(result[key]))
+                logger.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
         return result
@@ -289,12 +292,12 @@ class TransformerModel(Model):
                 if example.label in self.label_map:
                     label = self.label_map[example.label]
                 else:
-                    print("UNKNOWN LABEL %s, ignoring" % example.label)
+                    logger.warning("UNKNOWN LABEL %s, ignoring" % example.label)
                     return
             elif self.config.task == "regression":
                 label = float(example.label)
             else:
-                print("Only supported tasks are classification and regression")
+                logger.error("Only supported tasks are classification and regression")
                 raise NotImplementedError()
         else:
             label = None
@@ -310,10 +313,10 @@ class TransformerModel(Model):
 
         cached_features_file = os.path.join(self.data_dir, 'features' if not evaluate else 'eval-features')
         if os.path.exists(os.path.join(cached_features_file)):
-            print("Loading features from cached file ", cached_features_file)
+            logger.info("Loading features from cached file ", cached_features_file)
             features = torch.load(cached_features_file)
         else:
-            print("Creating features from dataset file at %s", cached_features_file)
+            logger.info("Creating features from dataset file at ", cached_features_file)
 
             examples = [
                 InputExample(guid=i,
@@ -325,11 +328,11 @@ class TransformerModel(Model):
             features = []
             for (ex_index, example) in enumerate(examples):
                 if ex_index % 10000 == 0:
-                    print("Writing example %d" % (ex_index))
+                    logger.info("Writing example %d" % (ex_index))
                 features.append(self.convert_example(example))
 
             if self.local_rank in [-1, 0]:
-                print("Saving features into cached file %s", cached_features_file)
+                logger.info("Saving features into cached file %s" % cached_features_file)
                 torch.save(features, cached_features_file)
 
         if self.local_rank == 0 and not evaluate:
