@@ -43,7 +43,7 @@ class TransformerModel(Model):
         self.fp16 = True
         self.logging_steps = 1000
         self.save_steps = 1000
-        self.max_length=128
+        self.max_length=256
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
