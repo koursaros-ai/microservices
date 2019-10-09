@@ -122,6 +122,7 @@ class Service:
 
         while True:
             body = pull_socket.recv()
+            self.logger.debug('Received "%s"' % body)
 
             command, msg_id, msg = _parse_msg(body)
 
