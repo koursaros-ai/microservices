@@ -73,6 +73,16 @@ class Service:
         else:
             raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
 
+    @staticmethod
+    def _send_to_router(router_socket, msg_id, proto):
+        msg = b'0' + msg_id + MessageToJson(proto)
+        router_socket.send(msg)
+
+    @staticmethod
+    def _send_to_next_service(push_socket, msg_id, proto):
+        msg = b'0' + msg_id + proto.SerializeToString()
+        push_socket.send(msg)
+
     def _protofy_rcv_msg(self, msg):
         proto = self._rcv_proto_cls()
         proto.ParseFromString(msg)
@@ -117,26 +127,23 @@ class Service:
                 elif command == RouterCmd.SEND.value:
                     proto_in = JsonToMessage(msg, self._rcv_proto_cls)
                     proto_out = self._send_to_stub(proto_in)
-                    msg = b'0' + msg_id + proto_out.SerializeToString()
-                    push_socket.send(msg)
+                    self._send_to_next_service(push_socket, msg_id, proto_out)
 
-                # not sent from router
+                # not sent from router and going to router
                 elif command == b'0':
                     proto_in = self._protofy_rcv_msg(msg)
-                    msg = b'0' + msg_id + MessageToJson(proto_in)
-                    router_socket.send(msg)
+                    self._send_to_router(router_socket, msg_id, proto_in)
 
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
                     router_socket.send('%s acknowledged.' % self.name)
 
-                # not sent from router
+                # not sent from router and not going to router
                 elif command == b'0':
                     proto_in = self._protofy_rcv_msg(msg)
                     proto_out = self._send_to_stub(proto_in)
-                    msg = b'0' + msg_id + proto_out.SerializeToString()
-                    push_socket.send(msg)
+                    self._send_to_next_service(push_socket, msg_id, proto_out)
 
 
 
