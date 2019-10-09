@@ -41,9 +41,7 @@ class TransformerModel(Model):
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
         self.fp16 = True
-        self.logging_steps = 1000
-        self.save_steps = 1000
-        self.max_length=256
+        self.max_length = 256
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
@@ -136,67 +134,68 @@ class TransformerModel(Model):
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
         logger.info("  Total optimization steps = %d" % t_total)
 
+        self.logging_steps = len(train_dataset) // self.batch_size // 2
+        self.logging_steps = len(train_dataset) // self.batch_size // 2
+
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
         self.model.zero_grad()
-        train_iterator = trange(int(epochs), desc="Epoch", disable=self.local_rank not in [-1, 0])
         label_count = [0] * len(self.config.labels)
-        for _ in train_iterator:
-            epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
-            num_correct = 0
-            for step, batch in enumerate(epoch_iterator):
-                self.model.train()
-                correct_labels = batch[3]
-                batch = tuple(t.to(self.device) for t in batch)
+        epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
+        num_correct = 0
+        for step, batch in enumerate(epoch_iterator):
+            self.model.train()
+            correct_labels = batch[3]
+            batch = tuple(t.to(self.device) for t in batch)
 
-                inputs = self.inputs_from_batch(batch)
-                outputs = self.model(**inputs)
-                loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
-                logits = outputs[1]
-                preds = logits.detach().cpu().numpy()
-                preds = np.argmax(preds, axis=1)
-                for pred in preds:
-                    label_count[pred] += 1
-                num_correct += np.sum(preds == correct_labels.numpy())
-                if step > 0:
-                    epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
-                                                   % (num_correct / (step*self.batch_size), label_count))
-                    epoch_iterator.refresh()  # to show immediately the update
+            inputs = self.inputs_from_batch(batch)
+            outputs = self.model(**inputs)
+            loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+            logits = outputs[1]
+            preds = logits.detach().cpu().numpy()
+            preds = np.argmax(preds, axis=1)
+            for pred in preds:
+                label_count[pred] += 1
+            num_correct += np.sum(preds == correct_labels.numpy())
+            if step > 0:
+                epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
+                                               % (num_correct / (step*self.batch_size), label_count))
+                epoch_iterator.refresh()  # to show immediately the update
 
-                if self.n_gpu > 1:
-                    loss = loss.mean()  # mean() to average on multi-gpu parallel training
+            if self.n_gpu > 1:
+                loss = loss.mean()  # mean() to average on multi-gpu parallel training
 
-                if self.fp16:
-                    with amp.scale_loss(loss, optimizer) as scaled_loss:
-                        scaled_loss.backward()
-                    torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), self.max_grad_norm)
-                else:
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
+            if self.fp16:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), self.max_grad_norm)
+            else:
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_grad_norm)
 
-                tr_loss += loss.item()
-                if (step + 1) % self.gradient_accumulation_steps == 0:
-                    optimizer.step()
-                    scheduler.step()  # Update learning rate schedule
-                    self.model.zero_grad()
-                    global_step += 1
+            tr_loss += loss.item()
+            if (step + 1) % self.gradient_accumulation_steps == 0:
+                optimizer.step()
+                scheduler.step()  # Update learning rate schedule
+                self.model.zero_grad()
+                global_step += 1
 
-                    if self.local_rank in [-1, 0] and self.logging_steps > 0 and global_step % self.logging_steps == 0:
-                        # Log metrics
-                        if self.local_rank == -1 and self.evaluate_during_training:
-                            results = self.evaluate(test_dataset)
-                            for key, value in results.items():
-                                tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-                        tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
-                        logging_loss = tr_loss
+                if self.local_rank in [-1, 0] and self.logging_steps > 0 and global_step % self.logging_steps == 0:
+                    # Log metrics
+                    if self.local_rank == -1 and self.evaluate_during_training:
+                        results = self.evaluate(test_dataset)
+                        for key, value in results.items():
+                            tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
+                    tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+                    tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
+                    logging_loss = tr_loss
 
-                    if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
-                        # Save model checkpoint
-                        model_to_save = self.model.module if hasattr(self.model,
-                                                                'module') else self.model
-                        model_to_save.save_pretrained(self.ckpt_dir)
-                        self.tokenizer.save_pretrained(self.ckpt_dir)
+                if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
+                    # Save model checkpoint
+                    model_to_save = self.model.module if hasattr(self.model,
+                                                            'module') else self.model
+                    model_to_save.save_pretrained(self.ckpt_dir)
+                    self.tokenizer.save_pretrained(self.ckpt_dir)
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
