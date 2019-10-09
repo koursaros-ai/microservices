@@ -43,14 +43,14 @@ class TransformerModel(Model):
         self.fp16 = True
         self.logging_steps = 1000
         self.save_steps = 1000
-        self.max_length=512
+        self.max_length=100
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
         self.pad_token = 0
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
-        self.pad = False
+        self.pad = True
         self.label_map = {label: i for i, label in enumerate(self.config.labels)}
         if self.trained:
             self.model.eval()
