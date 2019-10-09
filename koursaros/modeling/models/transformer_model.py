@@ -4,10 +4,12 @@ from transformers import *
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset, DistributedSampler)
 from tensorboardX import SummaryWriter
-from tqdm import tqdm, trange
+from tqdm import tqdm
 import numpy as np
 import os
 from kctl.logger import set_logger
+
+from koursaros.utils.misc import batch_list
 
 logger = set_logger('MODELS')
 
@@ -60,17 +62,6 @@ class TransformerModel(Model):
         if self.config.arch != 'distilbert':
             inputs['token_type_ids'] = batch[2] if self.config.arch in ['bert',
                                                                         'xlnet'] else None
-        return inputs
-
-    def inputs_from_features(self, features):
-        inputs = {'input_ids': features.input_ids,
-                  'attention_mask': features.attention_mask}
-        if self.config.arch != 'distilbert':
-            inputs['token_type_ids'] = features.token_type_ids if self.config.arch in \
-                                                                  ['bert', 'xlnet'] else None
-
-        for k, v in inputs.items():
-            inputs[k] = torch.tensor([v], dtype=torch.long).to(self.device) if v is not None else None
         return inputs
 
     def train(self, force_build_features=False):
@@ -321,6 +312,21 @@ class TransformerModel(Model):
                           token_type_ids=token_type_ids,
                           label=label)
 
+    def features_to_inputs(self, features, inference=False):
+        all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
+        all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long)
+        all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long)
+        if not inference:
+            if self.config.task == "classification":
+                all_labels = torch.tensor([f.label for f in features], dtype=torch.long)
+            elif self.config.task == "regression":
+                all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
+            else:
+                raise NotImplementedError()
+        else:
+            all_labels = None
+        return all_input_ids, all_attention_mask, all_token_type_ids, all_labels
+
     def load_and_cache_examples(self, data, evaluate=False, force_build_features=False):
         if self.local_rank not in [-1, 0] and not evaluate:
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
@@ -353,17 +359,7 @@ class TransformerModel(Model):
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
 
         # Convert to Tensors and build dataset
-        all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
-        all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long)
-        all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long)
-        if self.config.task == "classification":
-            all_labels = torch.tensor([f.label for f in features], dtype=torch.long)
-        elif self.config.task == "regression":
-            all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
-        else:
-            raise NotImplementedError()
-
-        dataset = TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_labels)
+        dataset = TensorDataset(*self.features_to_inputs(features))
         return dataset
 
     def pred_from_output(self, outputs):
@@ -377,20 +373,22 @@ class TransformerModel(Model):
         else:
             raise NotImplementedError()
 
-
     def run(self, *args):
-        if type(args[0]) is not list:
-            example = InputExample(
-                guid='sample-1',
+        examples = [
+            InputExample(
+                guid=str(i),
                 text_a=args[0],
                 text_b=None if len(args) < 2 else args[1]
-            )
-        else:
-            raise NotImplementedError()
-        features = self.convert_example(example)
-        inputs = self.inputs_from_features(features)
-        outputs = self.model(**inputs)
-        return self.pred_from_output(outputs)
+            ) for i, arg in enumerate(zip(*args))
+        ]
+        features = [self.convert_example(example) for example in examples]
+        all_inputs = self.features_to_inputs(features)
+        results = []
+        for batch in batch_list(zip(*all_inputs), self.batch_size):
+            inputs = self.inputs_from_batch(batch)
+            outputs = self.model(**inputs)
+            results.extend(self.pred_from_output(outputs))
+        return results
 
     @staticmethod
     def architectures():
