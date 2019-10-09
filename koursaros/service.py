@@ -42,8 +42,8 @@ class Service:
         messages = __import__('messages_pb2')
         self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
         self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
-        self.logger.debug('Receive proto spec: %s' % signature(self._rcv_proto_cls.__init__))
-        self.logger.debug('Send proto spec: %s' % signature(self._send_proto_cls.__init__))
+        self.logger.debug('Receive proto spec: %s' % self._rcv_proto_cls.__dict__)
+        self.logger.debug('Send proto spec: %s' % self._send_proto_cls.__dict__)
 
         # defaults
         self._stub_f = None
