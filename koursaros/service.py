@@ -136,18 +136,18 @@ class Service:
                     self._send_to_next_service(push_socket, msg_id, proto_out)
 
                 # not sent from router and going to router
-                elif command == b'0':
+                elif command == b'\x00':
                     proto_in = self._protofy_rcv_msg(msg)
                     self._send_to_router(router_socket, msg_id, proto_in)
 
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
-                    self.logger.debug('Acknowledging BIND request.')
+                    self.logger.debug(b'Acknowledging BIND request.')
                     router_socket.send('%s acknowledged.' % self.name)
 
                 # not sent from router and not going to router
-                elif command == b'0':
+                elif command == b'\x00':
                     proto_in = self._protofy_rcv_msg(msg)
                     proto_out = self._send_to_stub(proto_in)
                     self._send_to_next_service(push_socket, msg_id, proto_out)

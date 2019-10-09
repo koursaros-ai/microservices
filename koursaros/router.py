@@ -9,9 +9,9 @@ import sys
 
 
 class RouterCmd(Enum):
-    SEND = b'\x00'
-    BIND = b'\x01'
-    RESET = b'\x02'
+    SEND = b'\x01'
+    BIND = b'\x02'
+    RESET = b'\x03'
 
 
 class Router:
