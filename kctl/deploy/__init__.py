@@ -21,12 +21,14 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
     app_manager.raise_if_not_app_root()
 
+    ctx.invoke(router)
     ctx.invoke(streamers, pipeline_name=pipeline_name)
 
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
         ctx.invoke(service, service_name=service_name)
+
 
 
 @deploy.command()
