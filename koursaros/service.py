@@ -109,7 +109,7 @@ class Service:
 
         # push
         push_socket.connect(send_address)
-        self.logger.bold('PUSH socket connected on %s' % send_address)
+        self.logger.bold('PUSH socket connected on %s' % send_address) 
 
         # router
         router_socket.connect(ROUTER_ADDRESS)
