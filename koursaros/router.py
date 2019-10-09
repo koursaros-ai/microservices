@@ -50,6 +50,7 @@ class Router:
         if self.service_socket is not None:
             self.send_service_command(RouterCmd.RESET)
             self.service_socket.close()
+        import pdb; pdb.set_trace()
         self.connect_service_socket(service)
         self.send_service_command(RouterCmd.BIND)
 
