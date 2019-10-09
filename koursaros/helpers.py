@@ -21,7 +21,7 @@ def _parse_msg(body):
     :param body: bytes message
     :return command, msg_id, msg
     """
-    return body[:1], body[1:17], body[17:]
+    return body[:1], body[1:17], body[18:]
 
 
 def _int_to_16byte(integer):
