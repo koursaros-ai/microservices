@@ -134,6 +134,11 @@ class TransformerModel(Model):
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
         logger.info("  Total optimization steps = %d" % t_total)
 
+        if not 'eval_freq' in self.config.training:
+            self.eval_freq = 2
+        else:
+            self.eval_freq = self.config.training.eval_freq
+
         self.logging_steps = len(train_dataset) // self.batch_size // self.eval_freq
         self.save_steps = len(train_dataset) // self.batch_size // self.eval_freq
 
