@@ -39,8 +39,8 @@ class Router:
         service_port, _ = get_hash_ports(service, 2)
         service_address = HOST % service_port
         self.service_socket = self.context.socket(zmq.PUSH)
-        self.logger.bold('Connecting PUSH socket to %s' % service_address)
-        self.service_socket.connect(service_address)
+        self.logger.bold('Binding PUSH socket to %s' % service_address)
+        self.service_socket.bind(service_address)
 
     def send_service_command(self, command):
         self.logger.debug('Sending service command %s' % command)
