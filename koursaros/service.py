@@ -17,7 +17,7 @@ class Service:
     def __init__(self):
         cmd = sys.argv
         verbose = True if '--verbose' in cmd else False
-        cmd.remove('--verbose')
+        if verbose: cmd.remove('--verbose')
 
         # set yamls
         yaml_path = pathlib.Path(cmd[1])

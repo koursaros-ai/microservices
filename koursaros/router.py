@@ -25,7 +25,7 @@ class Router:
         # set logger
         cmd = sys.argv
         verbose = True if '--verbose' in cmd else False
-        cmd.remove('--verbose')
+        if verbose: cmd.remove('--verbose')
         self.services = cmd[1:]
         self.logger = set_logger('router', verbose=verbose)
         self.logger.info(f'Initializing "router", verbose: %s' % verbose)
