@@ -12,7 +12,7 @@ def deploy(ctx):
 
 @deploy.command()
 @click.argument('pipeline_name')
-@click.argument('-v', '--verbose', is_flag=True)
+@click.option('-v', '--verbose', is_flag=True)
 @click.pass_context
 def pipeline(ctx, pipeline_name, verbose):
     """
@@ -33,7 +33,7 @@ def pipeline(ctx, pipeline_name, verbose):
 
 @deploy.command()
 @click.argument('pipeline_name')
-@click.argument('-v', '--verbose', is_flag=True)
+@click.option('-v', '--verbose', is_flag=True)
 @click.pass_obj
 def streamers(app_manager, pipeline_name, verbose):
     """Deploy streamers for specified pipeline"""
@@ -51,7 +51,7 @@ def streamers(app_manager, pipeline_name, verbose):
 
 @deploy.command()
 @click.argument('pipeline_name')
-@click.argument('-v', '--verbose', is_flag=True)
+@click.option('-v', '--verbose', is_flag=True)
 @click.pass_obj
 def router(app_manager, pipeline_name, verbose):
     """Deploy the router"""
@@ -65,7 +65,7 @@ def router(app_manager, pipeline_name, verbose):
 
 @deploy.command()
 @click.argument('service_name')
-@click.argument('-v', '--verbose', is_flag=True)
+@click.option('-v', '--verbose', is_flag=True)
 @click.option('-a', '--all', is_flag=True)
 @click.pass_obj
 def service(app_manager, service_name, verbose, all=False):
