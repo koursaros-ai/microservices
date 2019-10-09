@@ -36,7 +36,7 @@ class Router:
         self.service_socket = None
 
     def connect_service_socket(self, service):
-        service_port, _ = get_hash_ports(service, 2)
+        _, service_port = get_hash_ports(service, 2)
         service_address = HOST % service_port
         self.service_socket = self.context.socket(zmq.PUSH)
         self.logger.bold('Connecting PUSH socket to %s' % service_address)
@@ -80,7 +80,8 @@ class Router:
 
         @app.route('/bind')
         def bind():
-            res = router.bind(router.services[0])
+            # send to the out port of the last service
+            res = router.bind(router.services[-1])
             return jsonify(dict(status='success', msg=res))
 
         @app.route('/send')
