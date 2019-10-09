@@ -29,7 +29,7 @@ class Router:
 
         # set zeromq
         self.context = zmq.Context()
-        self.router_socket = self.context.socket(zmq.PUSH)
+        self.router_socket = self.context.socket(zmq.PULL)
         self.service_socket = None
 
     def connect_service_socket(self, service):
