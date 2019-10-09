@@ -42,7 +42,6 @@ class TransformerModel(Model):
         self.n_gpu = 1
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
-        self.fp16 = True
         self.max_length = 256
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
@@ -66,11 +65,11 @@ class TransformerModel(Model):
 
     def train(self, force_build_features=False):
         try:
-            self.do_train(force_build_features=force_build_features)
+            return self.do_train(force_build_features=force_build_features)
         except:
             logger.warning('Error during training, decreasing batch size and trying again')
             self.batch_size = self.batch_size // 2 # back off batch_size
-            self.train(force_build_features=True)
+            return self.train(force_build_features=True)
 
     def do_train(self, force_build_features=False):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
@@ -99,12 +98,13 @@ class TransformerModel(Model):
             {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)],
              'weight_decay': 0.0}
         ]
-        if self.fp16:
-            try:
-                from apex import amp
-            except ImportError:
-                raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
+
+        try:
+            from apex import amp
             model, optimizer = amp.initialize(self.model, optimizer)
+        except ImportError:
+            raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
+
 
         # # multi-gpu training (should be after apex fp16 initialization)
         # if self.n_gpu > 1:
