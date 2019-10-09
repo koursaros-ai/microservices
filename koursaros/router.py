@@ -34,7 +34,7 @@ class Router:
 
     def connect_service_socket(self, service):
         service_port, _ = get_hash_ports(service, 2)
-        service_address = HOST.format(service_port)
+        service_address = HOST % service_port
         self.service_socket = self.context.socket(zmq.PUSH)
         self.service_socket.connect(service_address)
 
@@ -50,7 +50,7 @@ class Router:
         if self.service_socket is not None:
             self.send_service_command(RouterCmd.RESET)
             self.service_socket.close()
-        import pdb; pdb.set_trace()
+
         self.connect_service_socket(service)
         self.send_service_command(RouterCmd.BIND)
 
@@ -91,7 +91,7 @@ class Router:
 
         app = self.create_flask_app()
         self.logger.info('Starting flask on port %s' % FLASK_PORT)
-        app.run(port=5000, threaded=True, host='0.0.0.0')
+        app.run(port=FLASK_PORT, threaded=True, host='0.0.0.0')
 
 
 if __name__ == "__main__":
