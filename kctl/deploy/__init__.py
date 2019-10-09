@@ -12,8 +12,9 @@ def deploy(ctx):
 
 @deploy.command()
 @click.argument('pipeline_name')
+@click.argument('-v', '--verbose', is_flag=True)
 @click.pass_context
-def pipeline(ctx, pipeline_name):
+def pipeline(ctx, pipeline_name, verbose):
     """
     Deploy a pipeline by threading the deployment
     of streamers and each service.
@@ -21,19 +22,20 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
     app_manager.raise_if_not_app_root()
 
-    ctx.invoke(router, pipeline_name=pipeline_name)
-    ctx.invoke(streamers, pipeline_name=pipeline_name)
+    ctx.invoke(router, pipeline_name=pipeline_name, verbose=verbose)
+    ctx.invoke(streamers, pipeline_name=pipeline_name, verbose=verbose)
 
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
-        ctx.invoke(service, service_name=service_name)
+        ctx.invoke(service, service_name=service_name, verbose=verbose)
 
 
 @deploy.command()
 @click.argument('pipeline_name')
+@click.argument('-v', '--verbose', is_flag=True)
 @click.pass_obj
-def streamers(app_manager, pipeline_name):
+def streamers(app_manager, pipeline_name, verbose):
     """Deploy streamers for specified pipeline"""
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
@@ -42,27 +44,31 @@ def streamers(app_manager, pipeline_name):
     service_in = service_names[0]
     for service_out in service_names[1:] + [service_in]:
         cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
+        cmd += ['--verbose'] if verbose else []
         service_in = service_out
         app_manager.subproc(cmd)
 
 
 @deploy.command()
 @click.argument('pipeline_name')
+@click.argument('-v', '--verbose', is_flag=True)
 @click.pass_obj
-def router(app_manager, pipeline_name):
+def router(app_manager, pipeline_name, verbose):
     """Deploy the router"""
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
     cmd = [sys.executable, '-m', 'koursaros.router'] + pipeline_yaml.services
+    cmd += ['--verbose'] if verbose else []
     app_manager.subproc(cmd)
 
 
 @deploy.command()
 @click.argument('service_name')
+@click.argument('-v', '--verbose', is_flag=True)
 @click.option('-a', '--all', is_flag=True)
 @click.pass_obj
-def service(app_manager, service_name, all=False):
+def service(app_manager, service_name, verbose, all=False):
     """Deploy a service"""
     service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
     service_yaml = Yaml(service_yaml_path)
@@ -75,6 +81,7 @@ def service(app_manager, service_name, all=False):
         app_manager.save_base_to_pkg(service_yaml.base)
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, str(service_yaml_path)]
+    cmd += ['--verbose'] if verbose else []
     app_manager.subproc(cmd)
 
 

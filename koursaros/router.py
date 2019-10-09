@@ -23,9 +23,12 @@ class Router:
 
     def __init__(self):
         # set logger
-        self.logger = set_logger('router')
-        self.logger.info(f'Initializing "router"')
-        self.services = sys.argv[1:]
+        cmd = sys.argv
+        verbose = True if '--verbose' in cmd else False
+        cmd.remove('--verbose')
+        self.services = cmd[1:]
+        self.logger = set_logger('router', verbose=verbose)
+        self.logger.info(f'Initializing "router", verbose: %s' % verbose)
 
         # set zeromq
         self.context = zmq.Context()
@@ -39,6 +42,7 @@ class Router:
         self.service_socket.connect(service_address)
 
     def send_service_command(self, command):
+        self.logger.debug('Sending service command %s' % command)
         self.service_socket.send(command.value + _int_to_16byte(0))
 
     def bind(self, service):
@@ -54,7 +58,7 @@ class Router:
         self.connect_service_socket(service)
         self.send_service_command(RouterCmd.BIND)
 
-        # wait for response from service
+        self.logger.debug('Waiting for bind acknowledgement from service')
         return self.router_socket.recv()
 
     def send_msg(self, dict_):

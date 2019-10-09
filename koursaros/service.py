@@ -15,16 +15,21 @@ class Service:
     """The base service class"""
 
     def __init__(self):
+        cmd = sys.argv
+        verbose = True if '--verbose' in cmd else False
+        cmd.remove('--verbose')
+
         # set yamls
-        yaml_path = pathlib.Path(sys.argv[1])
+        yaml_path = pathlib.Path(cmd[1])
         self.yaml = Yaml(yaml_path)
         self.name = yaml_path.stem
-        _base_dir_path = pathlib.Path(sys.argv[0]).parent
+        _base_dir_path = pathlib.Path(cmd[0]).parent
         self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
 
         # set logger
-        self.logger = set_logger(self.name)
-        self.logger.info(f'Initializing "%s"' % self.name)
+
+        self.logger = set_logger(self.name, verbose=verbose)
+        self.logger.info('Initializing "{}", verbose: {}'.format(self.name, verbose))
 
         # set directories
         os.chdir(_base_dir_path)
