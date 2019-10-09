@@ -128,6 +128,7 @@ class Service:
 
             if self._bound:
                 if command == RouterCmd.RESET.value:
+                    self.logger.debug('Acknowledging RESET request.')
                     self._bound = False
 
                 elif command == RouterCmd.SEND.value:
