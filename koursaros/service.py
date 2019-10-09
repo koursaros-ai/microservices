@@ -4,14 +4,19 @@ from koursaros.router import RouterCmd
 from kctl.logger import set_logger
 from traceback import format_exc
 from koursaros.helpers import *
-from inspect import signature
 from grpc_tools import protoc
 from .yamls import Yaml
+from enum import Enum
 import pathlib
 import json
 import sys
 import zmq
 import os
+
+
+class ProtoType(Enum):
+    RCV = 0
+    SEND = 1
 
 
 class Service:
@@ -38,14 +43,10 @@ class Service:
         sys.path.insert(1, str(_base_dir_path))
 
         # compile messages
-        self._compile_messages_proto(_base_dir_path)
+        self._compile_protobufs(_base_dir_path)
         messages = __import__('messages_pb2')
-        self._rcv_proto_cls = messages.__dict__.get(self.base_yaml.rcv_proto)
-        self._send_proto_cls = messages.__dict__.get(self.base_yaml.send_proto)
-        self.logger.debug('Send proto (%s) spec: %s' % (
-            self.base_yaml.rcv_proto, self._rcv_proto_cls.__dict__))
-        self.logger.debug('Send proto (%s) spec: %s' % (
-            self.base_yaml.send_proto, self._send_proto_cls.__dict__))
+        self.rcv_proto = getattr(messages, self.base_yaml.rcv_proto)
+        self.send_proto = getattr(messages, self.base_yaml.send_proto)
 
         # defaults
         self._stub_f = None
@@ -55,11 +56,18 @@ class Service:
         self.router_socket = None
 
     @property
+    def protobuf_fields(self):
+        return {
+            '%s (%s)' % (self.rcv_proto.__name__, 'rcv_proto'): get_proto_fields(self.rcv_proto),
+            '%s (%s)' % (self.send_proto.__name__, 'send_proto'): get_proto_fields(self.send_proto)
+        }
+
+    @property
     def default_addresses(self):
         in_port, out_port = get_hash_ports(self.name, 2)
         return HOST % in_port, HOST % out_port
 
-    def _compile_messages_proto(self, path):
+    def _compile_protobufs(self, path):
         self.logger.info(f'Compiling messages for "{path}"...')
 
         protoc.main((
@@ -81,8 +89,8 @@ class Service:
         if returned is None:
             raise ValueError('Send stub must return...')
         elif isinstance(returned, dict):
-            return self._send_proto_cls(**returned)
-        elif isinstance(returned, self._send_proto_cls):
+            return self.send_proto(**returned)
+        elif isinstance(returned, self.send_proto):
             return returned
         else:
             raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
@@ -101,7 +109,7 @@ class Service:
         self.router_socket.send(msg)
 
     def _protofy_rcv_msg(self, msg):
-        proto = self._rcv_proto_cls()
+        proto = self.rcv_proto()
         proto.ParseFromString(msg)
         return proto
 
@@ -137,18 +145,18 @@ class Service:
 
         while True:
             body = self.pull_socket.recv()
-            command, msg_id, msg = _parse_msg(body)
+            command, msg_id, msg = _unpack_msg(body)
             self.logger.debug('Received cmd: {} | id: {} | msg: {}'
                               .format(command, msg_id, msg))
 
             if self._bound:
-                if command == RouterCmd.RESET.value:
+                if command == RouterCmd.RESET:
                     self.logger.debug('Acknowledging RESET request.')
                     self._bound = False
 
-                elif command == RouterCmd.SEND.value:
+                elif command == RouterCmd.SEND:
                     try:
-                        proto_in = self._rcv_proto_cls()
+                        proto_in = self.rcv_proto()
                         JsonToMessage(msg, proto_in)
                         proto_out = self._send_to_stub(proto_in)
                         self._send_to_next_service(msg_id, proto_out)
@@ -170,7 +178,7 @@ class Service:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
                     self.logger.debug('Acknowledging BIND request.')
-                    self.router_socket.send(b'%s acknowledged.' % self.name.encode())
+                    self.router_socket.send(_pack_msg(RouterCmd.ACK, 0, b''))
 
                 # not sent from router and not going to router
                 elif command == RouterCmd.PASS.value:

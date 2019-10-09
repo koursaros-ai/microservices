@@ -1,18 +1,19 @@
 
 from flask import Flask, request, jsonify
 from kctl.logger import set_logger
+from enum import IntEnum
 from .helpers import *
-from enum import Enum
 import json
 import zmq
 import sys
 
 
-class RouterCmd(Enum):
-    PASS = b'\x00'
-    SEND = b'\x01'
-    BIND = b'\x02'
-    RESET = b'\x03'
+class RouterCmd(IntEnum):
+    PASS = b'0'
+    SEND = b'1'
+    BIND = b'2'
+    RESET = b'3'
+    ACK = b'4'
 
 
 class Router:
@@ -36,6 +37,7 @@ class Router:
         self.router_socket = self.context.socket(zmq.PULL)
         self.service_socket = None
         self.msg_count = 0
+        self.poller = zmq.Poller()
 
     def connect_service_socket(self, service):
         _, service_port = get_hash_ports(service, 2)
@@ -46,9 +48,8 @@ class Router:
         self.service_socket.connect(service_address)
 
     def send_service_command(self, command):
-        self.logger.debug('Sending service command %s.' % command)
-        self.service_socket.send(command.value + _int_to_16byte(0))
-        self.logger.debug('Sent service command.')
+        cmd = _pack_msg(command, 0, b'')
+        self.service_socket.send(cmd)
 
     def bind(self, service):
         """
@@ -56,43 +57,45 @@ class Router:
         to the router instead of the next service.
         The router will send json versions of the protobuf.
         """
-        if self.service_socket is not None:
-            self.send_service_command(RouterCmd.RESET)
-            self.service_socket.close()
-
         self.connect_service_socket(service)
         self.send_service_command(RouterCmd.BIND)
+        self.poller.register(self.service_socket, zmq.POLLIN)
 
-        self.logger.debug('Waiting for bind acknowledgement from service')
-        return self.router_socket.recv()
+        socks = dict(self.poller.poll(POLL_TIMEOUT))
+
+        if self.service_socket in socks and socks[self.service_socket] == zmq.POLLIN:
+            return _unpack_msg(self.router_socket.recv())
 
     def send_msg(self, dict_):
         self.msg_count += 1
 
         # use message count if no id is found in data
-        msg_id = _int_to_16byte(dict_.pop('id') if 'id' in dict_ else self.msg_count)
-        self.service_socket.send(RouterCmd.SEND.value + msg_id + json.dumps(dict_).encode())
+        msg_id = dict_.pop('id') if 'id' in dict_ else self.msg_count
+        msg = _pack_msg(RouterCmd.SEND, msg_id, json.dumps(dict_).encode())
+        self.service_socket.send(msg)
 
         # wait for response from service
         body = self.router_socket.recv()
-        _, msg_id, msg = _parse_msg(body)
+        _, msg_id, msg = _unpack_msg(body)
         res = json.loads(msg)
 
-        res['id'] = _16byte_to_int(msg_id)
+        res['id'] = msg_id
         return res
 
     def create_flask_app(self):
         app = Flask(__name__)
         router = self
 
-        @app.route('/bind')
-        def bind():
-            # send to the out port of the last service
-            res = router.bind(router.services[-1])
-            return jsonify(dict(status='success', msg=res.decode()))
-
         @app.route('/send')
         def receive():
+            if router.service_socket is None:
+                first_service = router.services[-1]
+                res = router.bind(first_service)
+
+                if res[0] != RouterCmd.ACK:
+                    return jsonify(dict(status='failure', msg='{} did not respond'
+                                        .format(first_service)))
+
             data = request.form if request.form else request.json
             res = router.send_msg(data)
             return jsonify(res)
