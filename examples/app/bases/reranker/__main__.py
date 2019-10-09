@@ -3,7 +3,6 @@ from koursaros.service import Service
 from koursaros.modeling import model_from_config
 
 service = Service()
-model = model_from_config(service.yaml)
 
 @service.stub
 def rerank(rerank_query):
@@ -15,5 +14,6 @@ def rerank(rerank_query):
     )
 
 if __name__ == "__main__":
+    model = model_from_config(service.yaml)
     service.run()
 

@@ -69,7 +69,6 @@ def service(app_manager, service_name, all=False):
     if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE):
         app_manager.save_base_to_pkg(service_yaml.base)
 
-    print(sys.executable)
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base, str(service_yaml_path)]
     app_manager.subproc(cmd)
 
