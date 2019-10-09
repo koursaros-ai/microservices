@@ -4,12 +4,13 @@ from typing import List
 
 __all__ = ['_parse_msg', '_int_to_16byte', '_16byte_to_int',
            'ROUTER_ADDRESS', 'hash_string_between', 'get_hash_ports',
-           'HOST']
+           'HOST', 'FLASK_PORT']
 
 HOST = "tcp://127.0.0.1:%s"
 ROUTER_ADDRESS = HOST % 49152
 MIN_PORT = 49153
 MAX_PORT = 65536
+FLASK_PORT = 5000
 
 
 def _parse_msg(body):

@@ -86,6 +86,7 @@ class Router:
 
     def run(self):
         app = self.create_flask_app()
+        self.logger.info('Starting flask on port %s' % FLASK_PORT)
         app.run(port=5000, threaded=True, host='0.0.0.0')
 
 

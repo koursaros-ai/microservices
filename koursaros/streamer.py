@@ -21,8 +21,8 @@ class Streamer:
         _, in_port = get_hash_ports(service_in, 2)
         out_port, _ = get_hash_ports(service_out, 2)
 
-        rcv_address = HOST.format(in_port)
-        send_address = HOST.format(out_port)
+        rcv_address = HOST % in_port
+        send_address = HOST % out_port
 
         logger.info('Initializing {} streamer'.format(name))
 
