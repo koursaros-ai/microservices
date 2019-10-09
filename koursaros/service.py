@@ -80,12 +80,12 @@ class Service:
 
     @staticmethod
     def _send_to_router(router_socket, msg_id, proto):
-        msg = b'0' + msg_id + MessageToJson(proto)
+        msg = b'\x00' + msg_id + MessageToJson(proto)
         router_socket.send(msg)
 
     @staticmethod
     def _send_to_next_service(push_socket, msg_id, proto):
-        msg = b'0' + msg_id + proto.SerializeToString()
+        msg = b'\x00' + msg_id + proto.SerializeToString()
         push_socket.send(msg)
 
     def _protofy_rcv_msg(self, msg):
@@ -143,8 +143,8 @@ class Service:
             else:
                 if command == RouterCmd.BIND.value:
                     self._bound = True
-                    self.logger.debug(b'Acknowledging BIND request.')
-                    router_socket.send('%s acknowledged.' % self.name)
+                    self.logger.debug('Acknowledging BIND request.')
+                    router_socket.send(b'%s acknowledged.' % self.name.encode())
 
                 # not sent from router and not going to router
                 elif command == b'\x00':
