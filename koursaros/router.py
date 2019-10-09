@@ -5,6 +5,7 @@ from .helpers import *
 from enum import Enum
 import json
 import zmq
+import sys
 
 
 class RouterCmd(Enum):
@@ -24,6 +25,7 @@ class Router:
         # set logger
         self.logger = set_logger('router')
         self.logger.info(f'Initializing "router"')
+        self.services = sys.argv[1:]
 
         # set zeromq
         self.context = zmq.Context()
@@ -71,14 +73,7 @@ class Router:
 
         @app.route('/bind')
         def bind():
-            service = request.args.get('service')
-            if service is None:
-                return jsonify(dict(
-                    status='failure',
-                    msg='please request service (/service param)')
-                )
-
-            res = router.bind(service)
+            res = router.bind(router.services[0])
             return jsonify(dict(status='success', msg=res))
 
         @app.route('/send')

@@ -30,7 +30,6 @@ def pipeline(ctx, pipeline_name):
         ctx.invoke(service, service_name=service_name)
 
 
-
 @deploy.command()
 @click.argument('pipeline_name')
 @click.pass_obj
@@ -48,10 +47,14 @@ def streamers(app_manager, pipeline_name):
 
 
 @deploy.command()
+@click.argument('pipeline_name')
 @click.pass_obj
-def router(app_manager):
+def router(app_manager, pipeline_name):
     """Deploy the router"""
-    cmd = [sys.executable, '-m', 'koursaros.router']
+    pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
+    pipeline_yaml = Yaml(pipeline_yaml_path)
+
+    cmd = [sys.executable, '-m', 'koursaros.router'] + pipeline_yaml.services
     app_manager.subproc(cmd)
 
 
