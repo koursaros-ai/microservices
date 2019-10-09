@@ -120,12 +120,12 @@ class TransformerModel(Model):
 
         # Train!
         logger.info("***** Running training *****")
-        logger.info("  Num examples = ", len(train_dataset))
-        logger.info("  Num Epochs = ", epochs)
-        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = ",
+        logger.info("  Num examples = %d" % len(train_dataset))
+        logger.info("  Num Epochs = %d" % epochs)
+        logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d" %
                     self.batch_size * (
                         torch.distributed.get_world_size() if self.local_rank != -1 else 1))
-        logger.info("  Total optimization steps = ", t_total)
+        logger.info("  Total optimization steps = %d" % t_total)
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -209,8 +209,8 @@ class TransformerModel(Model):
 
         # Eval!
         logger.info("***** Running evaluation *****")
-        logger.info("  Num examples = ", len(eval_dataset))
-        logger.info("  Batch size = ", self.batch_size)
+        logger.info("  Num examples = %d" % len(eval_dataset))
+        logger.info("  Batch size = %d" % self.batch_size)
         eval_loss = 0.0
         nb_eval_steps = 0
         preds = None
@@ -252,7 +252,7 @@ class TransformerModel(Model):
         with open(output_eval_file, "w") as writer:
             logger.info("***** Eval results *****")
             for key in sorted(result.keys()):
-                logger.info("  %s = %s", key, str(result[key]))
+                logger.info("  %s = %s" % (key, str(result[key])))
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
         return result
@@ -313,10 +313,10 @@ class TransformerModel(Model):
 
         cached_features_file = os.path.join(self.data_dir, 'features' if not evaluate else 'eval-features')
         if os.path.exists(os.path.join(cached_features_file)):
-            logger.info("Loading features from cached file ", cached_features_file)
+            logger.info("Loading features from cached file %s" % cached_features_file)
             features = torch.load(cached_features_file)
         else:
-            logger.info("Creating features from dataset file at ", cached_features_file)
+            logger.info("Creating features from dataset file at %s" % cached_features_file)
 
             examples = [
                 InputExample(guid=i,

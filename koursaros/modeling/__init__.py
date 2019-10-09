@@ -17,7 +17,7 @@ def model_from_config(config, training=False):
     for model_class in MODELS:
         if config.arch in model_class.architectures():
             model = model_class(config, training)
-            logger.log('Loaded model {}'.format(config.arch))
+            logger.info('Loaded model {}'.format(config.arch))
             return model
     logger.error('Unsupported model architecture {}'.format(config.arch))
     raise NotImplementedError()
