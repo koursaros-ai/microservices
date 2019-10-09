@@ -1,0 +1,3 @@
+service:
+  base: fairseq-translator
+  pretrained: transformer.wmt19.en-de
