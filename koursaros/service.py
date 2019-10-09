@@ -40,18 +40,9 @@ class Service:
 
         # set zeromq
         context = zmq.Context()
-        rcv_address, send_address = self.default_addresses
         self._pull_socket = context.socket(zmq.PULL)
-        self._pull_socket.connect(rcv_address)
-        self.logger.bold('PULL socket connected on %s' % rcv_address)
-
         self._push_socket = context.socket(zmq.PUSH)
-        self._push_socket.connect(send_address)
-        self.logger.bold('PUSH socket connected on %s' % send_address)
-
         self._router_socket = context.socket(zmq.PULL)
-        self._router_socket.connect(ROUTER_ADDRESS)
-        self.logger.bold('ROUTER socket connected on %s' % send_address)
 
         # defaults
         self._stub_f = None
@@ -111,6 +102,19 @@ class Service:
 
         :param: binary message
         """
+        rcv_address, send_address = self.default_addresses
+        # pull
+        self._pull_socket.connect(rcv_address)
+        self.logger.bold('PULL socket connected on %s' % rcv_address)
+
+        # push
+        self._push_socket.connect(send_address)
+        self.logger.bold('PUSH socket connected on %s' % send_address)
+
+        # router
+        self._router_socket.connect(ROUTER_ADDRESS)
+        self.logger.bold('ROUTER socket connected on %s' % send_address)
+
         while True:
             body = self._pull_socket.recv()
 
