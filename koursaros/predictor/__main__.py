@@ -39,7 +39,7 @@ def predict(model_file, data_source, data_target, truncate=False):
     start = time.time()
     for step, batch in enumerate(batch_list(rows, BATCH_SIZE)):
         transposed = tuple(zip(*batch))
-        inputs = transposed[:-1]
+        inputs = transposed[:2]
         ids = transposed[-1]
         buffer.extend(zip(ids, model.run(*inputs)))
         i += BATCH_SIZE

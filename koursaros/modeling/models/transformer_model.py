@@ -368,9 +368,7 @@ class TransformerModel(Model):
 
 
     def transformers_encode_batch(self, *args):
-        import pdb
-        pdb.set_trace()
-        assert (type(args[0]) == list)
+        assert (type(args[0]) == list or type(args[0]) == tuple)
         all_input_ids = []
         max_batch_len = 0
 
