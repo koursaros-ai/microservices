@@ -81,7 +81,7 @@ class Network:
         else:
             hashed = hash_string_between(name, 0, round((MAX_PORT - MIN_PORT) / 2))
             xor = route.value ^ socket_type.value % 2
-            port = hashed + hashed * xor
+            port = hashed + hashed * xor + MIN_PORT
 
         tcp = 'tcp://%s:%d' % (HOST, port)
 
