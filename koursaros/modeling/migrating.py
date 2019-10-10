@@ -1,19 +1,17 @@
-import sys
 import transformers
-from fairseq.models import roberta
 from fairseq.data.data_utils import collate_tokens
 import time
 import torch.nn.functional as F
 import torch.hub
 
-MAX_LENGTH = 256
+MAX_LENGTH = 512
 PAD = True
 
 
 def benchmark_mnli(samples):
-    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
-    torch_hub_model.eval()
-    torch_hub_model.cuda()
+    # torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
+    # torch_hub_model.eval()
+    # torch_hub_model.cuda()
     try:
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli')
@@ -23,7 +21,7 @@ def benchmark_mnli(samples):
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
-        'torch_hub' : predict_roberta(torch_hub_model)
+        # 'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
@@ -76,32 +74,31 @@ def transformer_to_features(tokenizer, *args):
         max_length=MAX_LENGTH,
         truncate_first_sequence=True
     )
-    input_ids, token_type_ids = inputs["input_ids"][:MAX_LENGTH], \
-                                inputs["token_type_ids"][:MAX_LENGTH]
+    input_ids = inputs["input_ids"][:MAX_LENGTH]
 
-    attention_mask = [1] * len(input_ids)
+    return input_ids
 
-    # Zero-pad up to the sequence length.
-    if PAD:
-        padding_length = MAX_LENGTH - len(input_ids)
-        input_ids = ([0] * padding_length) + input_ids
-        attention_mask = ([0] * padding_length) + attention_mask
-        token_type_ids = ([0] * padding_length) + token_type_ids
-
-    return (input_ids, attention_mask, token_type_ids)
+def pad_up(input_ids, max_length):
+    padding_length = max_length - len(input_ids)
+    input_ids = ([0] * padding_length) + input_ids
+    attention_mask = ([0] * padding_length) + [1] * len(input_ids)
+    return (input_ids, attention_mask)
 
 
 def transformers_encode_batch(tokenizer, *args):
     assert(type(args[0]) == list)
     all_input_ids = []
-    all_attention_mask = []
-    all_token_type_ids = []
+    max_batch_len = 0
+
     for sample in zip(*args):
-        input_ids, attention_mask, token_type_ids = transformer_to_features(tokenizer, *sample)
+        input_ids = transformer_to_features(tokenizer, *sample)
         all_input_ids.append(input_ids)
-        all_attention_mask.append(attention_mask)
-        all_token_type_ids.append(token_type_ids)
-    return all_input_ids, all_attention_mask, all_token_type_ids
+        max_batch_len = max(max_batch_len, len(input_ids))
+
+    all_input_ids, all_attention_masks = zip(*[
+        pad_up(input_ids, max_batch_len) for input_ids in all_input_ids
+    ])
+    return all_input_ids, all_attention_masks
 
 
 if __name__ == '__main__':
