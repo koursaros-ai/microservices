@@ -381,13 +381,9 @@ class TransformerModel(Model):
         ]
         features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features, True)
-        results = []
         inputs = self.inputs_from_batch(all_inputs)
-        import pdb
-        pdb.set_trace()
         outputs = self.model(**inputs)
-        results.extend(self.pred_from_output(outputs))
-        return results
+        return self.pred_from_output(outputs)
 
     def multi_gpu_training(self):
         # multi-gpu training (should be after apex fp16 initialization)
