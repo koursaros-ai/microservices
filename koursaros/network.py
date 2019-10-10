@@ -48,11 +48,11 @@ def hash_string_between(string: str, min_num: int, max_num: int):
 
 
 class Network:
-    def __init__(self):
+    def __init__(self, context):
         self.ctx = zmq.Context()
         self.sockets = dict()
         self.pollers = dict()
-        self.logger = set_logger('Network')
+        self.logger = set_logger(context)
 
     def build_socket(self, socket_type: 'SocketType', route: 'Route',
                      identity: str = None, name=None):

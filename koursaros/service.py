@@ -60,7 +60,7 @@ class Service:
                         recv_proto=self.base_yaml.send_proto)
 
         # set network
-        net = Network()
+        net = Network(self.name)
         net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
         net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
         net.build_socket(SocketType.SUB_CONNECT, Route.CTRL, name=self.name)

@@ -16,9 +16,10 @@ class Streamer:
         name = "{}->{}".format(self.service_in[:5], self.service_out[:5])
         self.logger = set_logger(name)
         self.logger.info('Initializing {} streamer'.format(name))
+        self.name = name
 
     def run(self):
-        net = Network()
+        net = Network(self.name)
         net.build_socket(SocketType.PULL_BIND, Route.IN, name=self.service_in)
         net.build_socket(SocketType.PUSH_BIND, Route.OUT, name=self.service_out)
         zmq.device(zmq.STREAMER, net.sockets[Route.IN], net.sockets[Route.OUT])

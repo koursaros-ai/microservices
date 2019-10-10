@@ -19,7 +19,7 @@ class Router:
         self.logger.info('Initializing router')
 
         # set zeromq
-        self.net = Network()
+        self.net = Network('router')
         self.net.build_socket(SocketType.PUB_BIND, Route.CTRL)
         self.net.build_socket(SocketType.PULL_BIND, Route.IN, name='ROUTER')
 
