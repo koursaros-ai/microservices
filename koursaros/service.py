@@ -124,7 +124,6 @@ class Service:
                         jsonbytes = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
                         net.send(Route.OUT, Command.SEND, msg_id, jsonbytes)
                     else:
-                        self.logger.bold(msg)
                         protobytes = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
                         net.send(Route.OUT, Command.SEND, msg_id, protobytes)
 
