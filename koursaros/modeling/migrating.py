@@ -22,10 +22,10 @@ def benchmark_mnli(samples):
                                      'roberta-large-mnli', force_download=True)
     transformers_model = transformers_model.to(device)
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
-    transformers_traced = torch.jit.trace(transformers_model, get_dummy_data(transformers_tokenizer))
+    # transformers_traced = torch.jit.trace(transformers_model, get_dummy_data(transformers_tokenizer))
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
-        'transformers-traced': predict_transformers(transformers_traced, transformers_tokenizer),
+        # 'transformers-traced': predict_transformers(transformers_traced, transformers_tokenizer),
         'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
@@ -107,7 +107,7 @@ def transformers_encode_batch(tokenizer, *args):
         max_batch_len = max(max_batch_len, len(input_ids))
 
     all_input_ids, all_attention_masks = zip(*[
-        pad_up(input_ids, MAX_LENGTH) for input_ids in all_input_ids
+        pad_up(input_ids, max_batch_len) for input_ids in all_input_ids
     ])
     return all_input_ids, all_attention_masks
 
