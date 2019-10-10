@@ -33,3 +33,7 @@ def pipeline(ctx, pipeline_name):
         logger.info(json.dumps(res, indent=4))
         if 'error' in res:
             logger.info('error:\n%s' % res['error'].encode().decode("unicode_escape"))
+
+        else:
+            for trans in res['translations']:
+                logger.info('lang: %s\n trans: %s' % (trans['lang'], trans['text']))
