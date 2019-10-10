@@ -25,7 +25,7 @@ class Model(object):
             logger.info('Loading model from default checkpoint')
             self.checkpoint = self.config.checkpoint
             self.trained = True
-        elif os.path.exists(self.ckpt_dir + 'config.json'): # model already trained
+        elif os.path.exists(self.ckpt_dir + 'config.json') and not training: # model already trained
             logger.info('Loading trained model')
             self.checkpoint = self.ckpt_dir
             self.trained = True
