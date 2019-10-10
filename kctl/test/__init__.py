@@ -18,6 +18,7 @@ def pipeline(ctx, pipeline_name):
 
     if pipeline_name == 'telephone':
         url = 'http://localhost:5000/send'
+        headers = {'Content-Type': 'application/json'}
 
         translations = dict(
             translations=[
@@ -26,5 +27,5 @@ def pipeline(ctx, pipeline_name):
                      )])
 
         logger.bold('POSTING %s on %s' % (translations, url))
-        res = requests.post(url, data=translations)
+        res = requests.post(url, data=translations, headers=headers)
         logger.bold(json.dumps(res, indent=4))
