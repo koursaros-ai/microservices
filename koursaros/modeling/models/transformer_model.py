@@ -95,7 +95,8 @@ class TransformerModel(Model):
         try:
             return self.do_train(force_build_features=force_build_features)
         except:
-            logger.warning('Error during training, decreasing batch size and trying again')
+            logger.warning('Error during training, decrease batch size and try again')
+            raise SystemError()
             self.batch_size = self.batch_size // 2 # back off batch_size
             return self.train(force_build_features=True)
 
