@@ -75,29 +75,31 @@ class Service:
 
             try:
                 cmd, msg_id, msg = net.recv(Route.IN)
+                # if receiving status from preceding service, resend
+                if cmd == Command.STATUS:
+                    net.send(Route.OUT, cmd, msg_id, msg)
+
+                elif cmd == Command.SEND:
+
+                    # if first position then get jsons from router
+                    if self.position == 0:
+                        proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                    else:
+                        proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
+                    returned = self._stub(proto)
+
+                    if isinstance(returned, dict):
+                        msg = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+
+                    # if last position then send jsons to router
+                    if self.position == -1:
+                        msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                    else:
+                        msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
+
+                    net.send(Route.OUT, Command.SEND, msg_id, msg)
+
             except zmq.error.Again:
                 self.logger.info('Socket timeout...')
 
-            # if receiving status from preceding service, resend
-            if cmd == Command.STATUS:
-                net.send(Route.OUT, cmd, msg_id, msg)
 
-            elif cmd == Command.SEND:
-
-                # if first position then get jsons from router
-                if self.position == 0:
-                    proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
-                else:
-                    proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
-                returned = self._stub(proto)
-
-                if isinstance(returned, dict):
-                    msg = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
-
-                # if last position then send jsons to router
-                if self.position == -1:
-                    msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.JSONBYTES)
-                else:
-                    msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
-
-                net.send(Route.OUT, Command.SEND, msg_id, msg)
