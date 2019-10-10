@@ -53,6 +53,7 @@ class TransformerModel(Model):
         self.pad = True
         self.label_map = {label: i for i, label in enumerate(self.config.labels)}
         if self.trained:
+            print('Tracing model for deployment...')
             self.model.eval()
             self.trace_model()
         if self.config.task == 'classification':
