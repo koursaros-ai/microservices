@@ -92,7 +92,12 @@ class Service:
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 self.net.send(Route.OUT, Command.STATUS, 0, status)
 
-            cmd, msg_id, msg = self.net.recv(Route.IN)
+            try:
+                cmd, msg_id, msg = self.net.recv(Route.IN)
+            except zmq.error.Again:
+                # timeout
+                continue
+
             self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
 
             # if receiving status msg then resend
