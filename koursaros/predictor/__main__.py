@@ -8,7 +8,7 @@ import time
 
 BATCH_SIZE = int(os.environ.get('BATCH_SIZE') or 4)
 
-def predict(model_file, data_source, data_target):
+def predict(model_file, data_source, data_target, truncate=False):
     model = model_from_yaml(model_file)
     extension = data_source.split('.')[-1]
     if extension in ['tsv', 'csv']:
@@ -25,7 +25,8 @@ def predict(model_file, data_source, data_target):
         p = Conn()
         query_fn = p.query
         schema, table = data_source.split('.')
-        p.execute(f'''truncate table {data_target}''')
+        if truncate:
+            p.execute(f'''truncate table {data_target}''')
         rows = query_fn(select_all(schema, table, random=False))
 
         def write_fn(buffer):
@@ -54,4 +55,5 @@ if __name__ == '__main__':
     model_file = sys.argv[1]
     data_source = sys.argv[2]
     data_target = sys.argv[3] if len(sys.argv) > 3 else './predictions.tsv'
+    truncate = len(sys.argv) > 4 and sys.argv[4] == '-t'
     predict(model_file, data_source, data_target)
