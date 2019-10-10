@@ -20,8 +20,8 @@ class Messages:
             self.compile_protobufs(proto_module)
             self.protos = __import__('messages_pb2')
 
-            self.recv_proto = recv_proto
-            self.send_proto = send_proto
+            self.recv_proto = getattr(self.protos, recv_proto)
+            self.send_proto = getattr(self.protos, recv_proto)
 
     def cast(self, msg, from_type: 'MsgType', to_type: 'MsgType'):
 
