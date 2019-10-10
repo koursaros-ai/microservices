@@ -29,4 +29,5 @@ def pipeline(ctx, pipeline_name):
 
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
+        import pdb; pdb.set_trace()
         logger.bold(res.content)
