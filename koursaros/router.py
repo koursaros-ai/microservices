@@ -22,15 +22,13 @@ class Router:
         self.net = Network('router')
         self.net.build_socket(SocketType.PUB_BIND, Route.CTRL)
         self.net.build_socket(SocketType.PULL_BIND, Route.IN, name='ROUTER')
+        self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name='ROUTER')
 
         # setup messages
         self.msgs = Messages()
         self.msg_count = 0
 
-    def set_push_socket(self, service):
-        self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=service)
-
-    def wait_for_first_service(self):
+    def get_statuses(self):
         # ask services for status
         self.net.send(Route.CTRL, Command.STATUS, 0, b'')
         self.logger.info('Sent status request...')
@@ -38,6 +36,7 @@ class Router:
         while True:
             msg_id, msg = self.net.recv(Route.IN)
             service_status = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.JSON)
+            self.logger.bold()
 
             if service_status['position'] == 0:
                 self.set_push_socket(msg.decode())

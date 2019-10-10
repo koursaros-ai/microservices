@@ -76,21 +76,17 @@ class Network:
             SocketType.PAIR_CONNECT: lambda: self.ctx.socket(zmq.PAIR)
         }[socket_type]()
 
-        if route == Route.IN:
-            port = hash_string_between(name, MIN_PORT, MAX_PORT - round(DIFF / 2))
-        elif route == Route.OUT:
-            port = hash_string_between(name, MAX_PORT - round(DIFF / 2), MAX_PORT)
-        elif route == Route.CTRL:
-            port = ROUTER_PORT
-        else:
-            raise NotImplementedError
+        hashed = hash_string_between(name, 0, round((MAX_PORT - MIN_PORT) / 2))
+        xor = route.value ^ socket_type.value % 2
+        port = hashed + hashed * xor
 
-        tcp = 'tcp://%s:%d' % (HOST, port)
+        if route == Route.CTRL:
+            port = ROUTER_PORT
 
         if socket_type.is_bind:
-            sock.bind(tcp)
+            sock.bind('tcp://%s:%d' % (HOST, port))
         else:
-            sock.connect(tcp)
+            sock.connect('tcp://%s:%d' % (HOST, port))
 
         if socket_type in {SocketType.SUB_CONNECT, SocketType.SUB_BIND}:
             sock.setsockopt(zmq.SUBSCRIBE, identity.encode('ascii') if identity else b'')
