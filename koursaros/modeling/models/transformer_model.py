@@ -61,11 +61,12 @@ class TransformerModel(Model):
 
     def inputs_from_batch(self, batch):
         inputs = {'input_ids': batch[0],
-                  'attention_mask': batch[1],
-                  'labels': batch[3]}
+                  'attention_mask': batch[1]}
         if self.config.arch != 'distilbert':
             inputs['token_type_ids'] = batch[2] if self.config.arch in ['bert',
                                                                         'xlnet'] else None
+        if len(batch) > 3:
+            inputs['labels'] = batch[3]
         return inputs
 
     def train(self, force_build_features=False):
@@ -381,12 +382,11 @@ class TransformerModel(Model):
         features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features, True)
         results = []
-        for batch in batch_list(zip(*all_inputs), self.batch_size):
-            inputs = self.inputs_from_batch(batch)
-            import pdb
-            pdb.set_trace()
-            outputs = self.model(**inputs)
-            results.extend(self.pred_from_output(outputs))
+        inputs = self.inputs_from_batch(all_inputs)
+        import pdb
+        pdb.set_trace()
+        outputs = self.model(**inputs)
+        results.extend(self.pred_from_output(outputs))
         return results
 
     def multi_gpu_training(self):
