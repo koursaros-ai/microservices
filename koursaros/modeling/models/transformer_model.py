@@ -364,8 +364,8 @@ class TransformerModel(Model):
         logits = outputs[0]
         preds = logits.detach().cpu().numpy()
         if self.config.task == 'classification':
-            pred = np.argmax(preds, axis=1)
-            return self.config.labels[int(pred[0])]
+            preds = np.argmax(preds, axis=1)
+            return [self.config.labels[int(pred)] for pred in preds]
         elif self.config.task == 'regression':
             return np.squeeze(preds)
         else:
