@@ -41,7 +41,6 @@ class Router:
         cmd, msg_id, msg = self.net.recv(Route.IN)
         res = json.loads(msg)
         res['id'] = msg_id
-        self.logger.info(cmd)
 
         if cmd == Command.STATUS:
             self.statuses.update(msg)
