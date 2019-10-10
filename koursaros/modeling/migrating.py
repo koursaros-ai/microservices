@@ -16,9 +16,12 @@ PAD = True
 def predict_transformers(model, tokenizer):
     def predict_fn(*args):
         inputs = time_fn(transformers_encode_batch, tokenizer, *args)
-        # import pdb
-        # pdb.set_trace()
-        outputs = model(*inputs)
+        inputs_dict = {
+            'input_ids': inputs[0],
+            'attention_mask': inputs[1],
+            'token_type_ids': inputs[2]
+        }
+        outputs = model(**inputs_dict)
         logits = outputs[0]
         preds = F.log_softmax(logits, dim=-1)
         return preds.tolist()
@@ -49,8 +52,8 @@ def benchmark_mnli(samples):
                                      'roberta-large-mnli', force_download=True)
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
-        'torch_hub' : predict_transformers(transformers_model, transformers_tokenizer),
-        'transformer' : predict_roberta(torch_hub_model)
+        'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
+        'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
