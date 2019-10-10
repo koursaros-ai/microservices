@@ -85,7 +85,7 @@ class Service:
         self.net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
         self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
         self.net.build_poller(Route.IN)
-        self.net.setsockopt(zmq.RCVTIMEO, RCV_TIMEOUT)
+        self.net.setsockopt(zmq.RCVTIMEO, RCV_TIMEOUT) 
 
         while True:
             if self.last_status - time.time() > HEARTBEAT:
