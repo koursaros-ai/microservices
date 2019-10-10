@@ -308,7 +308,7 @@ class TransformerModel(Model):
                           token_type_ids=token_type_ids,
                           label=label)
 
-    def features_to_inputs(self, features, inference=False):
+    def features_to_inputs(self, features, inference):
         all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
         all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long)
         all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long)
@@ -355,7 +355,7 @@ class TransformerModel(Model):
             torch.distributed.barrier()  # Make sure only the first process in distributed training process the dataset, and the others will use the cache
 
         # Convert to Tensors and build dataset
-        dataset = TensorDataset(*self.features_to_inputs(features))
+        dataset = TensorDataset(*self.features_to_inputs(features, False))
         return dataset
 
     def pred_from_output(self, outputs):
@@ -378,7 +378,7 @@ class TransformerModel(Model):
             ) for i, arg in enumerate(zip(*args))
         ]
         features = [self.example_to_feature(example) for example in examples]
-        all_inputs = self.features_to_inputs(features, inference=True)
+        all_inputs = self.features_to_inputs(features, True)
         results = []
         for batch in batch_list(zip(*all_inputs), self.batch_size):
             inputs = self.inputs_from_batch(batch)
