@@ -33,7 +33,7 @@ def benchmark_mnli(samples):
         time_fn(benchmark, pred_fn, samples)
 
 def get_dummy_data(tokenizer):
-    args = ['All work and no play.'] * 8, ['Make jack a very dull boy.'] * 8
+    args = ['All work and no play make jack.'] * 8, ['Make jack a very dull boy.'] * 8
     inputs = transformers_encode_batch(tokenizer, *args)
     return torch.tensor(inputs[0], dtype=torch.long).to(device), \
            torch.tensor(inputs[1], dtype=torch.long).to(device)
