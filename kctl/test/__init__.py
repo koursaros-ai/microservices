@@ -20,11 +20,12 @@ def pipeline(ctx, pipeline_name):
         url = 'http://localhost:5000/send'
         headers = {'Content-Type': 'application/json'}
 
-        translations = dict(
-            translations=[
-                dict(lang='en',
-                     text='I would love pancakes tomorrow morning'
-                     )])
+        translations = json.dumps({
+            'translations': {
+                'lang': 'en',
+                'text': 'I would love pancakes tomorrow morning'
+            }
+        })
 
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
