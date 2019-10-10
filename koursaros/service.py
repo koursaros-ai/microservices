@@ -1,6 +1,7 @@
 from .network import Network, Route, SocketType, Command
 from .messages import MsgType, Messages, ParseError
 from kctl.logger import set_logger
+from traceback import format_exc
 from .yamls import Yaml
 import pathlib
 import zmq
@@ -88,6 +89,7 @@ class Service:
                 # if receiving status from preceding service, resend
                 if cmd in (Command.STATUS, Command.ERROR):
                     net.send(Route.OUT, cmd, msg_id, msg)
+                    continue
 
                 elif cmd == Command.SEND:
 
@@ -98,10 +100,19 @@ class Service:
                         except ParseError as e:
                             msg = msgs.cast(self.error(e), MsgType.JSON, MsgType.JSONBYTES)
                             net.send(Route.OUT, Command.ERROR, msg_id, msg)
+                            continue
 
                     else:
                         proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
-                    returned = self._stub(proto)
+
+                    try:
+                        returned = self._stub(proto)
+                    except:
+                        tb = format_exc()
+                        self.logger.info(tb)
+                        msg = msgs.cast(self.error(tb), MsgType.JSON, MsgType.JSONBYTES)
+                        net.send(Route.OUT, Command.ERROR, msg_id, msg)
+                        continue
 
                     if isinstance(returned, dict):
                         msg = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)

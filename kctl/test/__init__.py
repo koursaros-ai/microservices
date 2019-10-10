@@ -21,12 +21,15 @@ def pipeline(ctx, pipeline_name):
         headers = {'Content-Type': 'application/json'}
 
         translations = json.dumps({
-            'translations': {
+            'translations': [{
                 'lang': 'en',
                 'text': 'I would love pancakes tomorrow morning'
-            }
+            }]
         })
 
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
-        logger.bold(json.dumps(res.content, indent=4))
+        res = json.loads(res.content)
+        import pdb; pdb.set_trace()
+        logger.info(json.dumps(res, indent=4))
+        logger.info('error:\n%s' % res.get('error', None))
