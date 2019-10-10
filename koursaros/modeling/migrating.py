@@ -31,9 +31,8 @@ def benchmark_mnli(samples):
         time_fn(benchmark, pred_fn, samples)
 
 def get_dummy_data(tokenizer):
-    text_a = "Once upon a time there was a boy"
-    text_b = "He liked to write code all day long"
-    inputs = transformers_encode_batch(tokenizer, [text_a]*8, [text_b]*8)
+    args = ['All work and no play.'] * 8, ['Make jack a very dull boy.'] * 8
+    inputs = transformers_encode_batch(tokenizer, *args)
     return torch.tensor(inputs[0], dtype=torch.long), \
            torch.tensor(inputs[1], dtype=torch.long)
 
@@ -47,7 +46,7 @@ def predict_transformers(model, tokenizer):
             'input_ids': torch.tensor(inputs[0],  dtype=torch.long).to(device),
             'attention_mask': torch.tensor(inputs[1],  dtype=torch.long).to(device),
         }
-        outputs = model(*inputs_dict.values())
+        outputs = model(inputs_dict['input_ids'], inputs_dict['attention_mask'])
         logits = outputs[0]
         preds = F.log_softmax(logits, dim=-1)
         return preds.tolist()
