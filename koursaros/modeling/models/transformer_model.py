@@ -309,14 +309,14 @@ class TransformerModel(Model):
                           label=label)
 
     def features_to_inputs(self, features, inference):
-        all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
-        all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long)
-        all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long)
+        all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long).to(self.device)
+        all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long).to(self.device)
+        all_token_type_ids = torch.tensor([f.token_type_ids for f in features], dtype=torch.long).to(self.device)
         if not inference:
             if self.config.task == "classification":
-                all_labels = torch.tensor([f.label for f in features], dtype=torch.long)
+                all_labels = torch.tensor([f.label for f in features], dtype=torch.long).to(self.device)
             elif self.config.task == "regression":
-                all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
+                all_labels = torch.tensor([f.label for f in features], dtype=torch.float).to(self.device)
             else:
                 raise NotImplementedError()
             return all_input_ids, all_attention_mask, all_token_type_ids, all_labels
@@ -383,6 +383,8 @@ class TransformerModel(Model):
         results = []
         for batch in batch_list(zip(*all_inputs), self.batch_size):
             inputs = self.inputs_from_batch(batch)
+            import pdb
+            pdb.set_trace()
             outputs = self.model(**inputs)
             results.extend(self.pred_from_output(outputs))
         return results
