@@ -66,7 +66,8 @@ class Service:
 
     def register_sync_error(self, e, msg_id):
         self.register_async_error(e)
-        self.net.send(Route.OUT, Command.ERROR, msg_id, self.status)
+        msg = self.msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
+        self.net.send(Route.OUT, Command.ERROR, msg_id, msg)
 
     def register_async_error(self, e):
         self.errors += 1
@@ -76,7 +77,7 @@ class Service:
     def run(self):
 
         # compile messages
-        msgs = Messages(proto_module=self.base_dir_path,
+        self.msgs = Messages(proto_module=self.base_dir_path,
                         send_proto=self.base_yaml.recv_proto,
                         recv_proto=self.base_yaml.send_proto)
 
@@ -101,13 +102,13 @@ class Service:
                     # if first position then get jsons from router
                     if self.position == 0:
                         try:
-                            proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                            proto = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
                         except ParseError as e:
                             self.register_sync_error(e, msg_id)
                             continue
 
                     else:
-                        proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
+                        proto = self.msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
 
                     try:
                         returned = self._stub(proto)
@@ -116,15 +117,15 @@ class Service:
                         continue
 
                     if isinstance(returned, dict):
-                        proto = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+                        proto = self.msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
                     else:
                         proto = returned
 
                     # if last position then send jsons to router
                     if self.position == -1:
-                        msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                        msg = self.msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
                     else:
-                        msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
+                        msg = self.msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
 
                     self.net.send(Route.OUT, Command.SEND, msg_id, msg)
                     self.sent += 1
@@ -135,7 +136,7 @@ class Service:
 
             finally:
                 if time.time() - self.last_status > HEARTBEAT:
-                    status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
+                    status = self.msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                     self.net.send(Route.OUT, Command.STATUS, 0, status)
                     self.last_status = time.time()
 
