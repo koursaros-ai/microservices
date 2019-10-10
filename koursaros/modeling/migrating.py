@@ -9,9 +9,9 @@ PAD = True
 
 
 def benchmark_mnli(samples):
-    # torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
-    # torch_hub_model.eval()
-    # torch_hub_model.cuda()
+    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
+    torch_hub_model.eval()
+    torch_hub_model.cuda()
     try:
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli')
@@ -21,7 +21,7 @@ def benchmark_mnli(samples):
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
-        # 'torch_hub' : predict_roberta(torch_hub_model)
+        'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
@@ -102,4 +102,5 @@ def transformers_encode_batch(tokenizer, *args):
 
 
 if __name__ == '__main__':
-    benchmark_mnli(10)
+    with torch.no_grad():
+        benchmark_mnli(10)
