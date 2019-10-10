@@ -39,6 +39,8 @@ def predict(model_file, data_source, data_target):
         inputs = transposed[:-1]
         ids = transposed[-1]
         buffer.extend(zip(ids, model.run(*inputs)))
+        import pdb
+        pdb.set_trace()
         i += BATCH_SIZE
         if i > 1000:
             total = step * BATCH_SIZE
