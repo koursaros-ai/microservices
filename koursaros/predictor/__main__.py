@@ -25,7 +25,7 @@ def predict(model_file, data_source, data_target):
         p = Conn()
         query_fn = p.query
         schema, table = data_source.split('.')
-        p.execute(f'''truncate table {schema}.{table}''')
+        p.execute(f'''truncate table {data_target}''')
         rows = query_fn(select_all(schema, table, random=False))
 
         def write_fn(buffer):
