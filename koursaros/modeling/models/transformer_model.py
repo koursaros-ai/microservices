@@ -426,10 +426,8 @@ class TransformerModel(Model):
         }
         outputs = self.model(inputs_dict['input_ids'], inputs_dict['attention_mask'])
         logits = outputs[0]
-        import pdb
-        pdb.set_trace()
         if self.config.task == 'classification':
-            preds = F.log_softmax(logits, dim=-1).tolist()
+            preds = logits.argmax(dim=1)
             return [self.config.labels[int(pred)] for pred in preds]
         elif self.config.task == 'regression':
             return logits.squeeze().item()
