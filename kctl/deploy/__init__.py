@@ -27,6 +27,12 @@ def pipeline(ctx, pipeline_name):
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
+        service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
+        service_yaml = Yaml(service_yaml_path)
+
+        if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE):
+            app_manager.save_base_to_pkg(service_yaml.base)
+
         ctx.invoke(service, pipeline_name=pipeline_name, service_name=service_name)
 
 
@@ -67,9 +73,6 @@ def service(app_manager, pipeline_name, service_name):
 
     if base_yaml_path is None:
         raise FileNotFoundError('Could not find base "%s" base.yaml' % service_yaml.base)
-
-    if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE):
-        app_manager.save_base_to_pkg(service_yaml.base)
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base,
            str(service_yaml_path), str(pipe_yaml_path)]
