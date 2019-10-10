@@ -116,9 +116,9 @@ class Network:
 
         body = self.sockets[route].recv()
         cmd = Command(body[:1])
-        msg_id = struct.unpack("L", body[:8])[0]
-        msg = body[8:]
-        import pdb; pdb.set_trace()
+        msg_id = struct.unpack("L", body[1:9])[0]
+        msg = body[9:]
+
         return cmd, msg_id, msg
 
     def send(self, route: 'Route', cmd, msg_id: int, msg):
