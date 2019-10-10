@@ -32,8 +32,8 @@ class Router:
 
     def wait_for_first_service(self):
         # ask services for status
-        self.logger.info('Sending status request...')
         self.net.send(Route.CTRL, Command.STATUS, 0, b'')
+        self.logger.info('Sent status request...')
 
         while True:
             msg_id, msg = self.net.recv(Route.IN)
