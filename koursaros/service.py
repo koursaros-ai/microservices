@@ -121,6 +121,7 @@ class Service:
                     if self.position == -1:
                         msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.JSONBYTES)
                     else:
+                        self.logger.bold(msg)
                         msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
 
                     net.send(Route.OUT, Command.SEND, msg_id, msg)
