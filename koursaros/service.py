@@ -89,7 +89,7 @@ class Service:
 
         while True:
             if self.last_status - time.time() > HEARTBEAT:
-                self.logger.info('Sending heartbeat')
+
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 self.net.send(Route.OUT, Command.STATUS, 0, status)
 
@@ -97,6 +97,7 @@ class Service:
                 cmd, msg_id, msg = self.net.recv(Route.IN)
             except zmq.error.Again:
                 # timeout
+                self.logger.info('timeout')
                 continue
 
             self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
