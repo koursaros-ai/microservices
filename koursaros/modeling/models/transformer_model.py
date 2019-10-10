@@ -32,8 +32,9 @@ class TransformerModel(Model):
 
         self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.model_config.num_labels = len(self.config.labels)
+        self.model_config.torchscript = True
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
-                                           cache_dir=self.dir,torchscript=self.trained, **kwargs)
+                                           cache_dir=self.dir, **kwargs)
         if self.trained:
             self.trace_model()
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
@@ -81,7 +82,9 @@ class TransformerModel(Model):
         features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features, True)
         inputs = self.inputs_from_batch(all_inputs)
-        self.model = torch.jit.trace(self.model, (inputs['input_ids'],))
+        self.model = torch.jit.trace(self.model, (inputs['input_ids'],
+                                                  inputs['attention_mask'],
+                                                  inputs['token_type_ids']))
 
     def train(self, force_build_features=False):
         try:
