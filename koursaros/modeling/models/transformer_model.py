@@ -1,5 +1,5 @@
 from ..model import Model
-import torch.nn, torch.tensor, torch.distributed
+import torch.nn, torch.tensor, torch.distributed, torch.jit
 from transformers import *
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset, DistributedSampler)
@@ -33,8 +33,9 @@ class TransformerModel(Model):
         self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.model_config.num_labels = len(self.config.labels)
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
-                                           cache_dir=self.dir, **kwargs)
-
+                                           cache_dir=self.dir,torchscript=self.trained, **kwargs)
+        if self.trained:
+            self.trace_model()
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
         self.batch_size = self.config.training.batch_size
         self.max_grad_norm = 1.0
@@ -68,6 +69,19 @@ class TransformerModel(Model):
         if len(batch) > 3:
             inputs['labels'] = batch[3]
         return inputs
+
+    def trace_model(self):
+        examples = [
+            InputExample(
+                guid=1,
+                text_a="Once upon a time there was a boy",
+                text_b="He liked to write code all day long"
+            )
+        ]
+        features = [self.example_to_feature(example) for example in examples]
+        all_inputs = self.features_to_inputs(features, True)
+        inputs = self.inputs_from_batch(all_inputs)
+        self.model = torch.jit.trace(self.model, (inputs['input_ids'],))
 
     def train(self, force_build_features=False):
         try:
