@@ -29,7 +29,7 @@ def pipeline(ctx, pipeline_name):
         translations = json.dumps({
             'translations': [{
                 'lang': 'en',
-                'text': input('What would you like to translate?\t')
+                'text': input('What would you like to translate?\t')  
             }]
         })
 
