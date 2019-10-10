@@ -8,6 +8,7 @@ import torch.jit
 MAX_LENGTH = 512
 PAD = True
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def benchmark_mnli(samples):
     torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
@@ -19,6 +20,7 @@ def benchmark_mnli(samples):
     except:
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli', force_download=True)
+    transformers_model = transformers_model.to(device)
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     transformers_traced = torch.jit.trace(transformers_model, get_dummy_data(transformers_tokenizer))
     pred_functions = {
@@ -38,8 +40,6 @@ def get_dummy_data(tokenizer):
 
 
 def predict_transformers(model, tokenizer):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
     def predict_fn(*args):
         inputs = time_fn(transformers_encode_batch, tokenizer, *args)
         inputs_dict = {
