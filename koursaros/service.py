@@ -133,9 +133,11 @@ class Service:
             except zmq.error.Again:
                 # timeout
                 self.logger.info('timeout')
-                continue
 
             finally:
+                self.logger.info(self.last_status - time.time())
+                self.logger.info(HEARTBEAT)
+                self.logger.info(self.last_status - time.time() > HEARTBEAT)
                 if self.last_status - time.time() > HEARTBEAT:
                     self.logger.info('sending heartbeat')
                     status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
