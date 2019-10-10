@@ -374,8 +374,8 @@ class TransformerModel(Model):
         examples = [
             InputExample(
                 guid=str(i),
-                text_a=args[0],
-                text_b=None if len(args) < 2 else args[1]
+                text_a=arg[0],
+                text_b=None if len(arg) < 2 else arg[1]
             ) for i, arg in enumerate(zip(*args))
         ]
         features = [self.example_to_feature(example) for example in examples]
