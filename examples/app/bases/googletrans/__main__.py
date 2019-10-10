@@ -16,6 +16,7 @@ def translate(translations):
     trans = translator.translate(last_trans, src=last_lang, dest=dest_lang).text
     new_trans.lang = dest_lang
     new_trans.text = trans
+    print(translations)
     return translations
 
 
