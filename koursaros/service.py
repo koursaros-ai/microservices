@@ -102,7 +102,7 @@ class Service:
 
             # if receiving status msg then resend
             if cmd in (Command.STATUS, Command.ERROR):
-                self.net.send(Route.OUT, cmd, msg_id, msg)
+                self.net.send(Route.OUT, cmd, msg_id, msg) 
                 continue
 
             elif cmd == Command.SEND:
