@@ -114,4 +114,4 @@ def transformers_encode_batch(tokenizer, *args):
 
 if __name__ == '__main__':
     with torch.no_grad():
-        benchmark_mnli(10)
+        benchmark_mnli(100)
