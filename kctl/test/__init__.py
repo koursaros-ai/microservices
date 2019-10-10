@@ -30,7 +30,6 @@ def pipeline(ctx, pipeline_name):
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
         res = json.loads(res.content)
-        import pdb; pdb.set_trace()
         logger.info(json.dumps(res, indent=4))
         if 'error' in res:
             logger.info('error:\n%s' % res['error'].decode("unicode_escape"))
