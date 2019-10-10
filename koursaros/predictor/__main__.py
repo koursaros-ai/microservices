@@ -42,7 +42,7 @@ def predict(model_file, data_source, data_target):
         i += BATCH_SIZE
         if i > 1000:
             total = step * BATCH_SIZE
-            print('dumping example {}, rate: {}'.format(total, (time.time() - start)/total ))
+            print('dumping example {}, rate: {} per second'.format(total, total/(time.time() - start) ))
             write_fn(buffer)
             buffer = []
             i = 0
