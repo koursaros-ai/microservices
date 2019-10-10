@@ -17,9 +17,9 @@ def predict_transformers(model, tokenizer):
     def predict_fn(*args):
         inputs = time_fn(transformers_encode_batch, tokenizer, *args)
         inputs_dict = {
-            'input_ids': inputs[0],
-            'attention_mask': inputs[1],
-            'token_type_ids': inputs[2]
+            'input_ids': torch.tensor(inputs[0],  dtype=torch.long),
+            'attention_mask': torch.tensor(inputs[1],  dtype=torch.long),
+            'token_type_ids': torch.tensor(inputs[2],  dtype=torch.long)
         }
         outputs = model(**inputs_dict)
         logits = outputs[0]
