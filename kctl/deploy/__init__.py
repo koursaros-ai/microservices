@@ -38,11 +38,12 @@ def streamers(app_manager, pipeline_name):
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
-    service_in = 'ROUTER'
-    for service_out in pipeline_yaml.services:
-        cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
-        service_in = service_out
-        app_manager.subproc(cmd)
+    last_service = None
+    for service in ['ROUTER'] + pipeline_yaml.services + ['ROUTER']:
+        if last_service is not None:
+            cmd = [sys.executable, '-m', 'koursaros.streamer', last_service, service]
+            app_manager.subproc(cmd)
+        last_service = service
 
 
 @deploy.command()
