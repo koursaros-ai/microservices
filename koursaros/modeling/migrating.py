@@ -26,7 +26,7 @@ def predict_transformers(model, tokenizer):
 def predict_roberta(model):
     def pred_fn(*args):
         batch = time_fn(collate_tokens, [model.encode(*arg)[:MAX_LENGTH] for arg in zip(*args)], pad_idx=1)
-        labels = model.predict('mnli', batch).tolist()
+        labels = model.predict('mnli', *batch).tolist()
         return labels
     return pred_fn
 
