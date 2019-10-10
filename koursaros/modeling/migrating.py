@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.hub
 import torch.jit
 
-MAX_LENGTH = 512
+MAX_LENGTH = 128
 PAD = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -104,7 +104,7 @@ def transformers_encode_batch(tokenizer, *args):
         max_batch_len = max(max_batch_len, len(input_ids))
 
     all_input_ids, all_attention_masks = zip(*[
-        pad_up(input_ids, max_batch_len) for input_ids in all_input_ids
+        pad_up(input_ids, MAX_LENGTH) for input_ids in all_input_ids
     ])
     return all_input_ids, all_attention_masks
 
