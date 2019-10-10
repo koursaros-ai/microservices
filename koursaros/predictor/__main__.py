@@ -41,7 +41,7 @@ def predict(model_file, data_source, data_target):
         ids = transposed[-1]
         buffer.extend(zip(ids, model.run(*inputs)))
         i += BATCH_SIZE
-        if i > 1000:
+        if i > 500:
             total = step * BATCH_SIZE
             print('dumping example {}, rate: {} per second'.format(total, total/(time.time() - start) ))
             write_fn(buffer)
