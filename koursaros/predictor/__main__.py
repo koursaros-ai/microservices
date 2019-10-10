@@ -40,12 +40,12 @@ def predict(model_file, data_source, data_target, truncate=False):
     for step, batch in enumerate(batch_list(rows, BATCH_SIZE)):
         transposed = tuple(zip(*batch))
         inputs = transposed[:2]
-        ids = transposed[-1]
-        buffer.extend(zip(ids, model.run(*inputs)))
+        ids = transposed[2:]
+        buffer.extend(zip(*ids, model.run(*inputs)))
         i += BATCH_SIZE
         if i > 500:
             total = step * BATCH_SIZE
-            print('dumping example {}, rate: {} per second'.format(total, total/(time.time() - start) ))
+            print('dumping example {}, rate: {} per second'.format(total, total/(time.time() - start)))
             write_fn(buffer)
             buffer = []
             i = 0
