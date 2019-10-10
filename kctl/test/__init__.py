@@ -35,5 +35,8 @@ def pipeline(ctx, pipeline_name):
             logger.info('error:\n%s' % res['error'].encode().decode("unicode_escape"))
 
         else:
+            translations = ''
             for trans in res['translations']:
-                logger.info('lang: %s\n trans: %s' % (trans['lang'], trans['text']))
+                translations += 'lang: %s\n trans: %s\n' % (trans['lang'], trans['text'])
+
+            logger.info('Translations:\n%s' % translations)
