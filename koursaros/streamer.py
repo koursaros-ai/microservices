@@ -20,8 +20,8 @@ class Streamer:
 
     def run(self):
         net = Network(self.name)
-        net.build_socket(SocketType.PULL_BIND, Route.IN, name=self.service_out)
-        net.build_socket(SocketType.PUSH_BIND, Route.OUT, name=self.service_in)
+        net.build_socket(SocketType.PULL_BIND, Route.IN, name=self.service_in)
+        net.build_socket(SocketType.PUSH_BIND, Route.OUT, name=self.service_out)
         zmq.device(zmq.STREAMER, net.sockets[Route.IN], net.sockets[Route.OUT])
         net.close()
 
