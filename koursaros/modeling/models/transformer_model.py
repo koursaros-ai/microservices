@@ -55,7 +55,7 @@ class TransformerModel(Model):
         if self.trained:
             print('Tracing model for deployment...')
             self.model.eval()
-            self.trace_model()
+            # self.trace_model()
         if self.config.task == 'classification':
             self.best_checkpoint_metric = 'acc'
         elif self.config.task == 'regression':
@@ -294,9 +294,9 @@ class TransformerModel(Model):
             max_length=self.max_length,
             truncate_first_sequence=True  # We're truncating the first sequence in priority
         )
-        input_ids, token_type_ids = inputs["input_ids"][:self.max_length], inputs["token_type_ids"][:self.max_length]
-        # The mask has 1 for real tokens and 0 for padding tokens. Only real
-        # tokens are attended to.
+        input_ids, token_type_ids = inputs["input_ids"][:self.max_length], \
+                                    inputs["token_type_ids"][:self.max_length]
+
         attention_mask = [1] * len(input_ids)
 
         # Zero-pad up to the sequence length.
