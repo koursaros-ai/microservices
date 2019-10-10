@@ -31,7 +31,7 @@ class Messages:
             return proto
 
         elif from_type in (MsgType.RECV_PROTO, MsgType.SEND_PROTO) and to_type == MsgType.JSONBYTES:
-            return MessageToJson(msg)
+            return MessageToJson(msg).encode()
 
         elif from_type == MsgType.PROTOBYTES and to_type == MsgType.RECV_PROTO:
             proto = self.send_proto()
