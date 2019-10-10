@@ -21,7 +21,7 @@ def pipeline(ctx, pipeline_name):
     app_manager = ctx.obj
     app_manager.raise_if_not_app_root()
 
-    ctx.invoke(router, pipeline_name=pipeline_name)
+    ctx.invoke(router)
     ctx.invoke(streamers, pipeline_name=pipeline_name)
 
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
@@ -47,9 +47,8 @@ def streamers(app_manager, pipeline_name):
 
 
 @deploy.command()
-@click.argument('pipeline_name')
 @click.pass_obj
-def router(app_manager, pipeline_name):
+def router(app_manager):
     """Deploy the router"""
     cmd = [sys.executable, '-m', 'koursaros.router']
     app_manager.subproc(cmd)
