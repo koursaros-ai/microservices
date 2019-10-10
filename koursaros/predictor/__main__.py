@@ -32,14 +32,14 @@ def predict(model_file, data_source, data_target):
 
     buffer = []
     i = 0
-    for i, batch in enumerate(batch_list(rows, BATCH_SIZE)):
+    for step, batch in enumerate(batch_list(rows, BATCH_SIZE)):
         transposed = tuple(zip(*batch))
         inputs = transposed[:-1]
         ids = transposed[-1]
         buffer.extend(zip(ids, model.run(*inputs)))
         i += BATCH_SIZE
         if i > 1000:
-            print('dumping example {}'.format(i * BATCH_SIZE))
+            print('dumping example {}'.format(step * BATCH_SIZE))
             write_fn(buffer)
             buffer = []
             i = 0
