@@ -124,6 +124,11 @@ class Network:
 
     def send(self, route: 'Route', cmd, msg_id: int, msg):
         msg_id = struct.pack("L", msg_id)
+
+        self.logger.bold(cmd)
+        self.logger.bold(msg_id)
+        self.logger.bold(msg)
+
         self.sockets[route].send(cmd.value + msg_id + msg)
 
     def poll(self, route: 'Route'):
