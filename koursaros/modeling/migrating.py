@@ -91,8 +91,8 @@ def transformer_to_features(tokenizer, *args):
 
 def pad_up(input_ids, max_length):
     padding_length = max_length - len(input_ids)
-    input_ids = ([0] * padding_length) + input_ids
     attention_mask = ([0] * padding_length) + [1] * len(input_ids)
+    input_ids = ([0] * padding_length) + input_ids
     return (input_ids, attention_mask)
 
 
