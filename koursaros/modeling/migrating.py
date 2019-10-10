@@ -38,7 +38,7 @@ def benchmark(pred_fn, n):
 
 
 def benchmark_mnli(samples):
-    torch_hub_model = time_fn(torch.hub.load('pytorch/fairseq','roberta.large.mnli'))
+    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
     transformers_model = time_fn(transformers.RobertaModel.from_pretrained, 'roberta-large-mnli')
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
