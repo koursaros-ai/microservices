@@ -116,6 +116,8 @@ class Service:
 
                     if isinstance(returned, dict):
                         msg = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+                    else:
+                        msg = returned
 
                     # if last position then send jsons to router
                     if self.position == -1:
