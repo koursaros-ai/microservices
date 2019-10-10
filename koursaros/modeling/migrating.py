@@ -39,7 +39,7 @@ def predict_roberta(model):
 
 
 def benchmark(pred_fn, n):
-    args = 'All work and no play.', 'Make jack a very dull boy.'
+    args = ['All work and no play.'] * 8, ['Make jack a very dull boy.'] * 8
     for i in range(0, n):
         assert(type(pred_fn(*args)) == list)
 
@@ -93,8 +93,7 @@ def transformer_to_features(tokenizer, *args):
 
 
 def transformers_encode_batch(tokenizer, *args):
-    import pdb
-    pdb.set_trace()
+    assert(type(args[0]) == list)
     all_input_ids = []
     all_attention_mask = []
     all_token_type_ids = []
