@@ -62,7 +62,8 @@ def predict_roberta(model):
 
 
 def benchmark(pred_fn, n):
-    args = ['All work and no play.'] * 8, ['Make jack a very dull boy.'] * 8
+    args = ['The group turned to the recording proper on 1 May 1969.'] * 8, \
+           ['''Writing for the TV play progressed through May and June, and on 15 June mixing for Dave Davies' solo LP was completed (tapes for this record were eventually delivered to Pye and Reprise Records, although it never saw official release).'''] * 8
     for i in range(0, n):
         assert(type(pred_fn(*args)) == list)
 
