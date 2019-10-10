@@ -61,7 +61,7 @@ class Router:
         app = Flask(__name__)
         router = self
 
-        @app.route('/send')
+        @app.route('/send', methods=['POST'])
         def receive():
             if Route.OUT not in self.net.sockets:
                 router.wait_for_first_service()

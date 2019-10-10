@@ -1,6 +1,7 @@
-from koursaros.yamls import YamlType, Yaml
+from kctl.logger import set_logger
+import requests
 import click
-import sys
+import json
 
 
 @click.group()
@@ -12,18 +13,15 @@ def test(ctx):
 @test.command()
 @click.argument('pipeline_name')
 @click.pass_context
-def pipeline(ctx, pipeline_name, verbose):
-    """
-    Deploy a pipeline by threading the deployment
-    of streamers and each service.
-    """
-    app_manager = ctx.obj
-    app_manager.raise_if_not_app_root()
+def pipeline(ctx, pipeline_name):
+    logger = set_logger('TEST')
 
-    ctx.invoke(router, pipeline_name=pipeline_name)
-    ctx.invoke(streamers, pipeline_name=pipeline_name)
+    if pipeline_name == 'telephone':
+        translations = dict(
+            translations=[
+                dict(lang='en',
+                     text='I would love pancakes tomorrow morning'
+                     )])
 
-    pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
-
-    for service_name in pipeline_yaml.services:
-        ctx.invoke(service, service_name=service_name)
+        res = requests.post('localhost:5000/send', data=translations)
+        logger.bold(json.dumps(res, indent=4))

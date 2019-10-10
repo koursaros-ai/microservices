@@ -13,7 +13,7 @@ def deploy(ctx):
 @deploy.command()
 @click.argument('pipeline_name')
 @click.pass_context
-def pipeline(ctx, pipeline_name, verbose):
+def pipeline(ctx, pipeline_name):
     """
     Deploy a pipeline by threading the deployment
     of streamers and each service.
@@ -73,7 +73,7 @@ def service(app_manager, pipeline_name, service_name):
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base,
            str(service_yaml_path), pipe_yaml_path]
-    
+
     app_manager.subproc(cmd)
 
 
