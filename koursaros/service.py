@@ -4,11 +4,13 @@ from kctl.logger import set_logger
 from traceback import format_exc
 from .yamls import Yaml
 import pathlib
+import time
 import zmq
 import sys
 import os
 
 RCV_TIMEOUT = 10000
+HEARTBEAT = 5
 
 
 class Service:
@@ -37,28 +39,39 @@ class Service:
 
         # defaults
         self._stub = None
-        self.sent = 0
         self.base_dir_path = base_dir_path
         self.name = name
+        self.errors = 0
+        self.last_error = None
+        self.sent = 0
+        self.last_status = 0
+        self.last_error_time = None
 
     def stub(self, f):
         self._stub = f
 
     @property
     def status(self):
-        return dict(
-            pid=os.getpid(),
-            service=self.name,
-            sent=self.sent,
-            position=self.position
-        )
+        return {
+            self.name: {
+                os.getpid(): {
+                    'sent': self.sent,
+                    'errors': self.errors,
+                    'last_error': self.last_error,
+                    'last_error_time': self.last_error_time,
+                    'last_heartbeat': time.time()
+                }
+            }
+        }
 
-    def error(self, err):
-        return dict(
-            pid=os.getpid(),
-            service=self.name,
-            error=repr(err)
-        )
+    def register_sync_error(self, e, msg_id):
+        self.register_async_error(e)
+        self.net.send(Route.OUT, Command.ERROR, msg_id, self.status)
+
+    def register_async_error(self, e):
+        self.errors += 1
+        self.last_error = repr(e)
+        self.last_error_time = time.time()
 
     def run(self):
 
@@ -68,68 +81,52 @@ class Service:
                         recv_proto=self.base_yaml.send_proto)
 
         # set network
-        net = Network(self.name)
-        net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
-        net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
-        net.build_socket(SocketType.SUB_CONNECT, Route.CTRL)
-        net.build_poller(Route.CTRL)
-        net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
+        self.net = Network(self.name)
+        self.net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
+        self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
 
         while True:
-            # if message from router, send status
-            if net.poll(Route.CTRL):
-                self.logger.info('received status req from Router...')
+            if self.last_status - time.time() > HEARTBEAT:
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
-                net.send(Route.OUT, Command.STATUS, 0, status)
+                self.net.send(Route.OUT, Command.STATUS, 0, status)
 
-            try:
-                cmd, msg_id, msg = net.recv(Route.IN)
-                self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
+            cmd, msg_id, msg = self.net.recv(Route.IN)
+            self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
 
-                # if receiving status from preceding service, resend
-                if cmd in (Command.STATUS, Command.ERROR):
-                    net.send(Route.OUT, cmd, msg_id, msg)
-                    continue
+            # if receiving status msg then resend
+            if cmd in (Command.STATUS, Command.ERROR):
+                self.net.send(Route.OUT, cmd, msg_id, msg)
+                continue
 
-                elif cmd == Command.SEND:
+            elif cmd == Command.SEND:
 
-                    # if first position then get jsons from router
-                    if self.position == 0:
-                        try:
-                            proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
-                        except ParseError as e:
-                            jsonbytes = msgs.cast(self.error(e), MsgType.JSON, MsgType.JSONBYTES)
-                            net.send(Route.OUT, Command.ERROR, msg_id, jsonbytes)
-                            continue
-
-                    else:
-                        proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
-
+                # if first position then get jsons from router
+                if self.position == 0:
                     try:
-                        returned = self._stub(proto)
-                    except:
-                        tb = format_exc()
-                        self.logger.info(tb)
-                        jsonbytes = msgs.cast(self.error(tb), MsgType.JSON, MsgType.JSONBYTES)
-                        net.send(Route.OUT, Command.ERROR, msg_id, jsonbytes)
+                        proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                    except ParseError as e:
+                        self.register_sync_error(e, msg_id)
                         continue
 
-                    if isinstance(returned, dict):
-                        proto = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
-                    else:
-                        proto = returned
+                else:
+                    proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
 
-                    # if last position then send jsons to router
-                    if self.position == -1:
-                        jsonbytes = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
-                        net.send(Route.OUT, Command.SEND, msg_id, jsonbytes)
-                    else:
-                        protobytes = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
-                        net.send(Route.OUT, Command.SEND, msg_id, protobytes)
+                try:
+                    returned = self._stub(proto)
+                except:
+                    self.register_sync_error(format_exc(), msg_id)
+                    continue
 
+                if isinstance(returned, dict):
+                    proto = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+                else:
+                    proto = returned
 
+                # if last position then send jsons to router
+                if self.position == -1:
+                    msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                else:
+                    msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
 
-            except zmq.error.Again:
-                # self.logger.info('Socket timeout...')
-                pass
-
+                self.net.send(Route.OUT, Command.SEND, msg_id, msg)
+                self.sent += 1
