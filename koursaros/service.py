@@ -135,6 +135,7 @@ class Service:
                 pass
 
             finally:
+                self.logger.info('about to send heartbeat')
                 if self.last_status - time.time() > HEARTBEAT:
                     self.logger.info('sending heartbeat')
                     status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
