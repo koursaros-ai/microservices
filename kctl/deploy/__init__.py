@@ -72,7 +72,7 @@ def service(app_manager, pipeline_name, service_name):
         app_manager.save_base_to_pkg(service_yaml.base)
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base,
-           str(service_yaml_path), pipe_yaml_path]
+           str(service_yaml_path), str(pipe_yaml_path)]
 
     app_manager.subproc(cmd)
 
