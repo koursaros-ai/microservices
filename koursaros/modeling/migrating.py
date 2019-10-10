@@ -19,7 +19,7 @@ def predict_transformers(model, tokenizer):
         inputs_dict = {
             'input_ids': torch.tensor(inputs[0],  dtype=torch.long),
             'attention_mask': torch.tensor(inputs[1],  dtype=torch.long),
-            'token_type_ids': torch.tensor(inputs[2],  dtype=torch.long)
+            # 'token_type_ids': torch.tensor(inputs[2],  dtype=torch.long)
         }
         import pdb
         pdb.set_trace()
