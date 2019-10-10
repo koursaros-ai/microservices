@@ -1,5 +1,5 @@
 
-
+from kctl.logger import set_logger
 from hashlib import sha1
 from enum import Enum
 import struct
@@ -52,6 +52,7 @@ class Network:
         self.ctx = zmq.Context()
         self.sockets = dict()
         self.pollers = dict()
+        self.logger = set_logger('Network')
 
     def build_socket(self, socket_type: 'SocketType', route: 'Route',
                      identity: str = None, name=None):
@@ -84,10 +85,12 @@ class Network:
         else:
             raise NotImplementedError
 
+        tcp = 'tcp://%s:%d' % (HOST, port)
+
         if socket_type.is_bind:
-            sock.bind('tcp://%s:%d' % (HOST, port))
+            sock.bind(tcp)
         else:
-            sock.connect('tcp://%s:%d' % (HOST, port))
+            sock.connect(tcp)
 
         if socket_type in {SocketType.SUB_CONNECT, SocketType.SUB_BIND}:
             sock.setsockopt(zmq.SUBSCRIBE, identity.encode('ascii') if identity else b'')
@@ -99,6 +102,7 @@ class Network:
         sock.setsockopt(zmq.SNDHWM, 10)
         sock.setsockopt(zmq.SNDBUF, 10 * 1024 * 1024)  # limit of network buffer 100M
 
+        self.logger.bold('Socket built: %s on %s' % (socket_type, tcp))
         self.sockets[route] = sock
 
     def build_poller(self, route: 'Route'):

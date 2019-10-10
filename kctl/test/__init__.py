@@ -25,6 +25,6 @@ def pipeline(ctx, pipeline_name):
                      text='I would love pancakes tomorrow morning'
                      )])
 
-        logger.bold('Requesting %s on %s' % (translations, url))
+        logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations)
         logger.bold(json.dumps(res, indent=4))
