@@ -39,7 +39,7 @@ class Messages:
             return proto
 
         elif from_type == MsgType.SEND_PROTO and to_type == MsgType.PROTOBYTES:
-            proto = msg.SerializeToString().encode()
+            proto = msg.SerializeToString()
             return proto
 
         elif from_type == MsgType.JSON and to_type == MsgType.JSONBYTES:
