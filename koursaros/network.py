@@ -21,22 +21,22 @@ class Command(Enum):
 
 
 class Route(Enum):
-    IN = b'0'
-    OUT = b'1'
-    CTRL = b'2'
+    IN = 0
+    OUT = 1
+    CTRL = 2
 
 
 class SocketType(Enum):
-    PULL_BIND = b'0'
-    PULL_CONNECT = b'1'
-    PUSH_BIND = b'2'
-    PUSH_CONNECT = b'3'
-    SUB_BIND = b'4'
-    SUB_CONNECT = b'5'
-    PUB_BIND = b'6'
-    PUB_CONNECT = b'7'
-    PAIR_BIND = b'8'
-    PAIR_CONNECT = b'9'
+    PULL_BIND = 0
+    PULL_CONNECT = 1
+    PUSH_BIND = 2
+    PUSH_CONNECT = 3
+    SUB_BIND = 4
+    SUB_CONNECT = 5
+    PUB_BIND = 6
+    PUB_CONNECT = 7
+    PAIR_BIND = 8
+    PAIR_CONNECT = 9
 
     @property
     def is_bind(self):

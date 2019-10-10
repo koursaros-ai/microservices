@@ -6,12 +6,12 @@ import json
 
 
 class MsgType(Enum):
-    RECV_PROTO = b'0'
-    SEND_PROTO = b'1'
-    PROTOBYTES = b'2'
-    JSON = b'3'
-    JSONBYTES = b'4'
-    KWARGS = b'5'
+    RECV_PROTO = 0
+    SEND_PROTO = 1
+    PROTOBYTES = 2
+    JSON = 3
+    JSONBYTES = 4
+    KWARGS = 5
 
 
 class Messages:
