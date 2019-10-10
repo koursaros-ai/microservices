@@ -1,5 +1,6 @@
-from kctl.logger import set_logger
+
 from .network import Network, Route, SocketType
+from kctl.logger import set_logger
 import sys
 import zmq
 
