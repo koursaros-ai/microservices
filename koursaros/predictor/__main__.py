@@ -5,6 +5,7 @@ from koursaros.utils.misc import batch_list
 from koursaros.modeling.data import *
 import csv
 import time
+import torch
 
 BATCH_SIZE = int(os.environ.get('BATCH_SIZE') or 4)
 
@@ -56,4 +57,5 @@ if __name__ == '__main__':
     data_source = sys.argv[2]
     data_target = sys.argv[3] if len(sys.argv) > 3 else './predictions.tsv'
     truncate = len(sys.argv) > 4 and sys.argv[4] == '-t'
-    predict(model_file, data_source, data_target, truncate=truncate)
+    with torch.no_grad():
+        predict(model_file, data_source, data_target, truncate=truncate)

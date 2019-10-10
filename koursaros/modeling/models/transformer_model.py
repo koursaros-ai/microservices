@@ -8,6 +8,7 @@ from tqdm import tqdm
 import numpy as np
 import os
 from kctl.logger import set_logger
+import torch.nn.functional as F
 
 from koursaros.utils.misc import batch_list
 
@@ -331,6 +332,18 @@ class TransformerModel(Model):
                           token_type_ids=token_type_ids,
                           label=label)
 
+
+    def to_features(self, *args):
+        inputs = self.tokenizer.encode_plus(
+            *args,
+            add_special_tokens=True,
+            max_length=self.max_length,
+            truncate_first_sequence=True
+        )
+        input_ids = inputs["input_ids"][:self.max_length]
+        return input_ids
+
+
     def features_to_inputs(self, features, inference):
         all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long).to(self.device)
         all_attention_mask = torch.tensor([f.attention_mask for f in features], dtype=torch.long).to(self.device)
@@ -345,6 +358,29 @@ class TransformerModel(Model):
             return all_input_ids, all_attention_mask, all_token_type_ids, all_labels
         else:
             return all_input_ids, all_attention_mask, all_token_type_ids
+
+
+    def pad_up(self, input_ids, max_length):
+        padding_length = max_length - len(input_ids)
+        attention_mask = ([0] * padding_length) + [1] * len(input_ids)
+        input_ids = ([0] * padding_length) + input_ids
+        return (input_ids, attention_mask)
+
+
+    def transformers_encode_batch(self, *args):
+        assert (type(args[0]) == list)
+        all_input_ids = []
+        max_batch_len = 0
+
+        for sample in zip(*args):
+            input_ids = self.to_features(*sample)
+            all_input_ids.append(input_ids)
+            max_batch_len = max(max_batch_len, len(input_ids))
+
+        all_input_ids, all_attention_masks = zip(*[
+            self.pad_up(input_ids, max_batch_len) for input_ids in all_input_ids
+        ])
+        return all_input_ids, all_attention_masks
 
 
     def load_and_cache_examples(self, data, evaluate=False, force_build_features=False):
@@ -382,32 +418,19 @@ class TransformerModel(Model):
         dataset = TensorDataset(*self.features_to_inputs(features, False))
         return dataset
 
-    def pred_from_output(self, outputs):
+    def run(self, *args):
+        inputs = self.transformers_encode_batch(*args)
+        inputs_dict = {
+            'input_ids': torch.tensor(inputs[0], dtype=torch.long).to(self.device),
+            'attention_mask': torch.tensor(inputs[1], dtype=torch.long).to(self.device),
+        }
+        outputs = self.model(inputs_dict['input_ids'], inputs_dict['attention_mask'])
         logits = outputs[0]
-        preds = logits.detach().cpu().numpy()
         if self.config.task == 'classification':
-            preds = np.argmax(preds, axis=1)
+            preds = F.log_softmax(logits, dim=-1).tolist()
             return [self.config.labels[int(pred)] for pred in preds]
         elif self.config.task == 'regression':
-            return np.squeeze(preds)
-        else:
-            raise NotImplementedError()
-
-    def run(self, *args):
-        examples = [
-            InputExample(
-                guid=str(i),
-                text_a=arg[0],
-                text_b=None if len(arg) < 2 else arg[1]
-            ) for i, arg in enumerate(zip(*args))
-        ]
-        features = [self.example_to_feature(example) for example in examples]
-        all_inputs = self.features_to_inputs(features, True)
-        inputs = self.inputs_from_batch(all_inputs)
-        import pdb
-        pdb.set_trace()
-        outputs = self.model(*self.tuple_inputs(inputs))
-        return self.pred_from_output(outputs)
+            return logits.squeeze().item()
 
     def multi_gpu_training(self):
         # multi-gpu training (should be after apex fp16 initialization)
