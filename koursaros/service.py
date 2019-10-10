@@ -89,6 +89,7 @@ class Service:
 
         while True:
             if self.last_status - time.time() > HEARTBEAT:
+                self.logger.info('Sending heartbeat')
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 self.net.send(Route.OUT, Command.STATUS, 0, status)
 
@@ -102,7 +103,7 @@ class Service:
 
             # if receiving status msg then resend
             if cmd in (Command.STATUS, Command.ERROR):
-                self.net.send(Route.OUT, cmd, msg_id, msg) 
+                self.net.send(Route.OUT, cmd, msg_id, msg)
                 continue
 
             elif cmd == Command.SEND:
