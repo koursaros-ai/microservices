@@ -10,7 +10,7 @@ translator = Translator()
 @service.stub
 def translate(translations):
     last_translation = translations.translations[-1]
-    last_lang = last_translation.src_lang
+    last_lang = last_translation.lang
     last_trans = last_translation.text
     new_trans = translations.translations.add()
     trans = translator.translate(last_trans, src=last_lang, dest=dest_lang)

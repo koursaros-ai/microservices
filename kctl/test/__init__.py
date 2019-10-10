@@ -30,6 +30,6 @@ def pipeline(ctx, pipeline_name):
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
         res = json.loads(res.content)
-        if 'error' in res:
-            res['error'] = res['error'].encode().decode("unicode_escape")
         logger.info(json.dumps(res, indent=4))
+        if 'error' in res:
+            logger.info('error:\n%s' % res['error'].encode().decode("unicode_escape"))
