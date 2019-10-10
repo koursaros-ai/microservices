@@ -33,9 +33,10 @@ def predict(model_file, data_source, data_target):
     buffer = []
     i = 0
     for batch in batch_list(rows, BATCH_SIZE):
-        import pdb
-        pdb.set_trace()
-        buffer.extend(zip(*(batch[-1], model.run(*zip(*batch[:-1])))))
+        transposed = tuple(zip(*batch))
+        inputs = transposed[:-1]
+        ids = transposed[-1]
+        buffer.extend(zip(ids, model.run(*inputs)))
         i += BATCH_SIZE
         if BATCH_SIZE > 1000:
             write_fn(buffer)
