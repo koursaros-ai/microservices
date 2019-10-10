@@ -22,7 +22,7 @@ def pipeline(ctx, pipeline_name):
 
         translations = json.dumps({
             'translations': [{
-                'lang': 'en',
+                'src_lang': 'en',
                 'text': 'I would love pancakes tomorrow morning'
             }]
         })
