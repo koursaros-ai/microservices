@@ -130,6 +130,9 @@ class Network:
         """
         return True if self.sockets[route] in dict(self.pollers[route].poll(0)) else False
 
+    def setsockopt(self, route: 'Route', *args):
+        self.sockets[route].setsockopt(*args)
+
     def close(self):
         for sock in self.sockets.values():
             sock.close()

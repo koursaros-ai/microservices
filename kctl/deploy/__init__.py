@@ -73,7 +73,7 @@ def service(app_manager, pipeline_name, service_name):
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base,
            str(service_yaml_path), pipe_yaml_path]
-
+    
     app_manager.subproc(cmd)
 
 

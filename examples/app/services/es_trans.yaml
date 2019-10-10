@@ -1,0 +1,3 @@
+service:
+  base: googletrans
+  dest_lang: es

@@ -1,4 +1,5 @@
-from .network import Network, Route, SocketType, FLASK_PORT
+
+from .network import Network, Route, SocketType, FLASK_PORT, Command
 from flask import Flask, request, jsonify
 from kctl.logger import set_logger
 from .messages import Messages, MsgType
@@ -31,12 +32,13 @@ class Router:
 
     def wait_for_first_service(self):
         # ask services for status
-        self.net.send(Route.CTRL, 0, b'')
+        self.net.send(Route.CTRL, Command.STATUS, 0, b'')
 
         while True:
             msg_id, msg = self.net.recv(Route.IN)
+            service_status = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.JSON)
 
-            if msg != b'':
+            if service_status['position'] == 0:
                 self.set_push_socket(msg.decode())
                 break
 
@@ -46,7 +48,7 @@ class Router:
         # use message count if no id is found in data
         msg_id = msg.pop('id') if 'id' in msg else self.msg_count
         msg = self.msgs.cast(msg, MsgType.JSON, MsgType.JSONBYTES)
-        self.net.send(Route.OUT, msg_id, msg)
+        self.net.send(Route.OUT, Command.SEND, msg_id, msg)
 
         # wait for response from service
         msg_id, msg = self.net.recv(Route.CTRL)
