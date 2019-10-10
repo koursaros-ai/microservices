@@ -58,13 +58,13 @@ class Router:
         router = self
 
         @app.route('/status', methods=['GET'])
-        def receive():
+        def status():
             return jsonify(router.statuses)
 
         @app.route('/send', methods=['POST'])
-        def receive():
+        def send():
             data = request.form if request.form else request.json
-            router.logger.bold('Sending %s' % data)
+            router.logger.bold('Sending %s' % data) 
             router.send_msg(data)
             res = router.get_res()
             return jsonify(res)
