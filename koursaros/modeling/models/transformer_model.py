@@ -149,7 +149,7 @@ class TransformerModel(Model):
         else:
             self.eval_freq = self.config.training.eval_freq
 
-        self.logging_steps = 100#len(train_dataset) // self.batch_size // self.eval_freq
+        self.eval_and_save_every = 100#len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -195,14 +195,14 @@ class TransformerModel(Model):
                 self.model.zero_grad()
                 global_step += 1
 
-                if self.local_rank in [-1, 0] and self.logging_steps > 0 and global_step % self.logging_steps == 0:
+                if self.local_rank in [-1, 0]  and global_step % self.eval_and_save_every == 0:
                     # Log metrics
                     if self.local_rank == -1 and self.evaluate_during_training:
                         results = self.evaluate(test_dataset)
                         for key, value in results.items():
                             tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                         tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
+                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.eval_and_save_every, global_step)
                         logging_loss = tr_loss
                         if prev_best is None or results[self.best_checkpoint_metric] > prev_best:
                             prev_best = results[self.best_checkpoint_metric]
