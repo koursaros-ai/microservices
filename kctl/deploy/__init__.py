@@ -27,7 +27,7 @@ def pipeline(ctx, pipeline_name):
     pipeline_yaml = Yaml(app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE))
 
     for service_name in pipeline_yaml.services:
-        ctx.invoke(service, service_name=service_name)
+        ctx.invoke(service, pipeline_name=pipeline_name, service_name=service_name)
 
 
 @deploy.command()
