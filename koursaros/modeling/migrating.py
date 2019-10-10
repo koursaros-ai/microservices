@@ -6,10 +6,6 @@ import time
 import torch.nn.functional as F
 import torch.hub
 
-# def roberta_to_transformer(path_to_roberta, path_to_yaml):
-#     model = RobertaModel.from_pretrained(path_to_roberta, checkpoint_file='model.pt')
-#     model.eval()
-
 MAX_LENGTH = 256
 PAD = True
 
@@ -45,7 +41,7 @@ def benchmark(pred_fn, n):
 
 
 def benchmark_mnli(samples):
-    # torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
+    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
     try:
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli')
@@ -55,7 +51,7 @@ def benchmark_mnli(samples):
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
-        # 'torch_hub' : predict_roberta(torch_hub_model)
+        'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
