@@ -7,7 +7,7 @@ import zmq
 import sys
 import os
 
-RCV_TIMEOUT = 1000
+RCV_TIMEOUT = 10000
 
 
 class Service:
