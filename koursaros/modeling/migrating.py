@@ -50,6 +50,7 @@ def benchmark_mnli(samples):
 
 def time_fn(fn, *args, **kwargs):
     start = time.time()
+    print(args)
     res = fn(*args, **kwargs)
     print(f'Took {time.time() - start} seconds to run {fn.__name__}')
     return res
