@@ -9,7 +9,7 @@ import zmq
 import sys
 import os
 
-RCV_TIMEOUT = 10000
+RCV_TIMEOUT = 1000
 HEARTBEAT = 5
 
 
@@ -84,6 +84,8 @@ class Service:
         self.net = Network(self.name)
         self.net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
         self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
+        self.net.build_poller(Route.IN)
+        self.net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
 
         while True:
             if self.last_status - time.time() > HEARTBEAT:
