@@ -172,7 +172,7 @@ class TransformerModel(Model):
             preds = np.argmax(preds, axis=1)
             for pred in preds:
                 label_count[pred] += 1
-            num_correct += np.sum(preds == correct_labels.numpy())
+            num_correct += np.sum(preds == correct_labels.detach().cpu().numpy())
             if step > 0:
                 epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
                                                % (num_correct / (step*self.batch_size), label_count))
