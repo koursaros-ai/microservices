@@ -21,7 +21,7 @@ class Router:
         # set zeromq
         self.net = Network('router')
         self.net.build_socket(SocketType.PUB_BIND, Route.CTRL)
-        self.net.build_socket(SocketType.PULL_BIND, Route.IN, name='ROUTER')
+        self.net.build_socket(SocketType.PULL_CONNECT, Route.IN, name='ROUTER')
         self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name='ROUTER')
 
         # setup messages
