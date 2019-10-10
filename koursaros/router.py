@@ -47,7 +47,7 @@ class Router:
         self.net.send(Route.OUT, Command.SEND, msg_id, msg)
 
         # wait for response from service
-        msg_id, msg = self.net.recv(Route.CTRL)
+        msg_id, msg = self.net.recv(Route.IN)
         res = json.loads(msg)
 
         res['id'] = msg_id
