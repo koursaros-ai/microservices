@@ -92,13 +92,12 @@ class TransformerModel(Model):
         self.model = torch.jit.trace(self.model, self.tuple_inputs(inputs))
 
     def train(self, force_build_features=False):
-        try:
-            return self.do_train(force_build_features=force_build_features)
-        except:
-            logger.warning('Error during training, decrease batch size and try again')
-            raise SystemError()
-            self.batch_size = self.batch_size // 2 # back off batch_size
-            return self.train(force_build_features=True)
+        return self.do_train(force_build_features=force_build_features)
+        # except:
+        #     logger.warning('Error during training, decrease batch size and try again')
+        #     raise SystemError()
+        #     self.batch_size = self.batch_size // 2 # back off batch_size
+        #     return self.train(force_build_features=True)
 
     def do_train(self, force_build_features=False):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
