@@ -43,6 +43,7 @@ class TransformerModel(Model):
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
         self.max_length = 256
+        self.fp16 = False
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
         self.pad_on_left = True
@@ -53,6 +54,10 @@ class TransformerModel(Model):
         self.label_map = {label: i for i, label in enumerate(self.config.labels)}
         if self.trained:
             self.model.eval()
+        if self.config.task == 'classification':
+            self.best_checkpoint_metric = 'acc'
+        elif self.config.task == 'regression':
+            self.best_checkpoint_metric = 'loss'
 
     def inputs_from_batch(self, batch):
         inputs = {'input_ids': batch[0],
@@ -102,19 +107,9 @@ class TransformerModel(Model):
         try:
             from apex import amp
             model, optimizer = amp.initialize(self.model, optimizer)
+            self.fp16 = True
         except ImportError:
-            raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
-
-
-        # # multi-gpu training (should be after apex fp16 initialization)
-        # if self.n_gpu > 1:
-        #     model = torch.nn.DataParallel(self.model)
-        #
-        # # Distributed training (should be after apex fp16 initialization)
-        # if self.local_rank != -1:
-        #     model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.local_rank],
-        #                                                       output_device=self.local_rank,
-        #                                                       find_unused_parameters=True)
+            self.fp16 = False
 
         # Train!
         logger.info("***** Running training *****")
@@ -139,6 +134,7 @@ class TransformerModel(Model):
         label_count = [0] * len(self.config.labels)
         epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
         num_correct = 0
+        prev_best = None
         for step, batch in enumerate(epoch_iterator):
             self.model.train()
             correct_labels = batch[3]
@@ -182,24 +178,30 @@ class TransformerModel(Model):
                         results = self.evaluate(test_dataset)
                         for key, value in results.items():
                             tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
-                    tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                    tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
-                    logging_loss = tr_loss
-
-                if self.local_rank in [-1, 0] and self.save_steps > 0 and global_step % self.save_steps == 0:
-                    # Save model checkpoint
-                    model_to_save = self.model.module if hasattr(self.model,
-                                                            'module') else self.model
-                    model_to_save.save_pretrained(self.ckpt_dir)
-                    self.tokenizer.save_pretrained(self.ckpt_dir)
+                        tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
+                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
+                        logging_loss = tr_loss
+                        if prev_best is None or results[self.best_checkpoint_metric] > prev_best:
+                            prev_best = results[self.best_checkpoint_metric]
+                            self.save_model()
 
         if self.local_rank in [-1, 0]:
             tb_writer.close()
 
+        result = self.evaluate(test_dataset)
+        if prev_best is None or result[self.best_checkpoint_metric] > prev_best:
+            self.save_model()
+
         return global_step, tr_loss / global_step
 
-    def evaluate(self, test_dataset):
+    def save_model(self):
+        # Save model checkpoint
+        model_to_save = self.model.module if hasattr(self.model,
+                                                     'module') else self.model
+        model_to_save.save_pretrained(self.ckpt_dir)
+        self.tokenizer.save_pretrained(self.ckpt_dir)
 
+    def evaluate(self, test_dataset):
         eval_dataset = self.load_and_cache_examples(test_dataset, evaluate=True)
         eval_output_dir = os.path.join(self.data_dir, 'eval')
 
@@ -261,7 +263,7 @@ class TransformerModel(Model):
 
         return result
 
-    def convert_example(self, example):
+    def example_to_feature(self, example):
         inputs = self.tokenizer.encode_plus(
             example.text_a,
             example.text_b,
@@ -286,12 +288,6 @@ class TransformerModel(Model):
                 attention_mask = attention_mask + ([0] * padding_length)
                 token_type_ids = token_type_ids + ([self.pad_token_segment_id] * padding_length)
 
-            assert len(input_ids) == self.max_length, "Error with input length {} vs {}".format(len(input_ids),
-                                                                                                self.max_length)
-            assert len(attention_mask) == self.max_length, "Error with input length {} vs {}".format(len(attention_mask),
-                                                                                                     self.max_length)
-            assert len(token_type_ids) == self.max_length, "Error with input length {} vs {}".format(len(token_type_ids),
-                                                                                                 self.max_length)
         if example.label is not None:
             if self.config.task == "classification":
                 if example.label in self.label_map:
@@ -349,7 +345,7 @@ class TransformerModel(Model):
             for (ex_index, example) in enumerate(examples):
                 if ex_index % 10000 == 0:
                     logger.info("Writing example %d" % (ex_index))
-                features.append(self.convert_example(example))
+                features.append(self.example_to_feature(example))
 
             if self.local_rank in [-1, 0]:
                 logger.info("Saving features into cached file %s" % cached_features_file)
@@ -381,7 +377,7 @@ class TransformerModel(Model):
                 text_b=None if len(args) < 2 else args[1]
             ) for i, arg in enumerate(zip(*args))
         ]
-        features = [self.convert_example(example) for example in examples]
+        features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features)
         results = []
         for batch in batch_list(zip(*all_inputs), self.batch_size):
@@ -389,6 +385,16 @@ class TransformerModel(Model):
             outputs = self.model(**inputs)
             results.extend(self.pred_from_output(outputs))
         return results
+
+    def multi_gpu_training(self):
+        # multi-gpu training (should be after apex fp16 initialization)
+        if self.n_gpu > 1:
+            model = torch.nn.DataParallel(self.model)
+        # Distributed training (should be after apex fp16 initialization)
+        if self.local_rank != -1:
+            model = torch.nn.parallel.DistributedDataParallel(self.model, device_ids=[self.local_rank],
+                                                              output_device=self.local_rank,
+                                                              find_unused_parameters=True)
 
     @staticmethod
     def architectures():
