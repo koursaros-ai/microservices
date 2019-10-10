@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.hub
 import torch.jit
 
-MAX_LENGTH = 512
+MAX_LENGTH = 256
 PAD = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -35,6 +35,8 @@ def benchmark_mnli(samples):
 def get_dummy_data(tokenizer):
     args = ['All work and no play make jack.'] * 8, ['Make jack a very dull boy.'] * 8
     inputs = transformers_encode_batch(tokenizer, *args)
+    import pdb
+    pdb.set_trace()
     return torch.tensor(inputs[0], dtype=torch.long).to(device), \
            torch.tensor(inputs[1], dtype=torch.long).to(device)
 
