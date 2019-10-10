@@ -20,7 +20,7 @@ def benchmark_mnli(samples):
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli', force_download=True)
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
-    transformers_traced = torch.jit.trace(torch_hub_model, get_dummy_data(transformers_tokenizer))
+    transformers_traced = torch.jit.trace(transformers_model, get_dummy_data(transformers_tokenizer))
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
         'transformers-traced': predict_transformers(transformers_traced, transformers_tokenizer),
