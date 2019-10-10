@@ -3,4 +3,3 @@ version: '3.7'
 pipeline:
   services:
     - de_trans
-    - el_trans
