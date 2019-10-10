@@ -32,4 +32,4 @@ def pipeline(ctx, pipeline_name):
         res = json.loads(res.content)
         logger.info(json.dumps(res, indent=4))
         if 'error' in res:
-            logger.info('error:\n%s' % res['error'].decode("unicode_escape"))
+            logger.info('error:\n%s' % res['error'].encode().decode("unicode_escape"))
