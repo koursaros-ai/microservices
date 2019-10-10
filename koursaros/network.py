@@ -118,7 +118,7 @@ class Network:
         cmd = Command(body[:1])
         msg_id = struct.unpack("L", body[:8])[0]
         msg = body[8:]
-
+        self.logger.bold(cmd, msg_id, msg)
         return cmd, msg_id, msg
 
     def send(self, route: 'Route', cmd, msg_id: int, msg):
