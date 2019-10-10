@@ -100,6 +100,6 @@ class Service:
                     net.send(Route.OUT, Command.SEND, msg_id, msg)
 
             except zmq.error.Again:
-                self.logger.info('Socket timeout...')
-
+                # self.logger.info('Socket timeout...')
+                pass
 
