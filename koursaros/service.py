@@ -63,7 +63,7 @@ class Service:
         net = Network(self.name)
         net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
         net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
-        net.build_socket(SocketType.SUB_CONNECT, Route.CTRL, name=self.name)
+        net.build_socket(SocketType.SUB_CONNECT, Route.CTRL)
         net.build_poller(Route.CTRL)
         net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
 
