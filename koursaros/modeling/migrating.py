@@ -9,6 +9,27 @@ import torch.hub
 MAX_LENGTH = 256
 PAD = True
 
+
+def benchmark_mnli(samples):
+    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
+    torch_hub_model.eval()
+    torch_hub_model.cuda()
+    try:
+        transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
+                                     'roberta-large-mnli')
+    except:
+        transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
+                                     'roberta-large-mnli', force_download=True)
+    transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
+    pred_functions = {
+        'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
+        'torch_hub' : predict_roberta(torch_hub_model)
+    }
+    for framework, pred_fn in pred_functions.items():
+        print(f'Benchmarking {framework} with {samples} samples')
+        time_fn(benchmark, pred_fn, samples)
+
+
 def predict_transformers(model, tokenizer):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -38,25 +59,6 @@ def benchmark(pred_fn, n):
     args = ['All work and no play.'] * 8, ['Make jack a very dull boy.'] * 8
     for i in range(0, n):
         assert(type(pred_fn(*args)) == list)
-
-
-def benchmark_mnli(samples):
-    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
-    torch_hub_model.eval()
-    try:
-        transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
-                                     'roberta-large-mnli')
-    except:
-        transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
-                                     'roberta-large-mnli', force_download=True)
-    transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
-    pred_functions = {
-        'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
-        'torch_hub' : predict_roberta(torch_hub_model)
-    }
-    for framework, pred_fn in pred_functions.items():
-        print(f'Benchmarking {framework} with {samples} samples')
-        time_fn(benchmark, pred_fn, samples)
 
 ### HELPERS
 
