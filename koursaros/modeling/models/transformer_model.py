@@ -116,7 +116,7 @@ class TransformerModel(Model):
         train_sampler = RandomSampler(train_dataset)
         train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=self.batch_size)
 
-        t_total = len(train_dataloader) // epochs
+        t_total = len(train_dataloader)
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']
@@ -149,7 +149,7 @@ class TransformerModel(Model):
         else:
             self.eval_freq = self.config.training.eval_freq
 
-        self.eval_and_save_every = 100#len(train_dataset) // self.batch_size // self.eval_freq
+        self.eval_and_save_every = len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
