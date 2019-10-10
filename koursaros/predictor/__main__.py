@@ -33,6 +33,8 @@ def predict(model_file, data_source, data_target):
     buffer = []
     i = 0
     for batch in batch_list(rows, BATCH_SIZE):
+        print(batch)
+        print(zip(*batch[:-1]))
         buffer.extend(zip(*(batch[-1], model.run(*zip(*batch[:-1])))))
         i += BATCH_SIZE
         if BATCH_SIZE > 1000:
