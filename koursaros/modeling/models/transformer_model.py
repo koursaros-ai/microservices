@@ -92,12 +92,12 @@ class TransformerModel(Model):
         self.model = torch.jit.trace(self.model, self.tuple_inputs(inputs))
 
     def train(self, force_build_features=False):
-        try:
-            return self.do_train(force_build_features=force_build_features)
-        except:
-            logger.warning('Error during training, decreasing batch size and trying again')
-            self.batch_size = self.batch_size // 2 # back off batch_size
-            return self.train(force_build_features=True)
+        return self.do_train(force_build_features=force_build_features)
+        # except:
+        #     logger.warning('Error during training, decrease batch size and try again')
+        #     raise SystemError()
+        #     self.batch_size = self.batch_size // 2 # back off batch_size
+        #     return self.train(force_build_features=True)
 
     def do_train(self, force_build_features=False):
         ### In Transformers, optimizer and schedules are splitted and instantiated like this:
@@ -116,7 +116,7 @@ class TransformerModel(Model):
         train_sampler = RandomSampler(train_dataset)
         train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=self.batch_size)
 
-        t_total = len(train_dataloader) // epochs
+        t_total = len(train_dataloader)
 
         # Prepare optimizer and schedule (linear warmup and decay)
         no_decay = ['bias', 'LayerNorm.weight']
@@ -149,8 +149,7 @@ class TransformerModel(Model):
         else:
             self.eval_freq = self.config.training.eval_freq
 
-        self.logging_steps = len(train_dataset) // self.batch_size // self.eval_freq
-        self.save_steps = len(train_dataset) // self.batch_size // self.eval_freq
+        self.eval_and_save_every = len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -172,7 +171,7 @@ class TransformerModel(Model):
             preds = np.argmax(preds, axis=1)
             for pred in preds:
                 label_count[pred] += 1
-            num_correct += np.sum(preds == correct_labels.numpy())
+            num_correct += np.sum(preds == correct_labels.detach().cpu().numpy())
             if step > 0:
                 epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
                                                % (num_correct / (step*self.batch_size), label_count))
@@ -196,14 +195,14 @@ class TransformerModel(Model):
                 self.model.zero_grad()
                 global_step += 1
 
-                if self.local_rank in [-1, 0] and self.logging_steps > 0 and global_step % self.logging_steps == 0:
+                if self.local_rank in [-1, 0]  and global_step % self.eval_and_save_every == 0:
                     # Log metrics
                     if self.local_rank == -1 and self.evaluate_during_training:
                         results = self.evaluate(test_dataset)
                         for key, value in results.items():
                             tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                         tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.logging_steps, global_step)
+                        tb_writer.add_scalar('loss', (tr_loss - logging_loss) / self.eval_and_save_every, global_step)
                         logging_loss = tr_loss
                         if prev_best is None or results[self.best_checkpoint_metric] > prev_best:
                             prev_best = results[self.best_checkpoint_metric]

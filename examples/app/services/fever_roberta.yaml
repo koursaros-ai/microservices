@@ -1,0 +1,19 @@
+service:
+  base: classifier
+  arch: roberta
+  repo: gs://poloma-models
+  task: classification
+  labels:
+    - SUPPORTS
+    - REFUTES
+    - NEI
+  training:
+    data:
+      source: postgres
+      schema: sets
+      train: train_fever
+      test: test_fever
+    checkpoint: roberta-large-mnli
+    epochs: 3
+    learning_rate: 1e-05
+    batch_size: 4

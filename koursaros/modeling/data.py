@@ -11,5 +11,5 @@ def get_rows_from_tsv(fname):
 def select_all(schema, table, random=True):
     query = f'select * from {schema}.{table}'
     if random:
-        query += 'order by random()'
+        query += ' order by random()'
     return query
