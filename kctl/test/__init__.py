@@ -23,5 +23,5 @@ def pipeline(ctx, pipeline_name):
                      text='I would love pancakes tomorrow morning'
                      )])
 
-        res = requests.post('localhost:5000/send', data=translations)
+        res = requests.post('http://localhost:5000/send', data=translations)
         logger.bold(json.dumps(res, indent=4))
