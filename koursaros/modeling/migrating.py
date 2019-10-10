@@ -16,8 +16,8 @@ PAD = True
 def predict_transformers(model, tokenizer):
     def predict_fn(*args):
         inputs = time_fn(transformers_encode_batch, tokenizer, *args)
-        import pdb
-        pdb.set_trace()
+        # import pdb
+        # pdb.set_trace()
         outputs = model(*inputs)
         logits = outputs[0]
         preds = F.log_softmax(logits, dim=-1)
