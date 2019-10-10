@@ -38,9 +38,8 @@ def streamers(app_manager, pipeline_name):
     pipeline_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
     pipeline_yaml = Yaml(pipeline_yaml_path)
 
-    service_names = pipeline_yaml.services
-    service_in = service_names[0]
-    for service_out in service_names[1:] + [service_in]:
+    service_in = pipeline_yaml.services[0]
+    for service_out in pipeline_yaml.services[1:]:
         cmd = [sys.executable, '-m', 'koursaros.streamer', service_in, service_out]
         service_in = service_out
         app_manager.subproc(cmd)
