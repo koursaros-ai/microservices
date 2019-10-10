@@ -149,8 +149,7 @@ class TransformerModel(Model):
         else:
             self.eval_freq = self.config.training.eval_freq
 
-        self.logging_steps = len(train_dataset) // self.batch_size // self.eval_freq
-        self.save_steps = len(train_dataset) // self.batch_size // self.eval_freq
+        self.logging_steps = 100#len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
