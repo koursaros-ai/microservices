@@ -90,7 +90,6 @@ class Service:
         while True:
             try:
                 cmd, msg_id, msg = self.net.recv(Route.IN)
-                self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
 
                 # if receiving status msg then resend
                 if cmd in (Command.STATUS, Command.ERROR):
