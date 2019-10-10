@@ -319,9 +319,10 @@ class TransformerModel(Model):
                 all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
             else:
                 raise NotImplementedError()
+            return all_input_ids, all_attention_mask, all_token_type_ids, all_labels
         else:
-            all_labels = None
-        return all_input_ids, all_attention_mask, all_token_type_ids, all_labels
+            return all_input_ids, all_attention_mask, all_token_type_ids
+
 
     def load_and_cache_examples(self, data, evaluate=False, force_build_features=False):
         if self.local_rank not in [-1, 0] and not evaluate:
