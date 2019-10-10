@@ -49,7 +49,6 @@ class Router:
         # wait for response from service
         cmd, msg_id, msg = self.net.recv(Route.IN)
         res = json.loads(msg)
-        import pdb; pdb.set_trace()
 
         res['id'] = msg_id
         return res
