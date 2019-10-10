@@ -136,7 +136,6 @@ class Service:
 
             finally:
                 if time.time() - self.last_status > HEARTBEAT:
-                    self.logger.info('sending heartbeat')
                     status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                     self.net.send(Route.OUT, Command.STATUS, 0, status)
                     self.last_status = time.time()

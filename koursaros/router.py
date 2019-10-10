@@ -44,6 +44,7 @@ class Router:
 
         if cmd == Command.STATUS:
             self.statuses.update(msg)
+            return self.get_res()
 
         elif cmd == Command.ERROR:
             res['status'] = 'failure'
