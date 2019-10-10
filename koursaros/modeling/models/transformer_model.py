@@ -383,8 +383,6 @@ class TransformerModel(Model):
         results = []
         for batch in batch_list(zip(*all_inputs), self.batch_size):
             inputs = self.inputs_from_batch(batch)
-            import pdb
-            pdb.set_trace()
             outputs = self.model(**inputs)
             results.extend(self.pred_from_output(outputs))
         return results
