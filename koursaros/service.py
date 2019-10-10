@@ -76,6 +76,8 @@ class Service:
 
             try:
                 cmd, msg_id, msg = net.recv(Route.IN)
+                self.logger.info('Recieved msg %s with cmd %s...' % (msg, cmd))
+
                 # if receiving status from preceding service, resend
                 if cmd == Command.STATUS:
                     net.send(Route.OUT, cmd, msg_id, msg)
