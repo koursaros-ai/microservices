@@ -56,4 +56,4 @@ if __name__ == '__main__':
     data_source = sys.argv[2]
     data_target = sys.argv[3] if len(sys.argv) > 3 else './predictions.tsv'
     truncate = len(sys.argv) > 4 and sys.argv[4] == '-t'
-    predict(model_file, data_source, data_target)
+    predict(model_file, data_source, data_target, truncate=truncate)
