@@ -378,7 +378,7 @@ class TransformerModel(Model):
             ) for i, arg in enumerate(zip(*args))
         ]
         features = [self.example_to_feature(example) for example in examples]
-        all_inputs = self.features_to_inputs(features)
+        all_inputs = self.features_to_inputs(features, inference=True)
         results = []
         for batch in batch_list(zip(*all_inputs), self.batch_size):
             inputs = self.inputs_from_batch(batch)
