@@ -86,6 +86,7 @@ class Service:
 
                     # if first position then get jsons from router
                     if self.position == 0:
+                        self.logger.bold(msg)
                         proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
                     else:
                         proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
