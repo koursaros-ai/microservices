@@ -70,13 +70,13 @@ class Service:
         while True:
             # if message from router, send status
             if net.poll(Route.CTRL):
-                self.logger.info('Recieved status req from Router...')
+                self.logger.info('received status req from Router...')
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 net.send(Route.OUT, Command.STATUS, 0, status)
 
             try:
                 cmd, msg_id, msg = net.recv(Route.IN)
-                self.logger.info('Recieved msg %s with cmd %s...' % (msg, cmd))
+                self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
 
                 # if receiving status from preceding service, resend
                 if cmd == Command.STATUS:

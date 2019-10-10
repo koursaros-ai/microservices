@@ -67,6 +67,7 @@ class Router:
                 router.wait_for_first_service()
 
             data = request.form if request.form else request.json
+            router.logger.bold('Sending %s' % data)
             res = router.send_msg(data)
             return jsonify(res)
 
