@@ -61,18 +61,18 @@ class Service:
 
         # set network
         net = Network(self.name)
-        net.build_socket(SocketType.PUSH_CONNECT, Route.IN, name=self.name)
-        net.build_socket(SocketType.PULL_CONNECT, Route.OUT, name=self.name)
-        # net.build_socket(SocketType.SUB_CONNECT, Route.CTRL)
-        # net.build_poller(Route.CTRL)
+        net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
+        net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
+        net.build_socket(SocketType.SUB_CONNECT, Route.CTRL)
+        net.build_poller(Route.CTRL)
         net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
 
         while True:
             # if message from router, send status
-            # if net.poll(Route.CTRL):
-            #     self.logger.info('Recieved status req from Router...')
-            #     status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
-            #     net.send(Route.OUT, Command.STATUS, 0, status)
+            if net.poll(Route.CTRL):
+                self.logger.info('Recieved status req from Router...')
+                status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
+                net.send(Route.OUT, Command.STATUS, 0, status)
 
             try:
                 cmd, msg_id, msg = net.recv(Route.IN)
