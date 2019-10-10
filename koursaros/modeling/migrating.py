@@ -4,6 +4,7 @@ from fairseq.models import roberta
 from fairseq.data.data_utils import collate_tokens
 import time
 import torch.nn.functional as F
+import torch.hub
 
 # def roberta_to_transformer(path_to_roberta, path_to_yaml):
 #     model = RobertaModel.from_pretrained(path_to_roberta, checkpoint_file='model.pt')
@@ -29,13 +30,15 @@ def predict_roberta(model):
         return labels
     return pred_fn
 
+
 def benchmark(pred_fn, n):
     args = 'All work and no play.', 'Make jack a very dull boy.'
     for i in range(0, n):
         assert(type(pred_fn(*args)) == list)
 
+
 def benchmark_mnli(samples):
-    torch_hub_model = time_fn(roberta.RobertaModel.from_pretrained, 'roberta.large.mnli')
+    torch_hub_model = time_fn(torch.hub.load('pytorch/fairseq','roberta.large.mnli'))
     transformers_model = time_fn(transformers.RobertaModel.from_pretrained, 'roberta-large-mnli')
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
