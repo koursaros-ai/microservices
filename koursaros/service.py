@@ -135,9 +135,9 @@ class Service:
                 self.logger.info('timeout')
 
             finally:
-                self.logger.info(self.last_status - time.time())
+                self.logger.info(time.time() - self.last_status)
                 self.logger.info(HEARTBEAT)
-                self.logger.info(self.last_status - time.time() > HEARTBEAT)
+                self.logger.info(time.time() - self.last_status > HEARTBEAT)
                 if self.last_status - time.time() > HEARTBEAT:
                     self.logger.info('sending heartbeat')
                     status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
