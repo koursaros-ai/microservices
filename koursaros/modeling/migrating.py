@@ -47,7 +47,7 @@ def predict_transformers(model, tokenizer):
             'input_ids': torch.tensor(inputs[0],  dtype=torch.long).to(device),
             'attention_mask': torch.tensor(inputs[1],  dtype=torch.long).to(device),
         }
-        outputs = model(**inputs_dict)
+        outputs = model(*inputs_dict.values())
         logits = outputs[0]
         preds = F.log_softmax(logits, dim=-1)
         return preds.tolist()
