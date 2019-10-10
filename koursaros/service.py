@@ -56,7 +56,7 @@ class Service:
         return dict(
             pid=os.getpid(),
             service=self.name,
-            error=err
+            error=repr(err)
         )
 
     def run(self):
