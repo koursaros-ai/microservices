@@ -41,6 +41,7 @@ def predict(model_file, data_source, data_target):
         if i > 1000:
             write_fn(buffer)
             buffer = []
+            i = 0
 
     if len(buffer) > 0: write_fn(buffer)
 
