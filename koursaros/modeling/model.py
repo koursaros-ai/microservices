@@ -1,6 +1,7 @@
 import os
 from koursaros.utils.database.psql import Conn
 from koursaros.utils.misc import gb_free_space
+from koursaros.utils.bucket import bucket_contains, download_and_unzip
 from kctl.logger import set_logger
 from .data import *
 
@@ -28,6 +29,13 @@ class Model(object):
         elif os.path.exists(self.ckpt_dir + 'config.json') and not training: # model already trained
             logger.info('Loading trained model')
             self.checkpoint = self.ckpt_dir
+            self.trained = True
+        elif bucket_contains(f'{self.version}.tar.gz'):
+            logger.info(f'Downloading and extracting from bucket {self.config.repo}')
+            download_and_unzip(self.config.repo.split('//')[-1],
+                               f'{self.version}.tar.gz', self.dir)
+            self.checkpoint = self.ckpt_dir
+            assert(os.path.exists(self.ckpt_dir + 'config.json'))
             self.trained = True
         else: # init model for training
             logger.info('Initializing model for training')
