@@ -102,7 +102,7 @@ class Network:
         sock.setsockopt(zmq.SNDHWM, 10)
         sock.setsockopt(zmq.SNDBUF, 10 * 1024 * 1024)  # limit of network buffer 100M
 
-        self.logger.bold('Socket built: %s on %s' % (socket_type, tcp))
+        self.logger.bold('%s built on %s using hash: %s' % (socket_type, tcp, name))
         self.sockets[route] = sock
 
     def build_poller(self, route: 'Route'):
