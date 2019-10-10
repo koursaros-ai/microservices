@@ -14,7 +14,7 @@ def translate(translations):
     last_trans = last_translation.text
     new_trans = translations.translations.add()
     trans = translator.translate(last_trans, src=last_lang, dest=dest_lang)
-    new_trans.src_lang = dest_lang
+    new_trans.lang = dest_lang
     new_trans.text = trans
     return translations
 
