@@ -65,6 +65,7 @@ class Router:
         @app.route('/send', methods=['POST'])
         def send():
             data = request.form if request.form else request.json
+            print(data)
             router.logger.bold('Sending %s' % data)
             router.send_msg(data)
             res = router.get_res()
