@@ -59,7 +59,7 @@ def benchmark_mnli(samples):
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
-        time_fn(benchmark, pred_fn, *samples)
+        time_fn(benchmark, pred_fn, samples)
 
 ### HELPERS
 
@@ -93,6 +93,8 @@ def transformer_to_features(tokenizer, *args):
 
 
 def transformers_encode_batch(tokenizer, *args):
+    import pdb
+    pdb.set_trace()
     all_input_ids = []
     all_attention_mask = []
     all_token_type_ids = []
