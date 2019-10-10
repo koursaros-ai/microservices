@@ -36,5 +36,6 @@ def pipeline(ctx, pipeline_name):
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url + '/send', data=translations, headers=headers)
         log_json_res(res)
+        logger.bold('REQ STATUS')
         res = requests.get(url + '/status', data=translations, headers=headers)
         log_json_res(res)
