@@ -38,7 +38,7 @@ def predict(model_file, data_source, data_target):
         ids = transposed[-1]
         buffer.extend(zip(ids, model.run(*inputs)))
         i += BATCH_SIZE
-        if BATCH_SIZE > 1000:
+        if i > 1000:
             write_fn(buffer)
             buffer = []
 
