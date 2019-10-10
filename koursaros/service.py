@@ -7,7 +7,7 @@ import zmq
 import sys
 import os
 
-RCV_TIMEOUT = 10000
+RCV_TIMEOUT = 1000
 
 
 class Service:
@@ -73,7 +73,10 @@ class Service:
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 net.send(Route.OUT, Command.STATUS, 0, status)
 
-            cmd, msg_id, msg = net.recv(Route.IN)
+            try:
+                cmd, msg_id, msg = net.recv(Route.IN)
+            except zmq.error.Again:
+                self.logger.info('Socket timeout...')
 
             # if receiving status from preceding service, resend
             if cmd == Command.STATUS:
