@@ -2,7 +2,7 @@ from kctl.logger import set_logger
 import requests
 import click
 import json
-
+import ast
 
 @click.group()
 @click.pass_context
@@ -29,7 +29,7 @@ def pipeline(ctx, pipeline_name):
 
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
-        res = json.loads(res.content)
+        res = json.loads(res.content.decode("unicode_escape"))
         import pdb; pdb.set_trace()
         logger.info(json.dumps(res, indent=4))
         logger.info('error:\n%s' % res.get('error', None))
