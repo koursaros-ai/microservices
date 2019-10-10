@@ -35,8 +35,8 @@ def benchmark_mnli(samples):
 def get_dummy_data(tokenizer):
     args = ['All work and no play.'] * 8, ['Make jack a very dull boy.'] * 8
     inputs = transformers_encode_batch(tokenizer, *args)
-    return torch.tensor(inputs[0], dtype=torch.long), \
-           torch.tensor(inputs[1], dtype=torch.long)
+    return torch.tensor(inputs[0], dtype=torch.long).to(device), \
+           torch.tensor(inputs[1], dtype=torch.long).to(device)
 
 
 def predict_transformers(model, tokenizer):
