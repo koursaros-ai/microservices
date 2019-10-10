@@ -4,7 +4,3 @@ pipeline:
   services:
     - de_trans
     - el_trans
-    - es_trans
-    - fi_trans
-    - fr_trans
-    - en_trans
