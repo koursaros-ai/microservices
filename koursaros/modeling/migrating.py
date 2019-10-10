@@ -3,6 +3,7 @@ from fairseq.data.data_utils import collate_tokens
 import time
 import torch.nn.functional as F
 import torch.hub
+import torch.jit
 
 MAX_LENGTH = 512
 PAD = True
@@ -19,13 +20,21 @@ def benchmark_mnli(samples):
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli', force_download=True)
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
+    transformers_traced = torch.jit.trace(torch_hub_model, get_dummy_data(transformers_tokenizer))
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
+        'transformers-traced': predict_transformers(transformers_traced, transformers_tokenizer),
         'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
         time_fn(benchmark, pred_fn, samples)
+
+def get_dummy_data(tokenizer):
+    text_a = "Once upon a time there was a boy"
+    text_b = "He liked to write code all day long"
+    all_input_ids, all_attention_masks = transformers_encode_batch(tokenizer, [text_a]*8, [text_b]*8)
+    return all_input_ids, all_attention_masks
 
 
 def predict_transformers(model, tokenizer):
@@ -36,7 +45,6 @@ def predict_transformers(model, tokenizer):
         inputs_dict = {
             'input_ids': torch.tensor(inputs[0],  dtype=torch.long).to(device),
             'attention_mask': torch.tensor(inputs[1],  dtype=torch.long).to(device),
-            # 'token_type_ids': torch.tensor(inputs[2],  dtype=torch.long)
         }
         outputs = model(**inputs_dict)
         logits = outputs[0]
