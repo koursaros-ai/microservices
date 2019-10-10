@@ -71,6 +71,13 @@ class TransformerModel(Model):
             inputs['labels'] = batch[3]
         return inputs
 
+    def tuple_inputs(self, inputs):
+        return (
+            inputs['input_ids'],
+            inputs['attention_mask'],
+            inputs['token_type_ids']
+        )
+
     def trace_model(self):
         examples = [
             InputExample(
@@ -82,9 +89,7 @@ class TransformerModel(Model):
         features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features, True)
         inputs = self.inputs_from_batch(all_inputs)
-        self.model = torch.jit.trace(self.model, (inputs['input_ids'],
-                                                  inputs['attention_mask'],
-                                                  inputs['token_type_ids']))
+        self.model = torch.jit.trace(self.model, self.tuple_inputs(inputs))
 
     def train(self, force_build_features=False):
         try:
@@ -400,7 +405,7 @@ class TransformerModel(Model):
         features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features, True)
         inputs = self.inputs_from_batch(all_inputs)
-        outputs = self.model(**inputs)
+        outputs = self.model(self.tuple_inputs(inputs))
         return self.pred_from_output(outputs)
 
     def multi_gpu_training(self):
