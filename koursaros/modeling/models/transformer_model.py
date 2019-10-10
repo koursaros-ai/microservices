@@ -404,6 +404,8 @@ class TransformerModel(Model):
         features = [self.example_to_feature(example) for example in examples]
         all_inputs = self.features_to_inputs(features, True)
         inputs = self.inputs_from_batch(all_inputs)
+        import pdb
+        pdb.set_trace()
         outputs = self.model(*self.tuple_inputs(inputs))
         return self.pred_from_output(outputs)
 
