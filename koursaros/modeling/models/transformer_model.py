@@ -110,6 +110,7 @@ class TransformerModel(Model):
             model, optimizer = amp.initialize(self.model, optimizer)
             self.fp16 = True
         except ImportError:
+            logger.warning("Please install fp16 from https://github.com/NVIDIA/apex for better performance")
             self.fp16 = False
 
         # Train!
