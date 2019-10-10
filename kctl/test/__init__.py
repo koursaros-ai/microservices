@@ -17,11 +17,14 @@ def pipeline(ctx, pipeline_name):
     logger = set_logger('TEST')
 
     if pipeline_name == 'telephone':
+        url = 'http://localhost:5000/send'
+
         translations = dict(
             translations=[
                 dict(lang='en',
                      text='I would love pancakes tomorrow morning'
                      )])
 
-        res = requests.post('http://localhost:5000/send', data=translations)
+        logger.bold('Requesting %s on %s' % (translations, url))
+        res = requests.post(url, data=translations)
         logger.bold(json.dumps(res, indent=4))
