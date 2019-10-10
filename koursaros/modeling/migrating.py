@@ -11,9 +11,9 @@ PAD = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def benchmark_mnli(samples):
-    # torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
-    # torch_hub_model.eval()
-    # torch_hub_model.cuda()
+    torch_hub_model = time_fn(torch.hub.load, 'pytorch/fairseq','roberta.large.mnli')
+    torch_hub_model.eval()
+    torch_hub_model.cuda()
     try:
         transformers_model = time_fn(transformers.RobertaModel.from_pretrained,
                                      'roberta-large-mnli')
@@ -26,7 +26,7 @@ def benchmark_mnli(samples):
     pred_functions = {
         'transformers' : predict_transformers(transformers_model, transformers_tokenizer),
         'transformers-traced': predict_transformers(transformers_traced, transformers_tokenizer),
-        # 'torch_hub' : predict_roberta(torch_hub_model)
+        'torch_hub' : predict_roberta(torch_hub_model)
     }
     for framework, pred_fn in pred_functions.items():
         print(f'Benchmarking {framework} with {samples} samples')
