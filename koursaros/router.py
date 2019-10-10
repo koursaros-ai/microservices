@@ -43,6 +43,7 @@ class Router:
         res['id'] = msg_id
 
         if cmd == Command.STATUS:
+            self.logger.info(self.statuses)
             self.statuses.update(msg)
             return self.get_res()
 
