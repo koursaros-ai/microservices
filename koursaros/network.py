@@ -24,7 +24,6 @@ class Command(Enum):
 class Route(Enum):
     IN = 0
     OUT = 1
-    CTRL = 2
 
 
 class SocketType(Enum):
@@ -60,7 +59,7 @@ class Network:
         """
         :param socket_type:
         :param name: string that gets hashed and determines port
-        :param route: in/out/ctrl
+        :param route: in/out
         :param identity: pub/sub identity
         :return: zmq socket
         """
@@ -77,12 +76,9 @@ class Network:
             SocketType.PAIR_CONNECT: lambda: self.ctx.socket(zmq.PAIR)
         }[socket_type]()
 
-        if route == Route.CTRL:
-            port = ROUTER_PORT
-        else:
-            hashed = hash_string_between(name, 0, round((MAX_PORT - MIN_PORT) / 2))
-            xor = route.value ^ socket_type.value % 2
-            port = hashed + hashed * xor + MIN_PORT
+        hashed = hash_string_between(name, 0, round((MAX_PORT - MIN_PORT) / 2))
+        xor = route.value ^ socket_type.value % 2
+        port = hashed + hashed * xor + MIN_PORT
 
         tcp = 'tcp://%s:%d' % (HOST, port)
 
@@ -104,11 +100,6 @@ class Network:
         self.logger.bold('%s built on %s using hash: %s' % (socket_type, tcp, name))
         self.sockets[route] = sock
 
-    def build_poller(self, route: 'Route'):
-        poller = zmq.Poller()
-        poller.register(self.sockets[route], zmq.POLLIN)
-        self.pollers[route] = poller
-
     def recv(self, route: 'Route'):
         """
         first byte designates the commands,
@@ -125,16 +116,6 @@ class Network:
     def send(self, route: 'Route', cmd, msg_id: int, msg):
         msg_id = struct.pack("L", msg_id)
         self.sockets[route].send(cmd.value + msg_id + msg)
-
-    def poll(self, route: 'Route'):
-        """
-        :param route: Route Object
-        :return: True if messages exist for the route
-        """
-        return True if self.sockets[route] in dict(self.pollers[route].poll(0)) else False
-
-    def setsockopt(self, route: 'Route', *args):
-        self.sockets[route].setsockopt(*args)
 
     def close(self):
         for sock in self.sockets.values():

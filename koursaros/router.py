@@ -20,23 +20,13 @@ class Router:
 
         # set zeromq
         self.net = Network('router')
-        self.net.build_socket(SocketType.PUB_BIND, Route.CTRL)
         self.net.build_socket(SocketType.PULL_CONNECT, Route.IN, name='ROUTER')
         self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name='ROUTER')
 
         # setup messages
         self.msgs = Messages()
         self.msg_count = 0
-
-    def get_statuses(self):
-        # ask services for status
-        self.net.send(Route.CTRL, Command.STATUS, 0, b'')
-        self.logger.info('Sent status request...')
-
-        while True:
-            cmd, msg_id, msg = self.net.recv(Route.IN)
-            service_status = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.JSON)
-            self.logger.bold(service_status)
+        self.statuses = dict()
 
     def send_msg(self, msg):
         self.msg_count += 1
@@ -46,22 +36,37 @@ class Router:
         msg = self.msgs.cast(msg, MsgType.JSON, MsgType.JSONBYTES)
         self.net.send(Route.OUT, Command.SEND, msg_id, msg)
 
+    def get_res(self):
         # wait for response from service
         cmd, msg_id, msg = self.net.recv(Route.IN)
         res = json.loads(msg)
-
         res['id'] = msg_id
-        return res
+
+        if cmd == Command.STATUS:
+            self.statuses.update(msg)
+
+        elif cmd == Command.ERROR:
+            res['status'] = 'failure'
+            return res
+
+        elif cmd == Command.SEND:
+            res['status'] = 'success'
+            return res
 
     def create_flask_app(self):
         app = Flask(__name__)
         router = self
 
+        @app.route('/status', methods=['GET'])
+        def receive():
+            return jsonify(router.statuses)
+
         @app.route('/send', methods=['POST'])
         def receive():
             data = request.form if request.form else request.json
             router.logger.bold('Sending %s' % data)
-            res = router.send_msg(data)
+            router.send_msg(data)
+            res = router.get_res()
             return jsonify(res)
 
         return app
