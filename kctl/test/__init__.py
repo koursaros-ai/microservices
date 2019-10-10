@@ -29,4 +29,6 @@ def pipeline(ctx, pipeline_name):
 
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
-        logger.info(json.dumps(json.loads(res.content), indent=4))
+        res = json.loads(res.content)
+        logger.info(json.dumps(res, indent=4))
+        logger.info('error:\n%s' % res.get('error', None))
