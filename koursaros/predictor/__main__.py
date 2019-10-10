@@ -4,6 +4,7 @@ from koursaros.utils.database.psql import Conn
 from koursaros.utils.misc import batch_list
 from koursaros.modeling.data import *
 import csv
+import time
 
 BATCH_SIZE = int(os.environ.get('BATCH_SIZE') or 4)
 
@@ -32,6 +33,7 @@ def predict(model_file, data_source, data_target):
 
     buffer = []
     i = 0
+    start = time.time()
     for step, batch in enumerate(batch_list(rows, BATCH_SIZE)):
         transposed = tuple(zip(*batch))
         inputs = transposed[:-1]
@@ -39,7 +41,8 @@ def predict(model_file, data_source, data_target):
         buffer.extend(zip(ids, model.run(*inputs)))
         i += BATCH_SIZE
         if i > 1000:
-            print('dumping example {}'.format(step * BATCH_SIZE))
+            total = step * BATCH_SIZE
+            print('dumping example {}, rate: {}'.format(total, (time.time() - start)/total ))
             write_fn(buffer)
             buffer = []
             i = 0
