@@ -34,7 +34,7 @@ class Router:
         self.logger.info('Sent status request...')
 
         while True:
-            msg_id, msg = self.net.recv(Route.IN)
+            cmd, msg_id, msg = self.net.recv(Route.IN)
             service_status = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.JSON)
             self.logger.bold(service_status)
 
@@ -47,7 +47,7 @@ class Router:
         self.net.send(Route.OUT, Command.SEND, msg_id, msg)
 
         # wait for response from service
-        msg_id, msg = self.net.recv(Route.IN)
+        cmd, msg_id, msg = self.net.recv(Route.IN)
         res = json.loads(msg)
 
         res['id'] = msg_id
