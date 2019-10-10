@@ -35,7 +35,7 @@ def benchmark(pred_fn, n):
         assert(type(pred_fn(*args)) == list)
 
 def benchmark_mnli(samples):
-    torch_hub_model = time_fn(roberta.RobertaModel.from_pretrained, 'roberta-large-mnli')
+    torch_hub_model = time_fn(roberta.RobertaModel.from_pretrained, 'roberta.large.mnli')
     transformers_model = time_fn(transformers.RobertaModel.from_pretrained, 'roberta-large-mnli')
     transformers_tokenizer = time_fn(transformers.RobertaTokenizer.from_pretrained, 'roberta-large-mnli')
     pred_functions = {
@@ -50,8 +50,6 @@ def benchmark_mnli(samples):
 
 def time_fn(fn, *args, **kwargs):
     start = time.time()
-    print(args)
-    print(kwargs)
     res = fn(*args, **kwargs)
     print(f'Took {time.time() - start} seconds to run {fn.__name__}')
     return res
