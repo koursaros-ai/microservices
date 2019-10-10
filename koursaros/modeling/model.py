@@ -1,19 +1,10 @@
-import csv
-import hashlib
 import os
 from koursaros.utils.database.psql import Conn
 from koursaros.utils.misc import gb_free_space
 from kctl.logger import set_logger
+from .data import *
 
 logger = set_logger('MODELS')
-
-def get_rows_from_tsv(fname):
-    samples = []
-    with open(fname) as file:
-      return csv.reader(file, delimiter='\t')
-
-def select_all(schema, table):
-    return f'select * from {schema}.{table} order by random()'
 
 class Model(object):
 
