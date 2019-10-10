@@ -70,6 +70,7 @@ class Service:
         while True:
             # if message from router, send status
             if net.poll(Route.CTRL):
+                self.logger.info('Recieved status req from Router...')
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 net.send(Route.OUT, Command.STATUS, 0, status)
 
