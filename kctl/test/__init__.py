@@ -2,7 +2,7 @@ from kctl.logger import set_logger
 import requests
 import click
 import json
-
+import ast
 
 @click.group()
 @click.pass_context
@@ -23,13 +23,20 @@ def pipeline(ctx, pipeline_name):
         translations = json.dumps({
             'translations': [{
                 'lang': 'en',
-                'text': 'I would love pancakes tomorrow morning'
+                'text': input('What would you like to translate?\t')
             }]
         })
 
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
         res = json.loads(res.content)
-        import pdb; pdb.set_trace()
         logger.info(json.dumps(res, indent=4))
-        logger.info('error:\n%s' % res.get('error', None))
+        if 'error' in res:
+            logger.info('error:\n%s' % res['error'].encode().decode("unicode_escape"))
+
+        else:
+            translations = ''
+            for trans in res['translations']:
+                translations += 'lang: %s\n trans: %s\n' % (trans['lang'], trans['text'])
+
+            logger.info('Translations:\n%s' % translations)

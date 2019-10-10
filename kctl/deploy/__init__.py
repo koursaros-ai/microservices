@@ -68,8 +68,7 @@ def service(app_manager, pipeline_name, service_name):
     if base_yaml_path is None:
         raise FileNotFoundError('Could not find base "%s" base.yaml' % service_yaml.base)
 
-    if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE)\
-            and not app_manager.is_in_root_path(service_yaml.base, YamlType.BASE):
+    if app_manager.is_in_app_path(service_yaml.base, YamlType.BASE):
         app_manager.save_base_to_pkg(service_yaml.base)
 
     cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base,

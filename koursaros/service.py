@@ -98,8 +98,8 @@ class Service:
                         try:
                             proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
                         except ParseError as e:
-                            msg = msgs.cast(self.error(e), MsgType.JSON, MsgType.JSONBYTES)
-                            net.send(Route.OUT, Command.ERROR, msg_id, msg)
+                            jsonbytes = msgs.cast(self.error(e), MsgType.JSON, MsgType.JSONBYTES)
+                            net.send(Route.OUT, Command.ERROR, msg_id, jsonbytes)
                             continue
 
                     else:
@@ -110,20 +110,24 @@ class Service:
                     except:
                         tb = format_exc()
                         self.logger.info(tb)
-                        msg = msgs.cast(self.error(tb), MsgType.JSON, MsgType.JSONBYTES)
-                        net.send(Route.OUT, Command.ERROR, msg_id, msg)
+                        jsonbytes = msgs.cast(self.error(tb), MsgType.JSON, MsgType.JSONBYTES)
+                        net.send(Route.OUT, Command.ERROR, msg_id, jsonbytes)
                         continue
 
                     if isinstance(returned, dict):
-                        msg = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+                        proto = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+                    else:
+                        proto = returned
 
                     # if last position then send jsons to router
                     if self.position == -1:
-                        msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                        jsonbytes = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                        net.send(Route.OUT, Command.SEND, msg_id, jsonbytes)
                     else:
-                        msg = msgs.cast(msg, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
+                        protobytes = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
+                        net.send(Route.OUT, Command.SEND, msg_id, protobytes)
 
-                    net.send(Route.OUT, Command.SEND, msg_id, msg)
+
 
             except zmq.error.Again:
                 # self.logger.info('Socket timeout...')
