@@ -108,7 +108,9 @@ class Service:
                     try:
                         returned = self._stub(proto)
                     except:
-                        msg = msgs.cast(self.error(format_exc()), MsgType.JSON, MsgType.JSONBYTES)
+                        tb = format_exc()
+                        self.logger.info(tb)
+                        msg = msgs.cast(self.error(tb), MsgType.JSON, MsgType.JSONBYTES)
                         net.send(Route.OUT, Command.ERROR, msg_id, msg)
                         continue
 
