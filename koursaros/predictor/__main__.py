@@ -5,8 +5,7 @@ from koursaros.utils.misc import batch_list
 from koursaros.modeling.data import *
 import csv
 
-BATCH_SIZE = os.environ.get('BATCH_SIZE') or 4
-BATCH_SIZE = int(BATCH_SIZE)
+BATCH_SIZE = int(os.environ.get('BATCH_SIZE') or 4)
 
 def predict(model_file, data_source, data_target):
     model = model_from_yaml(model_file)
