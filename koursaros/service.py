@@ -1,5 +1,5 @@
 from .network import Network, Route, SocketType, Command
-from .messages import MsgType, Messages
+from .messages import MsgType, Messages, ParseError
 from kctl.logger import set_logger
 from .yamls import Yaml
 import pathlib
@@ -52,6 +52,13 @@ class Service:
             position=self.position
         )
 
+    def error(self, err):
+        return dict(
+            pid=os.getpid(),
+            service=self.name,
+            error=err
+        )
+
     def run(self):
 
         # compile messages
@@ -79,15 +86,19 @@ class Service:
                 self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
 
                 # if receiving status from preceding service, resend
-                if cmd == Command.STATUS:
+                if cmd in (Command.STATUS, Command.ERROR):
                     net.send(Route.OUT, cmd, msg_id, msg)
 
                 elif cmd == Command.SEND:
 
                     # if first position then get jsons from router
                     if self.position == 0:
-                        self.logger.bold(msg)
-                        proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                        try:
+                            proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                        except ParseError as e:
+                            msg = msgs.cast(self.error(e), MsgType.JSON, MsgType.JSONBYTES)
+                            net.send(Route.OUT, Command.ERROR, msg_id, msg)
+
                     else:
                         proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
                     returned = self._stub(proto)

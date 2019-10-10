@@ -36,11 +36,7 @@ class Router:
         while True:
             msg_id, msg = self.net.recv(Route.IN)
             service_status = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.JSON)
-            self.logger.bold()
-
-            if service_status['position'] == 0:
-                self.set_push_socket(msg.decode())
-                break
+            self.logger.bold(service_status)
 
     def send_msg(self, msg):
         self.msg_count += 1
@@ -63,9 +59,6 @@ class Router:
 
         @app.route('/send', methods=['POST'])
         def receive():
-            if Route.OUT not in self.net.sockets:
-                router.wait_for_first_service()
-
             data = request.form if request.form else request.json
             router.logger.bold('Sending %s' % data)
             res = router.send_msg(data)

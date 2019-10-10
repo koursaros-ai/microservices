@@ -18,6 +18,7 @@ POLL_TIMEOUT = 1000
 class Command(Enum):
     SEND = b'0'
     STATUS = b'1'
+    ERROR = b'2'
 
 
 class Route(Enum):

@@ -21,10 +21,10 @@ def pipeline(ctx, pipeline_name):
         headers = {'Content-Type': 'application/json'}
 
         translations = json.dumps({
-            'translations': [{
+            'translations': {
                 'lang': 'en',
                 'text': 'I would love pancakes tomorrow morning'
-            }]
+            }
         })
 
         logger.bold('POSTING %s on %s' % (translations, url))

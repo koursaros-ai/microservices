@@ -1,5 +1,5 @@
 
-from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage
+from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage, ParseError
 from grpc_tools import protoc
 from enum import Enum
 import json
