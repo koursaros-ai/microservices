@@ -14,11 +14,13 @@ MAX_LENGTH = 256
 PAD = True
 
 def predict_transformers(model, tokenizer):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
     def predict_fn(*args):
         inputs = time_fn(transformers_encode_batch, tokenizer, *args)
         inputs_dict = {
-            'input_ids': torch.tensor(inputs[0],  dtype=torch.long),
-            'attention_mask': torch.tensor(inputs[1],  dtype=torch.long),
+            'input_ids': torch.tensor(inputs[0],  dtype=torch.long).to(device),
+            'attention_mask': torch.tensor(inputs[1],  dtype=torch.long).to(device),
             # 'token_type_ids': torch.tensor(inputs[2],  dtype=torch.long)
         }
         outputs = model(**inputs_dict)
