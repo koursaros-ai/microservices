@@ -79,10 +79,19 @@ class AppManager:
 
     def is_in_app_path(self, name: str, yaml_type: YamlType):
         """
-        returns true if the base is defined in koursaros.bases
+        returns true if the base is defined in current app
         :param: args from get_yaml_path()
         """
         lookup_path = [self.root]
+        yaml_path = self.get_yaml_path(name, yaml_type, lookup_path=lookup_path)
+        return False if yaml_path is None else True
+
+    def is_in_root_path(self, name: str, yaml_type: YamlType):
+        """
+        returns true if the base is defined in koursaros.bases
+        :param: args from get_yaml_path()
+        """
+        lookup_path = [self.pkg_path]
         yaml_path = self.get_yaml_path(name, yaml_type, lookup_path=lookup_path)
         return False if yaml_path is None else True
 
