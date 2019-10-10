@@ -7,7 +7,7 @@ import zmq
 import sys
 import os
 
-RCV_TIMEOUT = 10000
+RCV_TIMEOUT = 1000
 
 
 class Service:
@@ -28,7 +28,7 @@ class Service:
 
         # set logger
         self.logger = set_logger(name)
-        self.logger.info('Initializing "{}"')
+        self.logger.info('Initializing "%s"' % name)
 
         # set directories
         os.chdir(base_dir_path)
