@@ -88,54 +88,57 @@ class Service:
         self.net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
 
         while True:
-            if self.last_status - time.time() > HEARTBEAT:
-
-                status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
-                self.net.send(Route.OUT, Command.STATUS, 0, status)
-
             try:
                 cmd, msg_id, msg = self.net.recv(Route.IN)
+                self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
+
+                # if receiving status msg then resend
+                if cmd in (Command.STATUS, Command.ERROR):
+                    self.net.send(Route.OUT, cmd, msg_id, msg)
+                    continue
+
+                elif cmd == Command.SEND:
+
+                    # if first position then get jsons from router
+                    if self.position == 0:
+                        try:
+                            proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                        except ParseError as e:
+                            self.register_sync_error(e, msg_id)
+                            continue
+
+                    else:
+                        proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
+
+                    try:
+                        returned = self._stub(proto)
+                    except:
+                        self.register_sync_error(format_exc(), msg_id)
+                        continue
+
+                    if isinstance(returned, dict):
+                        proto = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
+                    else:
+                        proto = returned
+
+                    # if last position then send jsons to router
+                    if self.position == -1:
+                        msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                    else:
+                        msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
+
+                    self.net.send(Route.OUT, Command.SEND, msg_id, msg)
+                    self.sent += 1
+
             except zmq.error.Again:
                 # timeout
                 self.logger.info('timeout')
                 continue
 
-            self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
+            finally:
+                if self.last_status - time.time() > HEARTBEAT:
+                    self.logger.info('sending heartbeat')
+                    status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
+                    self.net.send(Route.OUT, Command.STATUS, 0, status)
 
-            # if receiving status msg then resend
-            if cmd in (Command.STATUS, Command.ERROR):
-                self.net.send(Route.OUT, cmd, msg_id, msg)
-                continue
 
-            elif cmd == Command.SEND:
-
-                # if first position then get jsons from router
-                if self.position == 0:
-                    try:
-                        proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
-                    except ParseError as e:
-                        self.register_sync_error(e, msg_id)
-                        continue
-
-                else:
-                    proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
-
-                try:
-                    returned = self._stub(proto)
-                except:
-                    self.register_sync_error(format_exc(), msg_id)
-                    continue
-
-                if isinstance(returned, dict):
-                    proto = msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
-                else:
-                    proto = returned
-
-                # if last position then send jsons to router
-                if self.position == -1:
-                    msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.JSONBYTES)
-                else:
-                    msg = msgs.cast(proto, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
-
-                self.net.send(Route.OUT, Command.SEND, msg_id, msg)
-                self.sent += 1
