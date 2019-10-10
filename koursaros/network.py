@@ -18,6 +18,7 @@ POLL_TIMEOUT = 1000
 class Command(Enum):
     SEND = b'0'
     STATUS = b'1'
+    ERROR = b'2'
 
 
 class Route(Enum):
@@ -76,14 +77,12 @@ class Network:
             SocketType.PAIR_CONNECT: lambda: self.ctx.socket(zmq.PAIR)
         }[socket_type]()
 
-        if route == Route.IN:
-            port = hash_string_between(name, MIN_PORT, MAX_PORT - round(DIFF / 2))
-        elif route == Route.OUT:
-            port = hash_string_between(name, MAX_PORT - round(DIFF / 2), MAX_PORT)
-        elif route == Route.CTRL:
+        if route == Route.CTRL:
             port = ROUTER_PORT
         else:
-            raise NotImplementedError
+            hashed = hash_string_between(name, 0, round((MAX_PORT - MIN_PORT) / 2))
+            xor = route.value ^ socket_type.value % 2
+            port = hashed + hashed * xor + MIN_PORT
 
         tcp = 'tcp://%s:%d' % (HOST, port)
 
@@ -118,8 +117,8 @@ class Network:
 
         body = self.sockets[route].recv()
         cmd = Command(body[:1])
-        msg_id = struct.unpack("L", body[:8])[0]
-        msg = body[8:]
+        msg_id = struct.unpack("L", body[1:9])[0]
+        msg = body[9:]
 
         return cmd, msg_id, msg
 

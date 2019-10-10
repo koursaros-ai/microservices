@@ -21,16 +21,14 @@ class Router:
         # set zeromq
         self.net = Network('router')
         self.net.build_socket(SocketType.PUB_BIND, Route.CTRL)
-        self.net.build_socket(SocketType.PULL_BIND, Route.IN, name='ROUTER')
+        self.net.build_socket(SocketType.PULL_CONNECT, Route.IN, name='ROUTER')
+        self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name='ROUTER')
 
         # setup messages
         self.msgs = Messages()
         self.msg_count = 0
 
-    def set_push_socket(self, service):
-        self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=service)
-
-    def wait_for_first_service(self):
+    def get_statuses(self):
         # ask services for status
         self.net.send(Route.CTRL, Command.STATUS, 0, b'')
         self.logger.info('Sent status request...')
@@ -38,10 +36,7 @@ class Router:
         while True:
             msg_id, msg = self.net.recv(Route.IN)
             service_status = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.JSON)
-
-            if service_status['position'] == 0:
-                self.set_push_socket(msg.decode())
-                break
+            self.logger.bold(service_status)
 
     def send_msg(self, msg):
         self.msg_count += 1
@@ -64,10 +59,8 @@ class Router:
 
         @app.route('/send', methods=['POST'])
         def receive():
-            if Route.OUT not in self.net.sockets:
-                router.wait_for_first_service()
-
             data = request.form if request.form else request.json
+            router.logger.bold('Sending %s' % data)
             res = router.send_msg(data)
             return jsonify(res)
 

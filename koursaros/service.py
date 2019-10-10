@@ -1,5 +1,5 @@
 from .network import Network, Route, SocketType, Command
-from .messages import MsgType, Messages
+from .messages import MsgType, Messages, ParseError
 from kctl.logger import set_logger
 from .yamls import Yaml
 import pathlib
@@ -52,6 +52,13 @@ class Service:
             position=self.position
         )
 
+    def error(self, err):
+        return dict(
+            pid=os.getpid(),
+            service=self.name,
+            error=repr(err)
+        )
+
     def run(self):
 
         # compile messages
@@ -61,9 +68,8 @@ class Service:
 
         # set network
         net = Network(self.name)
-        out_name = 'ROUTER' if self.position == -1 else self.name
         net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
-        net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=out_name)
+        net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
         net.build_socket(SocketType.SUB_CONNECT, Route.CTRL)
         net.build_poller(Route.CTRL)
         net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
@@ -71,23 +77,28 @@ class Service:
         while True:
             # if message from router, send status
             if net.poll(Route.CTRL):
-                self.logger.info('Recieved status req from Router...')
+                self.logger.info('received status req from Router...')
                 status = msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
                 net.send(Route.OUT, Command.STATUS, 0, status)
 
             try:
                 cmd, msg_id, msg = net.recv(Route.IN)
-                self.logger.info('Recieved msg %s with cmd %s...' % (msg, cmd))
+                self.logger.info('received msg %s with cmd %s...' % (msg, cmd))
 
                 # if receiving status from preceding service, resend
-                if cmd == Command.STATUS:
+                if cmd in (Command.STATUS, Command.ERROR):
                     net.send(Route.OUT, cmd, msg_id, msg)
 
                 elif cmd == Command.SEND:
 
                     # if first position then get jsons from router
                     if self.position == 0:
-                        proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                        try:
+                            proto = msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                        except ParseError as e:
+                            msg = msgs.cast(self.error(e), MsgType.JSON, MsgType.JSONBYTES)
+                            net.send(Route.OUT, Command.ERROR, msg_id, msg)
+
                     else:
                         proto = msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
                     returned = self._stub(proto)
