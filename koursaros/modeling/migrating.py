@@ -21,8 +21,6 @@ def predict_transformers(model, tokenizer):
             'attention_mask': torch.tensor(inputs[1],  dtype=torch.long),
             # 'token_type_ids': torch.tensor(inputs[2],  dtype=torch.long)
         }
-        import pdb
-        pdb.set_trace()
         outputs = model(**inputs_dict)
         logits = outputs[0]
         preds = F.log_softmax(logits, dim=-1)
