@@ -22,7 +22,7 @@ def pipeline(ctx, pipeline_name):
 
         translations = json.dumps({
             'translations': [{
-                'src_lang': 'en',
+                'lang': 'en',
                 'text': 'I would love pancakes tomorrow morning'
             }]
         })
@@ -30,6 +30,6 @@ def pipeline(ctx, pipeline_name):
         logger.bold('POSTING %s on %s' % (translations, url))
         res = requests.post(url, data=translations, headers=headers)
         res = json.loads(res.content)
-        logger.info(json.dumps(res, indent=4))
         if 'error' in res:
-            logger.info('error:\n%s' % res['error'].encode().decode("unicode_escape"))
+            res['error'] = res['error'].encode().decode("unicode_escape")
+        logger.info(json.dumps(res, indent=4))
