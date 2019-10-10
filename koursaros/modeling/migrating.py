@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.hub
 import torch.jit
 
-MAX_LENGTH = 256
+MAX_LENGTH = 512
 PAD = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
