@@ -1,9 +1,7 @@
 
-from google.protobuf.json_format import MessageToJson, Parse as JsonToMessage, ParseError
-from kctl.logger import set_logger
-from traceback import format_exc
 from .network import Network, Route, SocketType, Command
-from grpc_tools import protoc
+from .messages import MsgType, Messages
+from kctl.logger import set_logger
 from .yamls import Yaml
 import pathlib
 import sys
@@ -14,122 +12,83 @@ class Service:
     """The base service class"""
 
     def __init__(self):
-
         # set yamls
+        base_dir_path = pathlib.Path(sys.argv[0]).parent
+        self.base_yaml = Yaml(base_dir_path.joinpath('base.yaml'))
         yaml_path = pathlib.Path(sys.argv[1])
         self.yaml = Yaml(yaml_path)
+        pipe_yaml = Yaml(pathlib.Path(sys.argv[2]))
+
+        # set metadata
         self.name = yaml_path.stem
-        _base_dir_path = pathlib.Path(sys.argv[0]).parent
-        self.base_yaml = Yaml(_base_dir_path.joinpath('base.yaml'))
+        position = pipe_yaml.services.index(self.name)
+        self.position = -1 if pipe_yaml.services[-1] == self.name else position
 
         # set logger
         self.logger = set_logger(self.name)
         self.logger.info('Initializing "{}"')
 
         # set directories
-        os.chdir(_base_dir_path)
-        sys.path.insert(1, str(_base_dir_path))
+        os.chdir(base_dir_path)
+        sys.path.insert(1, str(base_dir_path))
 
         # compile messages
-        self._compile_protobufs(_base_dir_path)
-        messages = __import__('messages_pb2')
-        self.recv_proto = getattr(messages, self.base_yaml.recv_proto)
-        self.send_proto = getattr(messages, self.base_yaml.send_proto)
+        self.msgs = Messages(proto_module=base_dir_path,
+                             send_proto=self.base_yaml.recv_proto,
+                             recv_proto=self.base_yaml.send_proto)
 
         # defaults
-        self._stub_f = None
-        self._bound = False
-
-    @staticmethod
-    def protobuf_fields(proto):
-        return proto.__name__, list(proto.DESCRIPTOR.fields_by_name)
-
-    @property
-    def specs(self):
-        recv_name, recv_fields = self.protobuf_fields(self.recv_proto)
-        send_name, send_fields = self.protobuf_fields(self.send_proto)
-
-        return {'recv: "%s"' % recv_name: recv_fields, 'SEND: "%s' % send_name: send_fields}
-
-    def _compile_protobufs(self, path):
-        self.logger.info(f'Compiling messages for "{path}"...')
-
-        protoc.main((
-            '',
-            f'-I={path}',
-            f'--python_out={path}',
-            f'{path}/messages.proto',
-        ))
+        self._stub = None
+        self.sent = 0
 
     def stub(self, f):
-        self._stub_f = f
+        self._stub = f
 
-    def _stub(self, proto):
-        # hand proto to stub
-        returned = self._stub_f(proto)
-
-        # cast returned type to proto
-        if returned is None:
-            raise ValueError('Send stub must return...')
-        elif isinstance(returned, dict):
-            return self.send_proto(**returned)
-        elif isinstance(returned, self.send_proto):
-            return returned
-        else:
-            raise TypeError('Cannot cast type "%s" to protobuf' % type(returned))
+    @property
+    def status(self):
+        return dict(
+            pid=os.getpid(),
+            service=self.name,
+            sent=self.sent,
+            position=self.position
+        )
 
     def run(self):
-        """
-        The stub receives a message and casts it into a proto
-        for the stub to receive. Whatever the stub returns is checked
-        and then returned
-        """
+
         net = Network()
         net.build_socket(SocketType.PULL_CONNECT, Route.IN, name=self.name)
         net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=self.name)
-        net.build_socket(SocketType.PUSH_CONNECT, Route.CTRL, name=self.name)
+        net.build_socket(SocketType.SUB_CONNECT, Route.CTRL, name=self.name)
+        net.build_poller(Route.CTRL)
 
         while True:
-            net = Network()
-            cmd, msg_id, msg = net.sockets[Route.IN].recv()
+            if net.poll(Route.CTRL):
+                status = self.msgs.cast(self.status, MsgType.JSON, MsgType.JSONBYTES)
+                net.send(Route.OUT, Command.STATUS, 0, status)
 
-            if self._bound:
-                if cmd == Command.SEND:
-                    try:
-                        proto_in = self.recv_proto()
-                        JsonToMessage(msg, proto_in)
-                        proto_out = self._stub(proto_in)
-                        msg = proto_out.SerializeToString()
-                        net.sockets[Route.OUT].send(Command.PASS, msg_id, msg)
-                    except ParseError as e:
-                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, repr(e).encode())
-                    except TypeError as e:
-                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, repr(e).encode())
-                    except ValueError as e:
-                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, repr(e).encode())
-                    except:
-                        net.sockets[Route.CTRL].send(Command.PASS, msg_id, format_exc().encode())
+            cmd, msg_id, msg = net.recv(Route.IN)
 
-                # not sent from router and going to router
-                elif cmd == Command.PASS:
-                    proto = self.recv_proto()
-                    proto.ParseFromString(msg)
-                    msg = MessageToJson(proto).encode()
-                    net.sockets[Route.CTRL].send(Command.PASS, msg_id, msg)
+            if cmd == Command.STATUS:
+                # resend
+                net.send(Route.OUT, cmd, msg_id, msg)
 
-            else:
-                if cmd == Command.BIND:
-                    self._bound = True
-                    net.sockets[Route.CTRL].send(Command.ACK, msg_id, msg)
+            elif cmd == Command.SEND:
 
-                # not sent from router and going to next service
-                elif cmd == Command.BIND:
-                    proto_in = self.recv_proto()
-                    proto_in.ParseFromString(msg)
-                    proto_out = self._stub(proto_in)
-                    msg = proto_out.SerializeToString()
-                    net.sockets[Route.OUT].send(Command.PASS, msg_id, msg)
+                # if first position then get jsons from router
+                if self.position == 0:
+                    proto = self.msgs.cast(msg, MsgType.JSONBYTES, MsgType.RECV_PROTO)
+                else:
+                    proto = self.msgs.cast(msg, MsgType.PROTOBYTES, MsgType.RECV_PROTO)
 
+                returned = self._stub(proto)
 
+                if isinstance(returned, dict):
+                    msg = self.msgs.cast(returned, MsgType.KWARGS, MsgType.SEND_PROTO)
 
+                # if last position then send jsons to router
+                if self.position == -1:
+                    msg = self.msgs.cast(msg, MsgType.SEND_PROTO, MsgType.JSONBYTES)
+                else:
+                    msg = self.msgs.cast(msg, MsgType.SEND_PROTO, MsgType.PROTOBYTES)
 
+                net.send(Route.OUT, Command.SEND, msg_id, msg)

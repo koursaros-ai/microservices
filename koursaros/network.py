@@ -15,17 +15,9 @@ FLASK_PORT = 5000
 POLL_TIMEOUT = 1000
 
 
-class ProtoType(Enum):
-    RECV = b'0'
-    SEND = b'1'
-
-
 class Command(Enum):
-    PASS = b'0'
-    SEND = b'1'
-    BIND = b'2'
-    RESET = b'3'
-    ACK = b'4'
+    SEND = b'0'
+    STATUS = b'1'
 
 
 class Route(Enum):
@@ -57,8 +49,9 @@ def hash_string_between(string: str, min_num: int, max_num: int):
 
 class Network:
     def __init__(self):
-        self.sockets = dict()
         self.ctx = zmq.Context()
+        self.sockets = dict()
+        self.pollers = dict()
 
     def build_socket(self, socket_type: 'SocketType', route: 'Route',
                      identity: str = None, name=None):
@@ -108,26 +101,36 @@ class Network:
 
         self.sockets[route] = sock
 
+    def build_poller(self, route: 'Route'):
+        poller = zmq.Poller()
+        poller.register(self.sockets[route], zmq.POLLIN)
+        self.pollers[route] = poller
+
     def recv(self, route: 'Route'):
         """
-        first character is the router command, next
-        sixteen are id, and last the rest is the message.
+        first byte designates the commands,
+        eight characters are id and the rest is the message.
         """
+
         body = self.sockets[route].recv()
         cmd = Command(body[:1])
-        msg_id = struct.unpack("xL", body[1:17])
-        msg = body[17:]
+        msg_id = struct.unpack("L", body[:8])[0]
+        msg = body[8:]
 
         return cmd, msg_id, msg
 
-    def send(self, route: 'Route', cmd: 'Command', msg_id: int, msg: 'bytes'):
-        self.sockets[route].send(cmd.value + struct.pack("xL", msg_id) + msg)
+    def send(self, route: 'Route', cmd, msg_id: int, msg):
+        msg_id = struct.pack("L", msg_id)
+        self.sockets[route].send(cmd.value + msg_id + msg)
+
+    def poll(self, route: 'Route'):
+        """
+        :param route: Route Object
+        :return: True if messages exist for the route
+        """
+        return True if self.sockets[route] in dict(self.pollers[route].poll(0)) else False
 
     def close(self):
         for sock in self.sockets.values():
             sock.close()
         self.ctx.term()
-
-    @staticmethod
-    def get_proto_fields(proto_cls):
-        return list(proto_cls.DESCRIPTOR.fields_by_name)

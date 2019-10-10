@@ -3,12 +3,14 @@ from koursaros.service import Service
 from googletrans import Translator
 
 service = Service()
+src_lang = service.yaml.src_lang
+dest_lang = service.yaml.dest_lang
+translator = Translator()
 
 
 @service.stub
-def piggify(msg):
-    pig_latin = ' '.join([word[1:] + word[0] + "ay" for word in msg.text.split()])
-    return dict(text=pig_latin)
+def translate(msg):
+    return dict(text=translator.translate(msg.text))
 
 
 if __name__ == "__main__":

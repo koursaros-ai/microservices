@@ -1,10 +1,8 @@
-
+from .network import Network, Route, SocketType, FLASK_PORT
 from flask import Flask, request, jsonify
 from kctl.logger import set_logger
-from .network import Network, Route, SocketType, Command, FLASK_PORT, POLL_TIMEOUT
+from .messages import Messages, MsgType
 import json
-import zmq
-import sys
 
 
 class Router:
@@ -16,43 +14,42 @@ class Router:
 
     def __init__(self):
         # set logger
-        self.services = sys.argv[1:]
         self.logger = set_logger('router')
-        self.logger.info(f'Initializing "router"')
+        self.logger.info('Initializing router')
 
         # set zeromq
         self.net = Network()
-        self.net.build_socket(SocketType.PULL_BIND, Route.CTRL)
+        self.net.build_socket(SocketType.PUB_BIND, Route.CTRL)
+        self.net.build_socket(SocketType.PULL_BIND, Route.IN, name='ROUTER')
+
+        # setup messages
+        self.msgs = Messages()
         self.msg_count = 0
-        self.poller = zmq.Poller()
 
-    def bind(self, service):
-        """
-        Bind the desired service to send incoming messages
-        to the router instead of the next service.
-        The router will send json versions of the protobuf.
-        """
+    def set_push_socket(self, service):
         self.net.build_socket(SocketType.PUSH_CONNECT, Route.OUT, name=service)
-        self.net.send(Route.OUT, Command.BIND, 0, b'')
 
-        route_out = self.net.sockets[Route.OUT]
-        self.poller.register(route_out, zmq.POLLIN)
+    def wait_for_first_service(self):
+        # ask services for status
+        self.net.send(Route.CTRL, 0, b'')
 
-        socks = dict(self.poller.poll(POLL_TIMEOUT))
+        while True:
+            msg_id, msg = self.net.recv(Route.IN)
 
-        if route_out in socks and socks[route_out] == zmq.POLLIN:
-            return self.net.recv(Route.CTRL).recv()[0] # get ack
+            if msg != b'':
+                self.set_push_socket(msg.decode())
+                break
 
-    def send_msg(self, dict_):
+    def send_msg(self, msg):
         self.msg_count += 1
 
         # use message count if no id is found in data
-        msg_id = dict_.pop('id') if 'id' in dict_ else self.msg_count
-        msg = json.dumps(dict_).encode()
-        self.net.send(Route.OUT, Command.BIND, msg_id, msg)
+        msg_id = msg.pop('id') if 'id' in msg else self.msg_count
+        msg = self.msgs.cast(msg, MsgType.JSON, MsgType.JSONBYTES)
+        self.net.send(Route.OUT, msg_id, msg)
 
         # wait for response from service
-        _, msg_id, msg = self.net.recv(Route.CTRL)
+        msg_id, msg = self.net.recv(Route.CTRL)
         res = json.loads(msg)
 
         res['id'] = msg_id
@@ -65,12 +62,7 @@ class Router:
         @app.route('/send')
         def receive():
             if Route.OUT not in self.net.sockets:
-                first_service = router.services[-1]
-                cmd = router.bind(first_service)
-
-                if cmd != Command.ACK:
-                    return jsonify(dict(status='failure', msg='{} did not respond'
-                                        .format(first_service)))
+                router.wait_for_first_service()
 
             data = request.form if request.form else request.json
             res = router.send_msg(data)
