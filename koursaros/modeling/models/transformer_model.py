@@ -32,6 +32,8 @@ class TransformerModel(Model):
             raise NotImplementedError()
 
         self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
+        if self.config.task == 'classification':
+            self.model_config.num_labels = len(self.config.labels)
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
                                            cache_dir=self.dir, **kwargs)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
@@ -54,7 +56,6 @@ class TransformerModel(Model):
             self.model.eval()
             # self.trace_model()
         if self.config.task == 'classification':
-            self.model_config.num_labels = len(self.config.labels)
             self.label_map = {label: i for i, label in enumerate(self.config.labels)}
             self.best_checkpoint_metric = 'acc'
         elif self.config.task == 'regression':
@@ -144,7 +145,7 @@ class TransformerModel(Model):
         logger.info("  Total optimization steps = %d" % t_total)
 
         if not 'eval_freq' in self.config.training:
-            self.eval_freq = 2
+            self.eval_freq = 32
         else:
             self.eval_freq = self.config.training.eval_freq
 

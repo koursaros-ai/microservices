@@ -13,3 +13,4 @@ service:
     epochs: 3
     learning_rate: 1e-05
     batch_size: 1
+    eval_freq:
