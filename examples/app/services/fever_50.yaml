@@ -1,0 +1,15 @@
+service:
+  base: reranker
+  arch: bert
+  repo: gs://poloma-models
+  task: regression
+  training:
+    data:
+      source: postgres
+      schema: sets
+      train: train_fever_5
+      test: test_fever_5
+    checkpoint: bert-large-uncased
+    epochs: 3
+    learning_rate: 1e-05
+    batch_size: 1
