@@ -41,7 +41,7 @@ class TransformerModel(Model):
         self.n_gpu = 1
         self.local_rank = -1
         self.gradient_accumulation_steps = 1
-        self.max_length = 256
+        self.max_length = 512
         self.fp16 = False
         self.evaluate_during_training = True
         self.pad_token_segment_id = 4 if self.config.arch == 'xlnet' else 0
