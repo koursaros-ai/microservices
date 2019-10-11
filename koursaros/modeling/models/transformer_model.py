@@ -153,9 +153,10 @@ class TransformerModel(Model):
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
         self.model.zero_grad()
-        label_count = [0] * len(self.config.labels)
+        if self.config.task == 'classification':
+            label_count = [0] * len(self.config.labels)
+            num_correct = 0
         epoch_iterator = tqdm(train_dataloader, desc="Iteration", disable=self.local_rank not in [-1, 0])
-        num_correct = 0
         prev_best = None
         for step, batch in enumerate(epoch_iterator):
             self.model.train()
@@ -168,12 +169,17 @@ class TransformerModel(Model):
             logits = outputs[1]
             preds = logits.detach().cpu().numpy()
             preds = np.argmax(preds, axis=1)
-            for pred in preds:
-                label_count[pred] += 1
-            num_correct += np.sum(preds == correct_labels.detach().cpu().numpy())
-            if step > 0:
-                epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
-                                               % (num_correct / (step*self.batch_size), label_count))
+
+            if self.config.task == 'classification':
+                for pred in preds:
+                    label_count[pred] += 1
+                num_correct += np.sum(preds == correct_labels.detach().cpu().numpy())
+                if step > 0:
+                    epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
+                                                   % (num_correct / (step * self.batch_size), label_count))
+                    epoch_iterator.refresh()  # to show immediately the update
+            if self.config.rask == 'regression' and step > 0:
+                epoch_iterator.set_description("Loss: %.2f" % loss)
                 epoch_iterator.refresh()  # to show immediately the update
 
             if self.n_gpu > 1:
