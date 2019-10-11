@@ -151,7 +151,7 @@ class TransformerModel(Model):
         else:
             self.eval_freq = self.config.training.eval_freq
 
-        self.eval_and_save_every = len(train_dataset) // self.batch_size // self.eval_freq
+        self.eval_and_save_every = 50 # len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
@@ -182,7 +182,7 @@ class TransformerModel(Model):
                                                    % (num_correct / (step * self.batch_size), label_count))
                     epoch_iterator.refresh()  # to show immediately the update
             if self.config.task == 'regression' and step > 0:
-                epoch_iterator.set_description("Loss: %.2f" % loss)
+                epoch_iterator.set_description("Loss: %.2f" % tr_loss)
                 epoch_iterator.refresh()  # to show immediately the update
 
             if self.n_gpu > 1:
