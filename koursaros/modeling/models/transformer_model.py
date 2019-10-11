@@ -34,6 +34,8 @@ class TransformerModel(Model):
         self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
         if self.config.task == 'classification':
             self.model_config.num_labels = len(self.config.labels)
+        elif self.config.task == 'regression':
+            self.model_config.num_labels = 1
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
                                            cache_dir=self.dir, **kwargs)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
