@@ -181,7 +181,7 @@ class TransformerModel(Model):
                     epoch_iterator.set_description("Accuracy: %.2f Label Counts: %s"
                                                    % (num_correct / (step * self.batch_size), label_count))
                     epoch_iterator.refresh()  # to show immediately the update
-            if self.config.rask == 'regression' and step > 0:
+            if self.config.task == 'regression' and step > 0:
                 epoch_iterator.set_description("Loss: %.2f" % loss)
                 epoch_iterator.refresh()  # to show immediately the update
 
