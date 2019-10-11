@@ -4,9 +4,9 @@ service:
   repo: gs://poloma-models
   task: classification
   labels:
-    - SUPPORTS
     - REFUTES
     - NEI
+    - SUPPORTS
   training:
     data:
       source: postgres
