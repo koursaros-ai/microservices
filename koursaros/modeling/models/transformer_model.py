@@ -426,18 +426,19 @@ class TransformerModel(Model):
         return dataset
 
     def run(self, *args):
-        inputs = self.transformers_encode_batch(*args)
-        inputs_dict = {
-            'input_ids': torch.tensor(inputs[0], dtype=torch.long).to(self.device),
-            'attention_mask': torch.tensor(inputs[1], dtype=torch.long).to(self.device),
-        }
-        outputs = self.model(inputs_dict['input_ids'], inputs_dict['attention_mask'])
-        logits = outputs[0]
-        if self.config.task == 'classification':
-            preds = logits.argmax(dim=1)
-            return [self.config.labels[int(pred)] for pred in preds]
-        elif self.config.task == 'regression':
-            return logits.squeeze().item()
+        with torch.no_grad():
+            inputs = self.transformers_encode_batch(*args)
+            inputs_dict = {
+                'input_ids': torch.tensor(inputs[0], dtype=torch.long).to(self.device),
+                'attention_mask': torch.tensor(inputs[1], dtype=torch.long).to(self.device),
+            }
+            outputs = self.model(inputs_dict['input_ids'], inputs_dict['attention_mask'])
+            logits = outputs[0]
+            if self.config.task == 'classification':
+                preds = logits.argmax(dim=1)
+                return [self.config.labels[int(pred)] for pred in preds]
+            elif self.config.task == 'regression':
+                return logits.squeeze().item()
 
     def multi_gpu_training(self):
         # multi-gpu training (should be after apex fp16 initialization)
