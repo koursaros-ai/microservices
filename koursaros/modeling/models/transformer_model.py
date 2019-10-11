@@ -147,11 +147,11 @@ class TransformerModel(Model):
         logger.info("  Total optimization steps = %d" % t_total)
 
         if not 'eval_freq' in self.config.training:
-            self.eval_freq = 32
+            self.eval_freq = 2
         else:
             self.eval_freq = self.config.training.eval_freq
 
-        self.eval_and_save_every = 50 # len(train_dataset) // self.batch_size // self.eval_freq
+        self.eval_and_save_every = len(train_dataset) // self.batch_size // self.eval_freq
 
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
