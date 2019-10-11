@@ -32,8 +32,6 @@ class TransformerModel(Model):
             raise NotImplementedError()
 
         self.model_config = config.from_pretrained(self.checkpoint, cache_dir=self.dir)
-        self.model_config.num_labels = len(self.config.labels)
-        self.model_config.torchscript = True
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
                                            cache_dir=self.dir, **kwargs)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
@@ -52,12 +50,12 @@ class TransformerModel(Model):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.pad = True
-        self.label_map = {label: i for i, label in enumerate(self.config.labels)}
         if self.trained:
-            print('Tracing model for deployment...')
             self.model.eval()
             # self.trace_model()
         if self.config.task == 'classification':
+            self.model_config.num_labels = len(self.config.labels)
+            self.label_map = {label: i for i, label in enumerate(self.config.labels)}
             self.best_checkpoint_metric = 'acc'
         elif self.config.task == 'regression':
             self.best_checkpoint_metric = 'loss'
