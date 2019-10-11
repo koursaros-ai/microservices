@@ -66,18 +66,8 @@ def router(app_manager):
 @click.pass_obj
 def service(app_manager, pipeline_name, service_name):
     """Deploy a service"""
-    service_yaml_path = app_manager.get_yaml_path(service_name, YamlType.SERVICE)
-    service_yaml = Yaml(service_yaml_path)
-    pipe_yaml_path = app_manager.get_yaml_path(pipeline_name, YamlType.PIPELINE)
-    base_yaml_path = app_manager.get_yaml_path(service_yaml.base, YamlType.BASE)
 
-    if base_yaml_path is None:
-        raise FileNotFoundError('Could not find base "%s" base.yaml' % service_yaml.base)
 
-    cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml.base,
-           str(service_yaml_path), str(pipe_yaml_path)]
-
-    app_manager.subproc(cmd)
 
 
 # else:

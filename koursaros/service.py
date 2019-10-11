@@ -3,6 +3,7 @@ from .messages import MsgType, Messages, ParseError
 from kctl.logger import set_logger
 from traceback import format_exc
 from .yamls import Yaml
+from .base import Messager
 import pathlib
 import time
 import zmq
@@ -13,7 +14,7 @@ RCV_TIMEOUT = 1000
 HEARTBEAT = 5
 
 
-class Service:
+class Service(Messager):
     """The base service class"""
 
     def __init__(self):
@@ -88,6 +89,8 @@ class Service:
         self.net.build_poller(Route.IN)
         self.net.setsockopt(Route.IN, zmq.RCVTIMEO, RCV_TIMEOUT)
 
+
+
         while True:
             try:
                 cmd, msg_id, msg = self.net.recv(Route.IN)
@@ -140,4 +143,12 @@ class Service:
                     self.net.send(Route.OUT, Command.STATUS, 0, status)
                     self.last_status = time.time()
 
+    def config(self, port_in, port_out):
+        self.socket_in = self.build_socket(SocketType.PULL_CONNECT, port_in)
+        self.socket_out = self.build_socket(SocketType.PUSH_CONNECT, port_out)
 
+    cmds = {
+        Command.SEND: send_msg,
+        Command.CONFIG: config,
+        Command.ERROR: send_error
+    }
