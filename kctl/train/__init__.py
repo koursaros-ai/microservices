@@ -11,7 +11,10 @@ def train(app_manager, name):
 
 
 @click.command()
+@click.argument('name')
+@click.option('-s', '--source')
+@click.option('-d', '--destination')
 @click.pass_obj
-def eval(*args):
+def predict(app_manager, name, s, d):
     """Save current directory's pipeline"""
-    pass
+    cmd = [sys.executable, '-m', 'koursaros.predictor', name, s, d]
