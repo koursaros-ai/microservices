@@ -438,7 +438,7 @@ class TransformerModel(Model):
                 preds = logits.argmax(dim=1)
                 return [self.config.labels[int(pred)] for pred in preds]
             elif self.config.task == 'regression':
-                return logits.squeeze().item()
+                return logits.squeeze().tolist()
 
     def multi_gpu_training(self):
         # multi-gpu training (should be after apex fp16 initialization)
