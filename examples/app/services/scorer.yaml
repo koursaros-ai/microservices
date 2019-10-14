@@ -5,10 +5,10 @@ service:
   data:
     source: postgres
     db: fever
-    schema: model_data
-    train: scorer_train
-    test: scorer_test
+    schema: test
+    train: scorer_train_title
+    test: scorer_test_title
   training:
-    init-checkpoint: https://dl.fbaipublicfiles.com/fairseq/models/roberta.large.tar.gz
+    init-checkpoint: bert-large-uncased
     epochs: 3
     learning-rate: 1e-05
