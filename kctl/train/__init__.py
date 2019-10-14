@@ -13,8 +13,8 @@ def train(app_manager, name):
 @click.command()
 @click.argument('name')
 @click.option('-s', '--source')
-@click.option('-d', '--destination')
+@click.option('-d', '--dest')
 @click.pass_obj
-def predict(app_manager, name, s, d):
+def predict(app_manager, name, source=None, dest=None):
     """Save current directory's pipeline"""
-    cmd = [sys.executable, '-m', 'koursaros.predictor', name, s, d]
+    cmd = [sys.executable, '-m', 'koursaros.predictor', name, source, dest]
