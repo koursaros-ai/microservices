@@ -2,7 +2,7 @@
 from .manager import AppManager
 from .create import create
 from .deploy import deploy
-from .train import train
+from .train import train, predict
 from .test import test
 from .pull import pull
 from .config import credentials
@@ -25,6 +25,7 @@ kctl.add_command(pull)
 kctl.add_command(train)
 kctl.add_command(test)
 kctl.add_command(credentials)
+kctl.add_command(predict)
 
 
 def cli():
