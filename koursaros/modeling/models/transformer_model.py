@@ -39,7 +39,7 @@ class TransformerModel(Model):
         self.model = model.from_pretrained(self.checkpoint, config=self.model_config,
                                            cache_dir=self.dir, **kwargs)
         self.tokenizer = tokenizer.from_pretrained(self.checkpoint, cache_dir=self.dir)
-        self.batch_size = self.config.training.batch_size
+        self.batch_size = self.config.training.batch_size if 'batch_size' in self.config.training else 4
         self.max_grad_norm = 1.0
         self.weight_decay = 0.0
         self.n_gpu = 1
