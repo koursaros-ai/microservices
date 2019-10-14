@@ -433,6 +433,8 @@ class TransformerModel(Model):
                 'attention_mask': torch.tensor(inputs[1], dtype=torch.long).to(self.device),
             }
             outputs = self.model(inputs_dict['input_ids'], inputs_dict['attention_mask'])
+            import pdb
+            pdb.set_trace()
             logits = outputs[0]
             if self.config.task == 'classification':
                 preds = logits.argmax(dim=1)
