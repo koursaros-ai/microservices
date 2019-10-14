@@ -3,6 +3,7 @@ service:
   arch: bert
   repo: gs://poloma-models
   task: regression
+  max_length: 256
   training:
     data:
       source: postgres
