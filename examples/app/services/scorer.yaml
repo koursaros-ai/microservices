@@ -10,6 +10,6 @@ service:
     train: scorer_train_title
     test: scorer_test_title
   training:
-    init-checkpoint: bert-large-uncased
+    checkpoint: bert-large-uncased
     epochs: 3
     learning-rate: 1e-05
