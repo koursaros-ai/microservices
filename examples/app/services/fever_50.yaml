@@ -2,8 +2,12 @@ service:
   base: reranker
   arch: bert
   repo: gs://poloma-models
-  task: regression
-  max_length: 256
+  task: classification
+  max_length: 512
+  labels:
+    - -1
+    - 0
+    - 1
   training:
     data:
       source: postgres
