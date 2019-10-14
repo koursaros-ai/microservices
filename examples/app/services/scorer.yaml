@@ -3,13 +3,13 @@ service:
   repo: gs://poloma-models
   task: regression
   arch: bert
-  data:
-    source: postgres
-    db: fever
-    schema: test
-    train: scorer_train_title
-    test: scorer_test_title
   training:
+    data:
+      source: postgres
+      db: fever
+      schema: test
+      train: scorer_train_title
+      test: scorer_test_title
     checkpoint: bert-large-uncased
     epochs: 3
     learning-rate: 1e-05
