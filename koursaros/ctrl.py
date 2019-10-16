@@ -1,269 +1,150 @@
 from .base import Messager, SocketType, CTRL_PORT, Command
-from kctl.manager import AppManager
-from .yamls import Yaml, YamlType
-from threading import Thread, get_ident, Condition
-from typing import List
+from threading import Thread
 import subprocess
 from hashlib import md5
-import atexit
 import sys
 import yaml as pyyaml
-from json import loads
-
+from collections import defaultdict
+from time import time
+import koursaros_pb2
 
 LOCAL_IP = '127.0.0.1'
 CHIEF_PORT = 49152
 MIN_PORT = 49153
 MAX_PORT = 65536
 
-DEFAULT_PIPELINE_STATE = dict(
-    updating=False,
-    services=set(),
-    ip=None,
-)
 
-DEFAULT_SERVICE_STATE = dict(
-    streamers=set(),
-    has_yaml=False,
-    is_first=False,
-    is_last=False,
-    subproc=False,
-    deploying=False,
-    running=False,
-    killing=False,
-    rip=False,
-    ip=None,
-)
-
-DEFAULT_STREAMER_STATE = dict(
-    port_in=None,
-    port_out=None,
-    subproc=False,
-    deploying=False,
-    running=False,
-    killing=False,
-    rip=False,
-    ip=None,
-)
-
-
-class Chief(Messager):
-    pipeline_name = dict()
-    pipeline_yamls = dict()
-    service_yamls = dict()
-    pipeline_states = dict()
-    service_states = dict()
-    streamer_states = dict()
+class Control(Messager):
+    handler = MessageHandler()
+    subprocesses = []
     ports = set(range(MIN_PORT, MAX_PORT))
 
     def __init__(self):
         self.socket_ctrl = self.build_socket(SocketType.REP_BIND, CTRL_PORT)
-        self.am = AppManager()
-        self.subproc_cb = Condition()
+        self.app_state = defaultdict(lambda: dict(
+            messages=dict(),
+            pipeline_yamls=defaultdict(lambda: dict(
+                last_update=0,
+                string=None,
+                json=None,
+                hash=None,
+            )),
+            service_yamls=defaultdict(lambda: dict(
+                last_update=0,
+                string=None,
+                json=None,
+                hash=None,
+            )),
+            pipeline_states=defaultdict(lambda: dict(
+                last_update=0,
+                status=None,
+                ip=None,
+                service_states=defaultdict(lambda: dict(
+                    start_time=None,
+                    last_update=0,
+                    subprocess=None,
+                    status=None,
+                    ip=None,
+                    sent=0,
+                    streamer_states=defaultdict(lambda: dict(
+                        port_out=self.ports.pop(),
+                        port_in=self.ports.pop(),
+                        last_update=0,
+                        subprocess=False,
+                        status=None,
+                        ip=None,
+                    )),
+                )),
+            )),
+        ))
 
-        # wait for subprocesses to finish on exit
-        atexit.register(self.wait_for_subprocs)
+    @handler.register(koursaros_pb2.ControlRequest.ApplyYamlRequest)
+    def apply_yaml(self, msg: 'koursaros_pb2.Message'):
+        yaml_string = msg.control_request.apply_yaml_request.yaml_string
+        yaml_hash = md5(yaml_string).hexdigest()
+        yaml_json = pyyaml.safe_load(yaml_string)
+        name = yaml_json['name']
 
-    def apply_yaml(self, name: bytes, yaml_type: bytes, yaml_string: bytes):
-        # yaml_hash = md5(yaml_string).hexdigest()
-        name = name.decode()
-        yaml_type = YamlType(yaml_type)
-        yaml = pyyaml.safe_load(yaml_string)
-        ss = self.service_states
-        sy = self.service_yamls
-        ps = self.pipeline_states
-        py = self.pipeline_yamls
-        sts = self.streamer_states
+        if 'pipeline' in yaml_json:
+            yaml_json = yaml_json['pipeline']
+            yaml_state = self.app_state['pipeline_yamls'][name]
 
-        if yaml_type == YamlType.PIPELINE:
-            ps[name] = DEFAULT_PIPELINE_STATE
-            py[name] = yaml
+        elif 'service' in yaml_json:
+            yaml_json = yaml_json['service']
+            yaml_state = self.app_state['service_yamls'][name]
 
-            for service in py['services']:
-                if service not in ss:
-                    ss[service] = DEFAULT_SERVICE_STATE
-                ps[name]['services'].add(service)
+        else:
+            return Command.ERROR
 
-            return Command.SUCCESS, 'Pipeline yaml "%s" applied' % name
+        # return error if yaml already recorded
+        if yaml_hash == yaml_state['hash']:
+            return Command.ERROR
 
-        elif yaml_type == YamlType.SERVICE:
-            ss[name] = DEFAULT_SERVICE_STATE
+        yaml_state['string'] = yaml_string
+        yaml_state['json'] = yaml_json
+        yaml_state['hash'] = yaml_hash
+        yaml_state['last_update'] = time()
 
-            for i in range(yaml['streamers']):
-                streamer = '/%s_%s' % (name, i)
-                ss[name]['streamers'].add(streamer)
-                sts[streamer] = DEFAULT_STREAMER_STATE
-                sts[streamer]['port_in'] = self.ports.pop()
-                sts[streamer]['port_out'] = self.ports.pop()
+        return Command.SUCCESS
 
-            sy[name] = yaml
-            ss[name]['has_yaml'] = True
+    @staticmethod
+    def subprocess_call(cmd, state):
+        subprocess.call(cmd)
 
-            return Command.SUCCESS, 'Service yaml "%s" applied' % name
+        # once done:
+        state['subprocess'] = False
 
-    def deploy_subproc(self):
+    @handler.register(koursaros_pb2.ControlRequest.SubprocessRequest)
+    def subprocess_pipelines(self, msg: 'koursaros_pb2.Message'):
         """
-        Deploys all current yamls held by the chief
+        Deploys all current yamls in subprocesses
         """
-        ps = self.pipeline_states
-        ss = self.service_states
-        sy = self.service_yamls
-        sts = self.streamer_states
+        sy = self.app_state['service_yamls']
+        sd = 'Service "%s" does not have a yaml'
+        rp = ('READY', 'PENDING')
+        python = sys.executable
+        ip = LOCAL_IP
         cmds = []
 
-        for pipeline in ps.values():
-            for service in pipeline['services']:
-                yaml = sy[service]
-                state = ss[service]
-                b = state['base']
-                st = state['streamers']
-                hy = state['has_yaml']
-                d = state['deploying']
-                r = state['running']
-                s = state['subproc']
-                ip = LOCAL_IP
+        for pipeline in self.app_state['pipeline_states'].values():
+            service_states = pipeline['service_states']
+            for service in service_states:
 
-                if not hy:
-                    return Command.FAILED, 'Service "%s" does not have a yaml' % service
+                # if service not in service yamls, fail
+                if service not in sy: return Command.FAILED, sd % service
 
-                if not r and not d:
-                    cmd = [sys.executable, '-m', 'koursaros.bases.%s' % b, service, ip]
-                    cmds += (state, cmd)
+                yaml = sy[service]['json']
+                service_state = service_states[service]
 
-                for streamer in st:
-                    state = sts[streamer]
-                    d = state['deploying']
-                    r = state['running']
+                # if service not running or deploying, deploy
+                if service_state['status'] not in rp:
+                    cmd = [python, '-m', 'koursaros.bases.%s' % yaml['base'], pipeline, service, ip]
+                    cmds += (service_state, cmd)
 
-                    if not d and not r:
-                        cmd = [sys.executable, '-m', 'koursaros.streamer', streamer, ip]
-                        cmds += (state, cmd)
+                streamer_states = service_state['streamer_states']
+                for streamer in range(yaml['streamers']):
+                    streamer_state = streamer_states[streamer]
 
+                    # if streamer not running or deploying, deploy
+                    if streamer_state['status'] not in rp:
+                        cmd = [python, '-m', 'koursaros.streamer', pipeline, service, streamer, ip]
+                        cmds += (streamer_state, cmd)
+
+            # run services and streamers, update states
             for state, cmd in cmds:
-                self.subproc(cmd)
-                state['deploying'] = True
+                t = Thread(target=self.subprocess_call, args=(cmd, state))
+                self.subprocesses.append(t)
+                t.start()
 
-            return Command.SUCCESS, 'Deployed pipelines'
+            return Command.SUCCESS
 
-    def status(self, name: bytes, status: bytes):
-        """
-        Receives status updates from the services and updates
-        them with what they should be doing.
+    @handler.register(koursaros_pb2.ControlRequest.StateUpdate)
+    def state_update(self, msg: 'koursaros_pb2.Message'):
 
-        :param name: name of the service requesting
-        :param status: status update from service
-        :return: service configs
-        """
-        name = name.decode()
-        status = loads(status)
-        ss = self.service_states
-        sts = self.streamer_states
+        for path, value in msg.control_request.state_update.updates:
+            node = self.app_state
 
-        if name[0] == '/':
-            # (if streamer)
-            state = self.service_states[name]
+            for key in path[:-1]:
+                node = node[key]
+            node[path[-1]] = value
 
-
-
-    def service_kill_res(self, name):
-        state = self.service_states[name]
-
-        state['killing'] = True
-        state['rip'] = True
-
-    def router_kill_res(self, name):
-        state = self.service_states[name]
-
-        state['killing'] = True
-        state['rip'] = True
-
-    def update_pipelines(self, c):
-        if pipeline_name not in self.pipelines:
-            c = True
-            pipeline = dict()
-            pipeline['services'] = dict()
-        else:
-            pipeline = self.pipelines[pipeline_name]
-
-        for service_name in pipeline_yaml['services']:
-            if service_name not in pipeline:
-                c = True
-                pipeline['services'][service_name] = dict()
-
-        pipeline['path'] = pipeline_yaml_path
-        self.pipelines[pipeline_name] = pipeline
-        self.update_services(c)
-        self.update_streamers(c)
-        self.send(self.socket_ctrl, Command.SUCCESS, b'Deployed pipeline "%s".' % pipeline_name)
-
-    def update_services(self, c):
-        for pipeline in self.pipelines:
-            for service in pipeline['services']:
-                if 'process' not in service:
-                    service_yaml = self.am.get_yaml_path(service, YamlType.SERVICE)
-                    cmd = [sys.executable, '-m', 'koursaros.bases.%s' % service_yaml['base']]
-
-        new_service = dict()
-        service_yaml_path = self.am.get_yaml_path(service_name, YamlType.SERVICE)
-        service_yaml = Yaml(service_yaml_path)
-        self.save_base(service_yaml.base)
-
-        self.subproc(cmd)
-        new_service['yaml'] = service_yaml
-        new_pipeline['services'][service_name] = new_service
-
-    def save_base(self, base_name):
-        base_yaml_path = self.am.get_yaml_path(base_name, YamlType.BASE)
-
-        if self.am.is_in_app_path(base_name, YamlType.BASE):
-            self.am.save_base_to_pkg(base_name)
-
-        if base_yaml_path is None:
-            raise FileNotFoundError('Could not find base "%s" base.yaml' % base_name)
-
-    def update_streamers(self, c):
-        for pipeline in self.pipelines:
-            excess = len(pipeline['streamers']) - len(pipeline['services']) - 1
-
-            for _ in range(excess):
-                cmd = [sys.executable, '-m', 'koursaros.streamer']
-
-            excess *= -1
-
-            self.subproc(cmd, 'streamers', )
-
-    def config(self, entity):
-        pass
-
-    def wait_for_subprocs(self):
-        """
-        Waits for subprocesses to finish. Add to exit stack command.
-        """
-        while self.subprocs:
-            self.subproc_cb.acquire()
-            self.subproc_cb.wait()
-            self.subproc_cb.release()
-
-    def subproc(self, cmd: List, entity, name):
-        """
-        Subprocess a command. Each subprocessed command is
-        managed by the app manager and the stack does not exit
-        until all commands finish...
-
-        :param cmd: command to run
-        """
-
-        if not isinstance(cmd, list):
-            raise TypeError('"%s" must be list type')
-
-        t = Thread(target=self.subproc_thread, args=[cmd])
-
-        self.subprocs.add(t.ident)
-        t.start()
-
-    def subproc_thread(self, cmd):
-        subprocess.call(cmd)
-        self.subprocs.discard(get_ident())
-        self.subproc_cb.acquire()
-        self.subproc_cb.notify()
-        self.subproc_cb.release()

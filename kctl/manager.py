@@ -108,3 +108,12 @@ class AppManager:
     def raise_if_not_app_root(self):
         if self.root is None:
             raise NotADirectoryError(f'"%s" is not an app' % self.base)
+
+    def save_base(self, base_name):
+        base_yaml_path = self.am.get_yaml_path(base_name, YamlType.BASE)
+
+        if self.am.is_in_app_path(base_name, YamlType.BASE):
+            self.am.save_base_to_pkg(base_name)
+
+        if base_yaml_path is None:
+            raise FileNotFoundError('Could not find base "%s" base.yaml' % base_name)

@@ -1,0 +1,95 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package gnes;
+
+message Message {
+    oneof body {
+        ControlRequest control_request = 1;
+        ControlResponse control_response = 2;
+    }
+}
+
+// define Request
+message ControlRequest {
+    oneof body {
+        StatusUpdate status_update = 1;
+        ApplyYamlRequest apply_yaml_request = 2;
+        SubprocessRequest subprocess_request = 3;
+    }
+
+    enum Status {
+        PENDING = 0;
+        READY = 1;
+        STOPPING = 2;
+        STOPPED = 3;
+    }
+
+    enum EntityType {
+        SERVICE = 0;
+        STREAMER = 1;
+    }
+
+    message StatusUpdate {
+        EntityType entity_type = 1;
+        Status status = 2;
+        google.protobuf.Timestamp time = 3;
+        string pipeline = 4;
+        string service = 5;
+        uint64 streamer = 6;
+    }
+
+    message ApplyYamlRequest {
+        bytes yaml_string = 1;
+    }
+
+    message SubprocessRequest {}
+
+}
+
+// define Response
+message ControlResponse {
+    oneof body {
+        StatusResponse status_response = 1;
+        ApplyYamlResponse apply_yaml_request = 2;
+        SubprocessResponse subprocess_request = 3;
+    }
+
+    enum Command {
+        CONTINUE = 0;
+        TERMINATE = 1;
+    }
+
+    enum Status {
+        SUCCESS = 0;
+        FAILURE = 1;
+    }
+
+    message StatusResponse {
+        Command command = 1;
+    }
+
+    message ApplyYamlResponse {
+        Status status = 1;
+    }
+
+    message SubprocessResponse {
+        Status status = 1;
+    }
+}
+
+
+service KoursarosRPC {
+    // option (rpc_core.method_no_deadline) = true;
+    // option (rpc_core.service_default_deadline_ms) = 5000;
+    rpc Train (Request) returns (Response) {
+    }
+    rpc Index (Request) returns (Response) {
+    }
+    rpc Query (Request) returns (Response) {
+    }
+    rpc Call (Request) returns (Response) {
+    }
+    rpc StreamCall (stream Request) returns (stream Response) {
+    }
+}
