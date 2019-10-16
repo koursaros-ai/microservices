@@ -26,11 +26,12 @@ class FileCred(yaml.YAMLObject):
         cls.repo_path = repo_path
 
 
-def get_creds(repo, username='', password=''):
+def get_creds(repo, username=None, password=None):
     repo_path = DIR.joinpath(repo)
     repo_path.mkdir(exist_ok=True, parents=True)
     FileCred.set_repo_path(repo_path)
-    git.Git(repo_path).clone("https://%s@%sgithub.com/%s" % (username, password, repo))
+    login = '%s:%s@' % (username, password) if username and password else ''
+    git.Git(repo_path).clone("https://%sgithub.com/%s" % (login, repo))
     creds = yaml.safe_load(repo_path.joinpath('creds.yaml').read_text())
     return Box(creds['creds'])
 
