@@ -1,8 +1,0 @@
-version: '3.7'
-
-base:
-  base: pytorch/pytorch:latest
-  image: translator/image
-  replicas: 1
-  rcv_proto: TranslateQuery
-  send_proto: TranslateQuery

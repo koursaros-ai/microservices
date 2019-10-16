@@ -1,2 +1,0 @@
-pipeline:
- route: backend -> elastic -> scorer -> inference -> receiver

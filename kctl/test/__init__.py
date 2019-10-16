@@ -1,4 +1,4 @@
-from kctl.logger import set_logger
+
 import requests
 import click
 import json

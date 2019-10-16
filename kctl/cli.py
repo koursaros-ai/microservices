@@ -1,11 +1,9 @@
 
 from .manager import AppManager
-from .create import create
 from .deploy import deploy
 from .train import train
 from .test import test
 from .pull import pull
-from .config import credentials
 import click
 
 

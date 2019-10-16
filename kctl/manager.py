@@ -1,7 +1,6 @@
 
 from koursaros.yamls import YamlType
 from shutil import copytree, rmtree
-from .logger import set_logger
 from pathlib import Path
 from typing import List
 from copy import copy
