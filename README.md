@@ -40,43 +40,6 @@ Koursaros leverages a general-purpose microservice / broker architecture to enab
   </tr>
 </table>
 
-## Highlights
-
-<table>
-  <tr>
-  <td width="33%">
-    <p><h3 align="center">🧪</h3><h3 align="center">SoTA</h3></p>
-  </td>
-  <td>
-    <p>Cutting edge neural models can be swapped in to quickly train and build production deployments.</p>
-  </td>
-  </tr>
-  <tr>
-  <td width="33%">
-    <p><h3 align="center">🔎</h3><h3 align="center">Transparent</h3></p>
-  </td>
-  <td>
-    <p>The pub-sub architecture enables monitoring and logging of the pipelines via RabbitMQ.</p>
-  </td>
-  </tr>
-  <tr>
-  <td width="33%">
-    <p><h3 align="center">🎂</h3><h3 align="center">Easy Development</h3></p>
-  </td>
-  <td>
-    <p>Before deploying the pipeline to the cloud, you can easily test the pipeline locally or in a dev environment.</p>
-  </td>
-  </tr>
-  <tr>
-  <td width="33%">
-    <p><h3 align="center">🔧</h3><h3 align="center">Customizable</h3></p>
-  </td>
-  <td>
-    <p>Koursaros uses markup language to simplify the creation of microservice pipelines.</p>
-  </td>
-  </tr>
-</table>
-
 ## Overview
 
 <p align="center">
