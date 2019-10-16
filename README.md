@@ -40,52 +40,6 @@ Koursaros leverages a general-purpose microservice / broker architecture to enab
   </tr>
 </table>
 
-## Overview
-
-<p align="center">
-<a>
-<img src=".github/overview.svg" alt="overview">
-</a>
-</p>
-
-The fundamental unit of Koursaros is a *stub*. Each *service* has a
-set of stubs that designate where messages get sent to and from.
-Each service performs a job depending on the stub that receives the message.
-After the service finishes the job, it can send the result on to the next stub in the pipeline.
-That way, stubs can be combined in different ways to define a *pipeline*.
-For example, service 1 and 2 can define a separate pipeline from a pipeline created by
-service 2, 3, and 4. Stubs can only send messages within their defined pipeline, but services
-can share memory across pipelines. This is useful for holding models in memory and other applications.
-Each pipeline is defined in the *stubs.yaml* so that Koursaros can automatically route the messages.
-
-For example, here is a simplified version of our fact-checking pipeline:
-
-<table>
-<tr>
-<th>stubs.yaml</th>
-</tr>
-<tr>
-<td>
-   <pre lang="yaml">
- stubs:
-   send: client.sendClaims() -> Claim                                   | retrieval
-   retrieval: retriever.getRelatedArticles(Claim) -> ClaimWithArticles  | compare
-   compare: model.factcheck(ClaimWithArticles)                        ->|
-   </pre>
-</td>
-</tr>
-</table>
-
-
-Koursaros takes the factchecking pipeline definition and spins up the client, retriever, and model
-services on separate processes. Each service has one stub in this case. Koursaros routes the messages
-between the service stubs. If a microservice has multiple stubs, each stub gets its own thread.
-The type of message being sent is also defined ahead of time.
-So for the send stub, the client executes the sendClaims function and returns a
-Claim message to the retrieval stub. The claim message gets routed to the retriever,
-who takes that Claim and finds related articles with the getRelatedArticles function,
-and returns a ClaimWithArticles message.
-
 ## Install
 ### Requirements
 You need Python 3.6 or later to run Koursaros.
