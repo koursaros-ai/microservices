@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='koursaros',
     packages=find_packages(),
-    package_data={'': ['*.proto', '*.yaml', '*.gitignore']},
+    include_package_data=True,
     version='0.0.1',
     license='MIT',
     description='Koursaros is a distributed, cloud-'
@@ -15,7 +15,7 @@ setup(
     # download_url='https://github.com/koursaros-ai/koursaros/archive/0.0.1.tar.gz',
     keywords=['koursaros', 'distributed', 'cloud-native', 'neural', 'inference'],
     install_requires=[
-        'pika',
+        'zmq',
     ],
     entry_points={
         'console_scripts': [
