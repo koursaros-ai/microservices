@@ -30,8 +30,14 @@ def get_creds(repo, username=None, password=None):
     repo_path = DIR.joinpath(repo)
     repo_path.parent.mkdir(exist_ok=True)
     FileCred.set_repo_path(repo_path)
-    login = '%s:%s@' % (username, password) if username and password else ''
-    git.Git(repo_path.parent).clone("https://%sgithub.com/%s" % (login, repo))
+
+    g = git.Git(repo_path.parent)
+    if repo_path.exists():
+        g.pull()
+    else:
+        login = '%s:%s@' % (username, password) if username and password else ''
+        g.clone("https://%sgithub.com/%s" % (login, repo))
+
     creds = yaml.safe_load(repo_path.joinpath('creds.yaml').read_text())
     return Box(creds['creds'])
 
