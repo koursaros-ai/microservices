@@ -37,9 +37,14 @@ Let's say the repo you make is `madhatter/creds`.
 You can get your credentials in a python script by doing the following:
 ```python
 from koursaros.credentials import get_creds
+from sys import argv
 
+# retrieve repo creds by adding login to script
 creds = get_creds('madhatter/creds', username='alice', password='cheshire')
+# or with cmd line args
+creds = get_creds('madhatter/creds', username=argv[1], password=argv[2])
 # NOTE: you don't need to log in if your git credentials are stored locally
+
 
 # the !! denotes native python types. You can access them like:
 creds.postgres.password # my_password
@@ -51,3 +56,7 @@ creds.google.app_creds.path # '/absolute/path/to/google/app_creds/bluehat.json'
 creds.google.app_creds.bytes # b'{"client_id": "293480342342034"}'
 creds.google.app_creds.text # '{"client_id": "293480342342034"}'
 ```
+
+## How it works
+The `get_creds()` function clones the specified repo and caches it to the koursaros.credentials
+directory. If the creds repo already exists, the repo is git pulled.
