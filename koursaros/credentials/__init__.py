@@ -31,10 +31,11 @@ def get_creds(repo, username=None, password=None):
     repo_path.parent.mkdir(exist_ok=True)
     FileCred.set_repo_path(repo_path)
 
-    g = git.Git(repo_path.parent)
     if repo_path.exists():
+        g = git.Git(repo_path)
         g.pull()
     else:
+        g = git.Git(repo_path.parent)
         login = '%s:%s@' % (username, password) if username and password else ''
         g.clone("https://%sgithub.com/%s" % (login, repo))
 
