@@ -7,11 +7,12 @@ services:
     ports:
     - 5566:5566
   Preprocessor10:
-    build: ../../../services/preprocessors/word-split-preprocessor
+    build: ../../services/preprocessors/word-split-preprocessor
     image: preprocessors:word-split-preprocessor
     command: --port_in 62401 --socket_in PULL_CONNECT --port_out 54470
       --socket_out PUSH_CONNECT --host_in Frontend00 --host_out Indexer20
   Indexer20:
+    build: ../../services/indexers/lvdb
     image: gnes/gnes:latest-alpine
-    command: index --port_in 54470 --socket_in PULL_BIND --port_out 60753 --socket_out PUSH_CONNECT
-      --host_out Frontend00 --host_in Preprocessor10 --yaml_path LVDBIndexer
+    command: --port_in 54470 --socket_in PULL_BIND --port_out 60753 --socket_out PUSH_CONNECT
+      --host_out Frontend00 --host_in Preprocessor10
