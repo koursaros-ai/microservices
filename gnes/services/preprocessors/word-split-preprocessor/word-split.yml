@@ -1,0 +1,5 @@
+!SentSplitPreprocessor
+parameters:
+  start_doc_id: 0
+  random_doc_id: True
+  deliminator: "[^\w]+"

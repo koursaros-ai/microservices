@@ -1,0 +1,6 @@
+parameters:
+  table: 'test.test_rerank'
+  col_one: 'claim'
+  col_two: 'text'
+  col_label: 'label'
+

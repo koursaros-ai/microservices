@@ -1,0 +1,22 @@
+version: '3.4'
+services:
+  Frontend00:
+    image: gnes/gnes:latest-alpine
+    command: frontend --grpc_port 5566 --port_out 62401 --socket_out PUSH_BIND --port_in
+      60753 --socket_in PULL_BIND --host_in Encoder20 --host_out Preprocessor10
+    ports:
+    - 5566:5566
+  Preprocessor10:
+    image: services/preprocessors:word-split-preprocessor
+    command: preprocess --port_in 62401 --socket_in PULL_CONNECT --port_out 54470
+      --socket_out PUSH_CONNECT --yaml_path SentSplitPreprocessor
+      --host_in Frontend00 --host_out Encoder20
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+  Encoder20:
+    image: services/encoders:siamese-bert
+    command: --port_in 54470 --socket_in PULL_BIND --port_out 60753 --socket_out PUSH_CONNECT
+      --host_out Frontend00 --host_in Preprocessor10
