@@ -8,38 +8,42 @@ import os
 
 class PostgresClient(CLIClient):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        a = self.args
-        self.creds = get_creds(a.cred_repo,
-                               username=a.cred_user,
-                               password=a.cred_pass)
-
-        p = self.creds.postgres
-        self.configs = dict(user=p.username,
-                            password=p.password,
-                            host=p.host,
-                            port=p.port,
-                            dbname=p.dbname)
-
-        os.environ['PGSSLMODE'] = p.pgsslmode
-        os.environ['PGSSLROOTCERT'] = p.pgsslrootcert.path
-
-        self.query = '''SELECT %s, %s, %s FROM %s''' % (a.col_one,
-                                                        a.col_two,
-                                                        a.col_label,
-                                                        a.table)
-        self.query += 'LIMIT %d' % a.limit if a.limit > 0 else ''
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
 
     @property
     def bytes_generator(self):
-        connection = psycopg2.connect(**self.configs)
-        cursor = connection.cursor()
-        cursor.execute(self.query % self.args.limit)
+        try:
+            a = self.args
+            creds = get_creds(a.cred_repo,
+                              username=a.cred_user,
+                              password=a.cred_pass)
 
-        for i, (text_one, text_two, label) in enumerate(cursor):
-            yield (text_one + text_two + str(label)).encode()
+            p = creds.postgres
+            os.environ['PGSSLMODE'] = p.sslmode
+            os.environ['PGSSLROOTCERT'] = p.sslrootcert.path
+
+            query = '''SELECT %s, %s, %s FROM %s''' % (a.col_one,
+                                                       a.col_two,
+                                                       a.col_label,
+                                                       a.table)
+            query += ' LIMIT %d' % a.limit if a.limit > 0 else ''
+
+            connection = psycopg2.connect(user=p.username,
+                                          password=p.password,
+                                          host=p.host,
+                                          port=p.port,
+                                          dbname=p.dbname)
+
+            cursor = connection.cursor()
+            cursor.execute(query)
+
+            for i, (text_one, text_two, label) in enumerate(cursor):
+                yield (text_one + text_two + str(label)).encode()
+
+        except Exception as ex:
+            self.logger.error(ex)
+
 
     def query_callback(self, req, resp):
         self.logger.info(req, resp)
@@ -53,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--cred_user', type=str)
     parser.add_argument('--cred_pass', type=str)
     parser.add_argument('--yaml_path', type=str)
-    args = parser.parse_args()
-    yaml = TrainableBase.load_yaml(args.yaml_path)
-    for k, v in yaml['parameters'].items(): setattr(args, k, v)
-    PostgresClient(args)
+    cli_args = parser.parse_args()
+    yaml = TrainableBase.load_yaml(cli_args.yaml_path)
+    for k, v in yaml['parameters'].items(): setattr(cli_args, k, v)
+    PostgresClient(cli_args)
