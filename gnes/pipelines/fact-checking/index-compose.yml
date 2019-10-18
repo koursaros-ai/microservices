@@ -14,7 +14,7 @@ services:
   Encoder20:
     build: ../../services/encoders/text-byte
     image: encoders:text-byte
-    command: --port_in 54470 --socket_in PULL_CONNECT --port_out 54472
+    command: --port_in 54470 --socket_in PULL_BIND --port_out 54472
       --socket_out PUSH_CONNECT --host_in Preprocessor10 --host_out Indexer30
   Indexer30:
     build: ../../services/indexers/flash-text

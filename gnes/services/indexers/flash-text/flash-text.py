@@ -24,7 +24,7 @@ class FlashTextIndexer(BCI):
             raise ValueError('vectors should be ndarray of np.integer')
 
         for key, vector in zip(keys, vectors):
-            self._flash_index[key] = self.decode_ndarray(vector)
+            self._flash_index[key] = self.decode_textint(vector)
 
     def query(self, keys: np.ndarray, top_k: int, *args, **kwargs) -> List[List[Tuple]]:
         if np.issubdtype(keys.dtype, np.integer):
@@ -33,7 +33,7 @@ class FlashTextIndexer(BCI):
         ret = []
         for key in keys:
             self._keyword_processor.keyword_trie_dict.clear()
-            self._keyword_processor.add_keyword(self.decode_ndarray(key))
+            self._keyword_processor.add_keyword(self.decode_textint(key))
             ret_i = dict()
             for (doc_id, offset), text in self._flash_index.items():
                 matches = len(self._keyword_processor.extract_keywords(text))
@@ -45,5 +45,5 @@ class FlashTextIndexer(BCI):
         return ret
 
     @staticmethod
-    def decode_ndarray(array):
-        return bytes(array.tolist()).decode()
+    def decode_textint(ndarray):
+        return ndarray[0].to_bytes(((ndarray[0].bit_length() + 7) // 8), byteorder="big").decode()
