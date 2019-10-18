@@ -6,7 +6,7 @@ from gnes.encoder.base import BaseTextEncoder
 from gnes.helper import batching, as_numpy_array
 
 
-class TextIntEncoder(BaseTextEncoder):
+class TextByteEncoder(BaseTextEncoder):
     """Returns np array of encoded text. Useful for text search."""
     is_trained = True
 
