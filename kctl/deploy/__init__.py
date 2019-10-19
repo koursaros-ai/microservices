@@ -48,19 +48,19 @@ def swarm(obj):
 
     rm = ['docker', 'stack', 'rm', pipeline_name]
     build = ['docker-compose', '-f', run_path, 'build']
-    wait = ['sleep', '20']
     stack = ['docker', 'stack', 'deploy', '-c', run_path, pipeline_name]
 
     app_manager.subprocess_call(rm)
     app_manager.subprocess_call(build)
-    app_manager.subprocess_call(wait)
+    app_manager.logger.critical('Waiting for docker network resources.')
+    time.sleep(20)
 
     start = round(time.time())
     app_manager.subprocess_call(stack)
 
     def stream_container_logs(cont: 'docker.models.containers.Container'):
         # get rid of uuid
-        name = cont.name.split('.')[:-1] if '.' in cont.name else cont.name
+        name = '.'.join(cont.name.split('.')[:-1]) if '.' in cont.name else cont.name
 
         for log in cont.logs(stream=True, since=start):
             app_manager.thread_logs[name] += [log.decode()]
