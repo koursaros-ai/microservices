@@ -63,7 +63,7 @@ def swarm(obj):
 
 def stream_container_logs(container, since):
     for log in container.logs(stream=True, since=since):
-        print(log)
+        print(log.decode())
 
 
 def k8s(*args, **kwargs):
