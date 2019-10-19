@@ -11,6 +11,8 @@ services:
       --socket_out PUB_BIND --port_ctrl 64183 --parallel_backend process --yaml_path json-mode.yml
     deploy:
       replicas: 2
+      restart_policy:
+        max_attempts: 3
   SiameseBertEncoder:
     build: ../../../services/encoders/siamese-bert
     image: encoders:siamese-bert-base
@@ -18,6 +20,8 @@ services:
       --parallel_backend process --yaml_path base.yml
     deploy:
       replicas: 2
+      restart_policy:
+        max_attempts: 3
   FaissIdx:
     build: ../../../services/indexers/faiss-cpu
     image: encoders:faiss-cpu-base
@@ -25,6 +29,8 @@ services:
       PUSH_CONNECT --port_ctrl 52598 --parallel_backend process --yaml_path base.yml
     deploy:
       replicas: 2
+      restart_policy:
+        max_attempts: 3
   TextByteEncoder:
     build: ../../../services/encoders/text-byte
     image: encoders:text-byte-max-256
@@ -39,6 +45,8 @@ services:
       PUSH_CONNECT --port_ctrl 54016 --parallel_backend process --yaml_path base.yml
     deploy:
       replicas: 2
+      restart_policy:
+        max_attempts: 3
   LevelDBIdx:
     build: ../../../services/indexers/lvdb
     image: indexers:lvdb-base
@@ -46,6 +54,8 @@ services:
       PUSH_CONNECT --port_ctrl 50468 --parallel_backend process --yaml_path base.yml
     deploy:
       replicas: 2
+      restart_policy:
+        max_attempts: 3
   Reduce:
     image: gnes/gnes:latest-alpine
     command: route --port_in 51159 --port_out 55928 --socket_out PUSH_CONNECT --port_ctrl
