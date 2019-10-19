@@ -29,7 +29,7 @@ class AppManager:
             return self.base
         for path in self.base.parents:
             if path.joinpath('.kctl').is_dir():
-                self.app_paths.add(path)
+                self.app_paths.add(str(path))
                 self.cache()
                 return path
 
@@ -39,7 +39,7 @@ class AppManager:
     def find_app_file(self, *dirs: Tuple[str]) -> 'Path':
         _ = self.root
         for path in self.app_paths:
-            check_path = path.joinpath(*dirs)
+            check_path = Path(path).joinpath(*dirs)
             if check_path.is_dir():
                 return check_path
 
