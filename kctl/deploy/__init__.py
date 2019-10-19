@@ -70,10 +70,10 @@ def stream_container_logs(container, since):
 
 def color_hash(string: str) -> str:
     # return string with color chosen based on string
-    color_ranges = [range(31, 38), range(41, 48), range(90, 98), range(100, 108)]
+    color_ranges = [range(31, 38), range(90, 98)]
     color_choices = [color for color_range in color_ranges for color in color_range]
     return '\033[%sm%s\033[0m' % (
-        color_choices[abs(hash(string)) % len(color_choices) - 1], string)
+        color_choices[abs(hash(string)) % (len(color_choices) - 1)], string)
 
 
 def k8s(*args, **kwargs):
