@@ -15,9 +15,9 @@ services:
         max_attempts: 3
   SiameseBertEncoder:
     build: ../../../services/encoders/siamese-bert
-    image: encoders:siamese-bert-base
+    image: encoders:siamese-bert-dim-64
     command: --port_in 52862 --port_out 51648 --socket_in SUB_CONNECT --port_ctrl 51170
-      --parallel_backend process --yaml_path base.yml
+      --parallel_backend process --yaml_path dim-64.yml
     deploy:
       replicas: 2
       restart_policy:

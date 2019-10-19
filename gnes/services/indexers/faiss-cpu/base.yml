@@ -1,1 +1,5 @@
-!FaissIndexer {}
+!FaissIndexer
+parameters:
+  data_path: /workspace
+  index_key: HNSW32
+  num_dim: 64

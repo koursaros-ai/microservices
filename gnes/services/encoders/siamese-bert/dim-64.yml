@@ -1,0 +1,3 @@
+!CharEmbeddingEncoder
+parameters:
+  dim: 64
