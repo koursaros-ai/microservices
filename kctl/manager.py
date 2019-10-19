@@ -18,11 +18,11 @@ class AppManager:
         self.pkg_path = Path(__file__).parent
         self.cache_path = self.pkg_path.joinpath('.cache')
         self.logger = set_logger('KCTL')
-        self.root = self.find_root()
         try:
             self.app_paths = set(self.cache_path.read_text().split('\n'))
         except FileNotFoundError:
             self.app_paths = set()
+        self.root = self.find_root()
 
     def find_root(self) -> 'Path':
         if self.base.joinpath('.kctl').is_dir():
