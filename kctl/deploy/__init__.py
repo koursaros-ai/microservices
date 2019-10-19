@@ -1,6 +1,7 @@
 
 import click
-
+import docker
+import time
 
 @click.group()
 @click.argument('runtime')
@@ -52,7 +53,17 @@ def swarm(obj):
     app_manager.subprocess_call(rm)
     app_manager.subprocess_call(build)
     app_manager.subprocess_call(wait)
+
+    start = time.time()
     app_manager.subprocess_call(stack)
+
+    for container in client.containers.list(all=True):
+        app_manager.thread(target=stream_container_logs, args=(container, start))
+
+
+def stream_container_logs(container, since):
+    for log in container.logs(stream=True, since=since):
+        print(log)
 
 
 def k8s(*args, **kwargs):

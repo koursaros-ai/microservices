@@ -3,6 +3,8 @@ from pathlib import Path
 from gnes.helper import set_logger
 from typing import Tuple, List
 import subprocess
+import threading
+import atexit
 
 
 class AppManager:
@@ -23,6 +25,8 @@ class AppManager:
         except FileNotFoundError:
             self.app_paths = set()
         self.root = self.find_root()
+        self.threads = []
+        atexit.register(self.join)
 
     def find_root(self) -> 'Path':
         if self.base.joinpath('.kctl').is_dir():
@@ -51,5 +55,14 @@ class AppManager:
             raise NotADirectoryError(f'"%s" is not an app' % self.base)
 
     def subprocess_call(self, cmd: List[str]):
-        self.logger.critical('Calling %s' % ' '.join(cmd))
+        self.logger.critical('Calling \033"%s"' % ' '.join(cmd))
         subprocess.call(cmd)
+
+    def thread(self, *args, **kwargs):
+        t = threading.Thread(*args, **kwargs)
+        t.start()
+        self.threads.append(t)
+
+    def join(self):
+        for t in self.threads:
+            t.join()
