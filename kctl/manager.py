@@ -77,10 +77,19 @@ class AppManager:
 
     def thread_logger(self):
         while True:
-            for ctx, logs in self.thread_logs.items():
-                sys.stdout.write(''.join(logs).replace('\n', '\n%s' % ctx))
-            self.thread_logs.clear()
+            for ctx in list(self.thread_logs):
+                logs = self.thread_logs.pop(ctx)
+                prefix = '%s: ' % self.color_hash(ctx)
+                sys.stdout.write(''.join(logs).replace('\n', '\n%s' % prefix))
             time.sleep(THREAD_LOG_INTERVAL)
+
+    @staticmethod
+    def color_hash(string: str) -> str:
+        # return string with color chosen based on string
+        color_ranges = [range(31, 38), range(90, 98)]
+        color_choices = [color for color_range in color_ranges for color in color_range]
+        return '\033[%sm%s\033[0m' % (
+            color_choices[abs(hash(string)) % (len(color_choices) - 1)], string)
 
     def join(self):
         for t in self.threads:

@@ -58,21 +58,12 @@ def swarm(obj):
     start = round(time.time())
     app_manager.subprocess_call(stack)
 
-    def stream_container_logs(cont: 'docker.models.containers.Container', since: int):
-        prefix = '%s: ' % color_hash(cont.name)
-        for log in cont.logs(stream=True, since=since):
-            app_manager.thread_logs[prefix].append(log.decode())
+    def stream_container_logs(cont: 'docker.models.containers.Container'):
+        for log in cont.logs(stream=True, since=start):
+            app_manager.thread_logs[cont.name] += [log.decode()]
 
     for container in docker.from_env().containers.list(all=True):
-        app_manager.thread(target=stream_container_logs, args=(container, start))
-
-
-def color_hash(string: str) -> str:
-    # return string with color chosen based on string
-    color_ranges = [range(31, 38), range(90, 98)]
-    color_choices = [color for color_range in color_ranges for color in color_range]
-    return '\033[%sm%s\033[0m' % (
-        color_choices[abs(hash(string)) % (len(color_choices) - 1)], string)
+        app_manager.thread(target=stream_container_logs, args=[container])
 
 
 def k8s(*args, **kwargs):
