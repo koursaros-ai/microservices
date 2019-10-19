@@ -18,23 +18,21 @@ def pipeline(ctx, pipeline_name, runtime, method):
     """
     Deploy a pipeline with compose or k8s.
     """
-    def calling(cmd):
-        app_manager.logger.critical('Calling %s' % ''.join(cmd))
 
     app_manager = ctx.obj
     app_manager.raise_if_not_app_root()
     run_path = app_manager.root.joinpath('pipelines', pipeline_name, runtime, 'docker-compose.yml')
 
-    globals()[method](run_path)
+    globals()[method](run_path, app_manager.logger.critical)
 
 
-def compose(run_path):
+def compose(run_path, log):
     prefix = ['docker-compose', '-f']
     down = prefix + [run_path, 'down']
     up = prefix + [run_path, 'up --build']
-    pipeline.calling(down)
+    log('Calling %s' % ''.join(down))
     # subprocess.call(down)
-    pipeline.calling(up)
+    log('Calling %s' % ''.join(up))
     # subprocess.call(up)
 
 
