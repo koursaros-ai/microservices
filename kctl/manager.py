@@ -52,7 +52,6 @@ class AppManager:
         _ = self.root
         for path in self.app_paths:
             check_path = Path(path).joinpath(*dirs)
-            print(check_path)
             if check_path.is_file():
                 return check_path
 

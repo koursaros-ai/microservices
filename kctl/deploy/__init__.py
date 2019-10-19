@@ -3,6 +3,7 @@ import click
 import docker
 import time
 
+
 @click.group()
 @click.argument('runtime')
 @click.pass_context
@@ -32,7 +33,7 @@ def client(obj, client_name, yaml_path, creds):
     app_manager, runtime = obj
     run_path = app_manager.find_app_file('clients', client_name, yaml_path)
     tag = 'clients:%s-%s' % (client_name, run_path.stem)
-    build = ['docker', 'build', '-f', str(run_path), '-t', tag, '.']
+    build = ['docker', 'build', '-t', tag, str(run_path)]
     run = ['docker', 'run', '--network', 'host', '-it', tag, '--mode', runtime, '--creds', creds]
 
     app_manager.subprocess_call(build)
