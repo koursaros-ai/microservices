@@ -11,7 +11,7 @@ def show(ctx, runtime):
     ctx.obj = (ctx.obj, runtime)
 
 
-@click.group()
+@show.command()
 @click.argument('pipeline_name')
 @click.pass_obj
 def pipeline(obj, pipeline_name):
