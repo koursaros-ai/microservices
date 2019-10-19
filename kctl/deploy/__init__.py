@@ -2,7 +2,6 @@
 import click
 import docker
 import time
-import sys
 
 @click.group()
 @click.argument('runtime')
