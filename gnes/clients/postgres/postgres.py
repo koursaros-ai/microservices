@@ -24,8 +24,8 @@ class PostgresClient(CLIClient):
 
             columns = ', '.join([args.id_column] + args.data_columns)
             query = '''SELECT %s FROM %s''' % (columns, args.table)
-            query += ' LIMIT %d' % args.limit if args.limit > 0 else ''
             query += ' ORDER BY %s DESC' % args.id_column
+            query += ' LIMIT %d' % args.limit if args.limit > 0 else ''
 
             connection = psycopg2.connect(user=psql.username,
                                           password=psql.password,
