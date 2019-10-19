@@ -2,6 +2,7 @@ from gnes.cli.parser import set_client_cli_parser
 from koursaros.credentials import get_creds
 from gnes.client.cli import CLIClient
 from gnes.base import TrainableBase
+import traceback
 import psycopg2
 import json
 import os
@@ -46,8 +47,8 @@ class PostgresClient(CLIClient):
                     elif args.mode == 'raw':
                         yield b''.join(row)
 
-        except Exception as ex:
-            self.logger.error(ex)
+        except:
+            self.logger.error(traceback.format_exc())
 
     def query_callback(self, req, resp):
         self.logger.info(req, resp)
