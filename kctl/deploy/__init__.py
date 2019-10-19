@@ -54,7 +54,7 @@ def swarm(obj):
     app_manager.subprocess_call(build)
     app_manager.subprocess_call(wait)
 
-    start = time.time()
+    start = round(time.time())
     app_manager.subprocess_call(stack)
 
     for container in docker.from_env().containers.list(all=True):
