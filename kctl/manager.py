@@ -40,10 +40,11 @@ class AppManager:
         _ = self.root
         for path in self.app_paths:
             check_path = Path(path).joinpath(*dirs)
+            print(check_path)
             if check_path.is_dir():
                 return check_path
 
-        raise NotADirectoryError(f'"%s" directory not found' % str(Path(*dirs)))
+        raise FileNotFoundError(f'"%s" directory not found' % str(Path(*dirs)))
 
     def raise_if_no_app_roots(self):
         if self.app_paths == set():
