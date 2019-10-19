@@ -59,8 +59,11 @@ def swarm(obj):
     app_manager.subprocess_call(stack)
 
     def stream_container_logs(cont: 'docker.models.containers.Container'):
+        # get rid of uuid
+        name = cont.name.split('.')[:-1] if '.' in cont.name else cont.name
+
         for log in cont.logs(stream=True, since=start):
-            app_manager.thread_logs[cont.name] += [log.decode()]
+            app_manager.thread_logs[name] += [log.decode()]
 
     for container in docker.from_env().containers.list(all=True):
         app_manager.thread(target=stream_container_logs, args=[container])
