@@ -18,7 +18,7 @@ def pipeline(obj, pipeline_name):
     """Deploy a pipeline with compose or k8s. """
     app_manager, runtime = obj
     flow_path = app_manager.find_app_file('pipelines', pipeline_name, runtime, 'flow.py')
-    flow = machinery.SourceFileLoader('flow', flow_path).load_module()
+    flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module()
     import pdb
     pdb.set_trace()
 
