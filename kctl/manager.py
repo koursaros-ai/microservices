@@ -1,6 +1,6 @@
 
 from pathlib import Path
-
+from gnes.helper import set_logger
 
 class AppManager:
     """Manager that keeps track of all of the koursaros
@@ -13,6 +13,7 @@ class AppManager:
     def __init__(self, base: str = '.'):
         self.base = Path(base).absolute()
         self.pkg_path = Path(__import__('koursaros').__path__[0])
+        self.logger = set_logger('KCTL')
 
     @property
     def root(self):

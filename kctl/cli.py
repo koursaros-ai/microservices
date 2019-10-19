@@ -3,7 +3,6 @@ from .manager import AppManager
 from .deploy import deploy
 from .train import train
 from .test import test
-from .pull import pull
 import click
 
 
@@ -17,12 +16,9 @@ def kctl(ctx):
     ctx.obj = AppManager()
 
 
-kctl.add_command(create)
 kctl.add_command(deploy)
-kctl.add_command(pull)
 kctl.add_command(train)
 kctl.add_command(test)
-kctl.add_command(credentials)
 
 
 def cli():
