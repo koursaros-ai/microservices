@@ -6,9 +6,9 @@ flow = (
     .add_preprocessor(name='SentSplitPrep', replicas=2,
                       yaml_path='../../../services/preprocessors/sent-split/json-mode.yml')
     .add_encoder(name='SiameseBertEncoder', replicas=2,
-                 yaml_path='../../../services/encoders/siamese-bert/base.yml')
+                 yaml_path='../../../services/encoders/siamese-bert/dim-64.yml')
     .add_indexer(name='FaissIdx', replicas=2,
-                 yaml_path='../../../services/indexers/faiss/base.yml')
+                 yaml_path='../../../services/indexers/faiss-cpu/base.yml')
     .add_encoder(name='TextByteEncoder', recv_from='SentSplitPrep', replicas=2,
                  yaml_path='../../../services/encoders/text-byte/max-256.yml')
     .add_indexer(name='KeywordIdx', replicas=2,
