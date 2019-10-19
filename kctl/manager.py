@@ -80,7 +80,7 @@ class AppManager:
             for ctx in list(self.thread_logs):
                 logs = self.thread_logs.pop(ctx)
                 prefix = '\n%s: ' % self.color_hash(ctx)
-                to_log = prefix + ''.join(logs).replace('\n', prefix)
+                to_log = prefix + ''.join(logs).rstrip().replace('\n', prefix) + '\n'
                 sys.stdout.write(to_log)
             time.sleep(THREAD_LOG_INTERVAL)
 
