@@ -55,7 +55,7 @@ class AppManager:
             raise NotADirectoryError(f'"%s" is not an app' % self.base)
 
     def subprocess_call(self, cmd: List[str]):
-        self.logger.critical('Calling \033"%s"' % ' '.join(cmd))
+        self.logger.critical('Callin "%s"' % ' '.join(cmd))
         subprocess.call(cmd)
 
     def thread(self, *args, **kwargs):

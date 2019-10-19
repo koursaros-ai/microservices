@@ -57,7 +57,7 @@ def swarm(obj):
     start = time.time()
     app_manager.subprocess_call(stack)
 
-    for container in client.containers.list(all=True):
+    for container in docker.from_env().containers.list(all=True):
         app_manager.thread(target=stream_container_logs, args=(container, start))
 
 
