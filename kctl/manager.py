@@ -52,4 +52,4 @@ class AppManager:
 
     def subprocess_call(self, cmd: List[str]):
         self.logger.critical('Calling %s' % ' '.join(cmd))
-        # subprocess.call(cmd)
+        subprocess.call(cmd)
