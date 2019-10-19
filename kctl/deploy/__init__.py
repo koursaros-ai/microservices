@@ -58,14 +58,13 @@ def swarm(obj):
     start = round(time.time())
     app_manager.subprocess_call(stack)
 
+    def stream_container_logs(cont: 'docker.models.containers.Container', since: int):
+        prefix = '%s: ' % color_hash(cont.name)
+        for log in cont.logs(stream=True, since=since):
+            app_manager.thread_logs[prefix].append(log.decode())
+
     for container in docker.from_env().containers.list(all=True):
         app_manager.thread(target=stream_container_logs, args=(container, start))
-
-
-def stream_container_logs(container, since):
-    prefix = '%s: ' % color_hash(container.name)
-    for log in container.logs(stream=True, since=since):
-        sys.stdout.write(log.decode().replace('\n', '\n%s' % prefix))
 
 
 def color_hash(string: str) -> str:

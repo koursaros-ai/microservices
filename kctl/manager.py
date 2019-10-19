@@ -5,6 +5,11 @@ from typing import Tuple, List
 import subprocess
 import threading
 import atexit
+import time
+import sys
+from collections import defaultdict
+
+THREAD_LOG_INTERVAL = 0.1
 
 
 class AppManager:
@@ -26,6 +31,9 @@ class AppManager:
             self.app_paths = set()
         self.root = self.find_root()
         self.threads = []
+        self.thread_logs = defaultdict(lambda: [])
+        self.thread_logging = False
+
         atexit.register(self.join)
 
     def find_root(self) -> 'Path':
@@ -59,10 +67,22 @@ class AppManager:
         subprocess.call(cmd)
 
     def thread(self, *args, **kwargs):
+        if not self.thread_logging:
+            self.thread_logging = True
+            self.thread(target=self.thread_logger)
+
         t = threading.Thread(*args, **kwargs)
         t.start()
-        self.threads.append(t)
+        self.threads += [t]
+
+    def thread_logger(self):
+        while True:
+            for ctx, logs in self.thread_logs.items():
+                sys.stdout.write(''.join(logs).replace('\n', '\n%s' % ctx))
+            self.thread_logs.clear()
+            time.sleep(THREAD_LOG_INTERVAL)
 
     def join(self):
         for t in self.threads:
             t.join()
+
