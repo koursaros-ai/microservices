@@ -13,12 +13,15 @@ def deploy(ctx, runtime):
     ctx.obj = (ctx.obj, runtime)
 
 
-@deploy.command()
+@click.group()
 @click.argument('pipeline_name')
 @click.pass_context
 def pipeline(ctx, pipeline_name):
     """Deploy a pipeline with compose or k8s. """
     ctx.obj += (pipeline_name,)
+
+
+deploy.add_command(pipeline)
 
 
 @deploy.command()
