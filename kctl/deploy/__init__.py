@@ -12,9 +12,9 @@ def deploy(ctx):
 @deploy.command()
 @click.argument('pipeline_name')
 @click.argument('runtime')
-@click.option('method', type=click.Choice(['k8s', 'compose']))
+# @click.argument('method', type=click.Choice(['k8s', 'compose']))
 @click.pass_context
-def pipeline(ctx, pipeline_name, runtime, method):
+def pipeline(ctx, pipeline_name, runtime):
     """
     Deploy a pipeline with compose or k8s.
     """
