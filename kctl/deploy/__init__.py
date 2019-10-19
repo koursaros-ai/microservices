@@ -23,7 +23,7 @@ def pipeline(ctx, pipeline_name, runtime, method):
     app_manager.raise_if_not_app_root()
     run_path = app_manager.root.joinpath('pipelines', pipeline_name, runtime, 'docker-compose.yml')
 
-    globals()[method](run_path, app_manager.logger.critical)
+    globals()[method](str(run_path), app_manager.logger.critical)
 
 
 def compose(run_path, log):
