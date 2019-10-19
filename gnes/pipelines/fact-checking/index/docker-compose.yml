@@ -7,7 +7,7 @@ services:
   SentSplitPrep:
     build: ../../../services/preprocessors/sent-split
     image: preprocessors:sent-split-json-mode
-    command: preprocess --port_in 55626 --port_out 52862 --socket_in PULL_CONNECT
+    command: --port_in 55626 --port_out 52862 --socket_in PULL_CONNECT
       --socket_out PUB_BIND --port_ctrl 64183 --parallel_backend process --yaml_path json-mode.yml
     deploy:
       replicas: 2
@@ -41,7 +41,7 @@ services:
   KeywordIdx:
     build: ../../../services/indexers/keyword
     image: indexers:keyword-base
-    command: index --port_in 51336 --port_out 51159 --socket_in PULL_CONNECT --socket_out
+    command: --port_in 51336 --port_out 51159 --socket_in PULL_CONNECT --socket_out
       PUSH_CONNECT --port_ctrl 54016 --parallel_backend process --yaml_path base.yml
     deploy:
       replicas: 2
@@ -50,7 +50,7 @@ services:
   LevelDBIdx:
     build: ../../../services/indexers/lvdb
     image: indexers:lvdb-base
-    command: index --port_in 52862 --port_out 51159 --socket_in SUB_CONNECT --socket_out
+    command: --port_in 52862 --port_out 51159 --socket_in SUB_CONNECT --socket_out
       PUSH_CONNECT --port_ctrl 50468 --parallel_backend process --yaml_path base.yml
     deploy:
       replicas: 2
