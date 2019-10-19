@@ -19,10 +19,11 @@ def pipeline(obj, pipeline_name):
     """Deploy a pipeline with compose or k8s. """
     app_manager, runtime = obj
     flow_path = app_manager.find_app_file('pipelines', pipeline_name, runtime, 'flow.py')
-    os.chdir(str(flow_path.parent))
-    flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module()
     import pdb
     pdb.set_trace()
+
+    os.chdir(str(flow_path.parent))
+    flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module()
 
 
 def k8s(*args, **kwargs):
