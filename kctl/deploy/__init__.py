@@ -45,7 +45,7 @@ def client(obj, client_name, yaml_path, creds):
 @click.pass_obj
 def compose(obj):
     app_manager, runtime, pipeline_name = obj
-    run_path = app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml')
+    run_path = str(app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml'))
 
     prefix = ['docker-compose', '-f']
     down = prefix + [run_path, 'down']
