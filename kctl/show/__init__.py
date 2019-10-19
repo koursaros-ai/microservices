@@ -21,7 +21,7 @@ def pipeline(obj, pipeline_name, save):
     app_manager, runtime = obj
     flow_path = app_manager.find_app_file('pipelines', pipeline_name, runtime, 'flow.py')
     os.chdir(str(flow_path.parent))
-    flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module()
+    flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
     build = flow.build()
     url = build.to_url()
     try:
