@@ -1,4 +1,4 @@
-FROM gnes/gnes:latest-faiss-cpu
+FROM gnes/hub-indexer:latest-faiss-cpu
 
 ADD *.yml ./
 

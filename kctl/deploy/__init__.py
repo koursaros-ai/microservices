@@ -40,16 +40,16 @@ def client(obj, client_name, yaml_path, creds):
 
 @pipeline.command()
 @click.pass_obj
-def compose(obj):
+def swarm(obj):
     app_manager, runtime, pipeline_name = obj
     run_path = str(app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml'))
 
-    prefix = ['docker-compose', '-f']
-    down = prefix + [run_path, 'down']
-    up = prefix + [run_path, 'up', '--build']
+    compose = ['docker-compose', '-f', run_path]
+    stack = ['docker', 'stack', 'deploy', '-c', run_path, pipeline_name]
 
-    app_manager.subprocess_call(down)
-    app_manager.subprocess_call(up)
+    app_manager.subprocess_call(compose + ['down'])
+    app_manager.subprocess_call(compose + ['build'])
+    app_manager.subprocess_call(stack)
 
 
 def k8s(*args, **kwargs):
