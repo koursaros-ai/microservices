@@ -1,0 +1,5 @@
+parameters:
+  table: 'test.train_article_rerank'
+  columns: ['claim', 'label']
+  mode: json
+

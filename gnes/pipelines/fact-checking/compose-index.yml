@@ -1,0 +1,52 @@
+version: '3.4'
+services:
+  Frontend0:
+    image: gnes/gnes:latest-alpine
+    command: frontend --port_in 55928 --port_out 55626 --port_ctrl 54990
+      --parallel_backend process
+  SentSplitPrep:
+    build: ../../services/preprocessors/sent-split
+    image: preprocessors:sent-split-json-mode
+    command: preprocess --port_in 55626 --port_out 52862 --socket_in PULL_CONNECT
+      --socket_out PUB_BIND --port_ctrl 64183 --parallel_backend process --yaml_path json-mode.yml
+    deploy:
+      replicas: 2
+  SiameseBertEncoder:
+    build: ../../services/encoders/siamese-bert
+    image: encoders:siamese-bert-base
+    command: --port_in 52862 --port_out 51648 --socket_in SUB_CONNECT --port_ctrl 51170
+      --parallel_backend process --yaml_path base.yml
+    deploy:
+      replicas: 2
+  FaissIdx:
+    build: ../../services/indexers/faiss-cpu
+    image: encoders:faiss-cpu-base
+    command: --port_in 51648 --port_out 51159 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 52598 --parallel_backend process --yaml_path base.yml
+    deploy:
+      replicas: 2
+  TextByteEncoder:
+    build: ../../services/encoders/text-byte
+    image: encoders:text-byte-max-256
+    command: --port_in 52862 --port_out 51336 --socket_in SUB_CONNECT --port_ctrl
+      55188 --parallel_backend process --yaml_path max-256.yml
+    deploy:
+      replicas: 2
+  KeywordIdx:
+    build: ../../services/indexers/keyword
+    image: indexers:keyword-base
+    command: index --port_in 51336 --port_out 51159 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 54016 --parallel_backend process --yaml_path base.yml
+    deploy:
+      replicas: 2
+  LevelDBIdx:
+    build: ../../services/indexers/lvdb
+    image: indexers:lvdb-base
+    command: index --port_in 52862 --port_out 51159 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 50468 --parallel_backend process --yaml_path base.yml
+    deploy:
+      replicas: 2
+  Reduce:
+    image: gnes/gnes:latest-alpine
+    command: route --port_in 51159 --port_out 55928 --socket_out PUSH_CONNECT --port_ctrl
+      58563 --parallel_backend process --yaml_path BaseReduceRouter

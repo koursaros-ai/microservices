@@ -1,0 +1,3 @@
+!SentSplitPreprocessor
+parameters:
+  is_json: True

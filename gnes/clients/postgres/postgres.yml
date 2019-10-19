@@ -1,6 +1,0 @@
-parameters:
-  table: 'test.train_article_rerank'
-  col_one: 'claim'
-  col_two: 'text'
-  col_label: 'label'
-

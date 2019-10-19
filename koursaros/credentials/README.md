@@ -33,16 +33,16 @@ creds:
     app_creds: !file google/bluehat.json
 ```
 
-Let's say the repo you make is `madhatter/creds`.
+Let's say the repo you make is `madhatter/creds`, my username is `alice` and password is `cheshire`.
 You can get your credentials in a python script by doing the following:
 ```python
 from koursaros.credentials import get_creds
 from sys import argv
 
 # retrieve repo creds by adding login to script
-creds = get_creds('madhatter/creds', username='alice', password='cheshire')
+creds = get_creds('alice:cheshire@madhatter/creds')
 # or with cmd line args
-creds = get_creds('madhatter/creds', username=argv[1], password=argv[2])
+creds = get_creds(argv[1])
 # NOTE: you don't need to log in if your git credentials are stored locally
 
 

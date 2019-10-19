@@ -1,0 +1,4 @@
+!TextByteEncoder
+parameters:
+  max_seq_len: 256
+

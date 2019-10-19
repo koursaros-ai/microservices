@@ -1,0 +1,8 @@
+parameters:
+  table: wiki.articles
+  id_column: id
+  data_columns: [title]
+  start_doc_id: 1
+  mode: raw
+
+
