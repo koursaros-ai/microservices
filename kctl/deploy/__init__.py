@@ -29,10 +29,10 @@ def pipeline(ctx, pipeline_name, runtime, method):
 def compose(run_path, log):
     prefix = ['docker-compose', '-f']
     down = prefix + [run_path, 'down']
-    up = prefix + [run_path, 'up --build']
-    log('Calling %s' % ''.join(down))
+    up = prefix + [run_path, 'up', '--build']
+    log('Calling %s' % ' '.join(down))
     # subprocess.call(down)
-    log('Calling %s' % ''.join(up))
+    log('Calling %s' % ' '.join(up))
     # subprocess.call(up)
 
 
