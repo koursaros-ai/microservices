@@ -32,7 +32,7 @@ def pipeline(obj, pipeline_name, save):
 
     if save:
         out_path = flow_path.parent.joinpath('docker-compose-temp.yml')
-        out_path.write_text(build.to_swarm_yaml)
+        out_path.write_text(build.to_swarm_yaml())
         app_manager.logger.critical('Saved swarm yaml to %s' % str(out_path))
 
 
