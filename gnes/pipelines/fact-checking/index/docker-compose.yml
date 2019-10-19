@@ -4,6 +4,8 @@ services:
     image: gnes/gnes:latest-alpine
     command: frontend --port_in 55928 --port_out 55626 --port_ctrl 54990
       --parallel_backend process
+    ports:
+      - 8800:8800
   SentSplitPrep:
     build: ../../../services/preprocessors/sent-split
     image: preprocessors:sent-split-json-mode
