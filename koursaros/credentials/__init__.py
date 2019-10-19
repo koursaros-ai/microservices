@@ -37,7 +37,7 @@ def get_creds(git_dsn):
         g.pull()
     else:
         g = git.Git(repo_path.parent)
-        g.clone("https://%sgithub.com/%s" % (login, repo))
+        g.clone("https://%s@github.com/%s" % (login, repo))
 
     creds = yaml.safe_load(repo_path.joinpath('creds.yaml').read_text())
     return Box(creds['creds'])

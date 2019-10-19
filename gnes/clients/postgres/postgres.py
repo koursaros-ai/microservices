@@ -35,19 +35,20 @@ class PostgresClient(CLIClient):
             cursor = connection.cursor()
             cursor.execute(query)
 
-            if args.mode not in VALID_MODES:
+            if args.send_type not in VALID_MODES:
                 raise ValueError('"mode" parameter must be one of %s' % VALID_MODES)
             else:
                 for i, (_id, *row) in enumerate(cursor):
                     if _id != id:
                         raise ValueError('"%s" column must by an incremental id')
 
-                    if args.mode == 'json':
+                    if args.send_type == 'json':
                         yield (json.dumps(zip(columns, row))).encode()
-                    elif args.mode == 'raw':
+                    elif args.send_type == 'raw':
                         yield b''.join(row)
 
         except:
+            self.logger.error('wut')
             self.logger.error(traceback.format_exc())
 
     def query_callback(self, req, resp):

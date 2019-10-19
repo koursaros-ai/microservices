@@ -1,9 +1,11 @@
-FROM gnes/gnes:latest-alpine
+FROM gnes/gnes:latest-buster
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev git
+RUN apt update
+RUN apt install libpq-dev gcc python3-dev musl-dev git -y
 RUN pip install psycopg2 git+https://git@github.com/koursaros-ai/koursaros.git
-
-RUN echo 1
+RUN pip uninstall gnes -y
+RUN echo 2
+RUN pip install git+https://git@github.com/colethienes/gnes.git
 
 ADD *.py *.yml ./
 
