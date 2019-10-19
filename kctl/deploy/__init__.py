@@ -2,6 +2,7 @@
 import click
 import docker
 import time
+import sys
 
 @click.group()
 @click.argument('runtime')
@@ -62,8 +63,17 @@ def swarm(obj):
 
 
 def stream_container_logs(container, since):
+    prefix = '%s: ' % color_hash(container.name)
     for log in container.logs(stream=True, since=since):
-        print(log.decode())
+        log.replace('\n', '\n%s' % prefix)
+        sys.stdout.write(log)
+
+
+def color_hash(string: str) -> str:
+    # return string with color chosen based on string
+    color_ranges = [range(31, 38), range(41, 48), range(90, 98), range(100, 108)]
+    color_choices = [color for color_range in color_ranges for color in color_range]
+    return '\033[%sm%s\033[0m' % (color_choices[abs(hash(string))], string)
 
 
 def k8s(*args, **kwargs):
