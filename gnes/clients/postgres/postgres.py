@@ -15,7 +15,7 @@ class PostgresClient(CLIClient):
     def bytes_generator(self):
         try:
             args = self.args
-            creds = get_creds(args.git_dsn)
+            creds = get_creds(args.creds)
 
             psql = creds.postgres
             os.environ['PGSSLMODE'] = psql.sslmode
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser = set_client_cli_parser()
     parser.add_argument('--limit', type=int, help='number of postgres rows (-1 for unlimited)')
     cred_repo_help = 'cred repo set up according to git:koursaros-ai/koursaros.credentials spec'
-    parser.add_argument('--git_dsn', type=str, required=True, help=cred_repo_help)
+    parser.add_argument('--creds', type=str, required=True, help=cred_repo_help)
     parser.add_argument('--yaml_path', type=str)
     cli_args = parser.parse_args()
     yaml = TrainableBase.load_yaml(cli_args.yaml_path)

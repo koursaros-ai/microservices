@@ -4,5 +4,6 @@ parameters:
   data_columns: [title]
   start_doc_id: 1
   mode: raw
+  limit: 100
 
 

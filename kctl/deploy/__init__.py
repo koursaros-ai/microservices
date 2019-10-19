@@ -1,39 +1,55 @@
 
 import click
 import subprocess
+import os
+from pathlib import Path
 
 
 @click.group()
+@click.argument('runtime')
 @click.pass_context
-def deploy(ctx):
+def deploy(ctx, runtime):
     """Deploy gnes services."""
+    ctx.obj = (ctx.obj, runtime)
 
 
 @deploy.command()
 @click.argument('pipeline_name')
-@click.argument('runtime')
-@click.argument('method', type=click.Choice(['k8s', 'compose']))
 @click.pass_context
-def pipeline(ctx, pipeline_name, runtime, method):
-    """
-    Deploy a pipeline with compose or k8s.
-    """
-
-    app_manager = ctx.obj
-    app_manager.raise_if_not_app_root()
-    run_path = app_manager.root.joinpath('pipelines', pipeline_name, runtime, 'docker-compose.yml')
-
-    globals()[method](str(run_path), app_manager.logger.critical)
+def pipeline(ctx, pipeline_name):
+    """Deploy a pipeline with compose or k8s. """
+    ctx.obj += (pipeline_name,)
 
 
-def compose(run_path, log):
+@deploy.command()
+@click.argument('client_name')
+@click.argument('yaml_path')
+@click.option('-c', '--creds', required=True)
+@click.pass_obj
+def client(obj, client_name, yaml_path, creds):
+    """Deploy a client with docker. """
+    app_manager, runtime = obj
+    run_path = app_manager.find_app_file('clients', client_name, yaml_path)
+    tag = 'clients:%s-%s' % (client_name, run_path.stem)
+    build = ['docker', 'build', '-f', str(run_path), '-t', tag, '.']
+    run = ['docker', 'run', '--network', 'host', '-it', tag, '--mode', runtime, '--creds', creds]
+
+    app_manager.subprocess_call(build)
+    app_manager.subprocess_call(run)
+
+
+@pipeline.command()
+@click.pass_obj
+def compose(obj):
+    app_manager, runtime, pipeline_name = obj
+    run_path = app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml')
+
     prefix = ['docker-compose', '-f']
     down = prefix + [run_path, 'down']
     up = prefix + [run_path, 'up', '--build']
-    log('Calling %s' % ' '.join(down))
-    # subprocess.call(down)
-    log('Calling %s' % ' '.join(up))
-    # subprocess.call(up)
+
+    app_manager.subprocess_call(down)
+    app_manager.subprocess_call(up)
 
 
 def k8s(*args, **kwargs):
