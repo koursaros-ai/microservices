@@ -21,5 +21,5 @@ flow = (
 
 # checkout how the flow looks like (...and post it on Twitter, but hey what do I know about promoting OSS)
 # funny!
-webbrowser.open_new_tab(flow.build().to_url())
+
 open('compose-index-temp.yml', 'w').write(flow.build().to_swarm_yaml())
