@@ -65,8 +65,7 @@ def swarm(obj):
 def stream_container_logs(container, since):
     prefix = '%s: ' % color_hash(container.name)
     for log in container.logs(stream=True, since=since):
-        log.replace('\n', '\n%s' % prefix)
-        sys.stdout.write(log)
+        sys.stdout.write(log.decode().replace('\n', '\n%s' % prefix))
 
 
 def color_hash(string: str) -> str:
