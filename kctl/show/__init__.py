@@ -14,8 +14,7 @@ def show():
 @click.pass_obj
 def pipeline(app_manager, pipeline_name, runtime):
     """Deploy a pipeline with compose or k8s. """
-    build = app_manager.get_flow('pipelines', pipeline_name, runtime)
-    url = build.to_url()
+    url = app_manager.get_flow('pipelines', pipeline_name, runtime).build().to_url()
 
     try:
         webbrowser.open_new_tab(url)
