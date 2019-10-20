@@ -56,7 +56,7 @@ def swarm(obj):
     app_manager.subprocess_call(prune)
     app_manager.subprocess_call(build)
     app_manager.logger.critical('Waiting for docker network resources...')
-    time.sleep(20)
+    # time.sleep(20)
 
     start = round(time.time())
     app_manager.subprocess_call(stack)

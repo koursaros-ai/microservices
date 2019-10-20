@@ -3,7 +3,7 @@ services:
   Frontend0:
     image: gnes/gnes:latest-alpine
     command: frontend --port_in 55928 --port_out 55626 --port_ctrl 54990
-      --parallel_backend process
+      --socket_in PULL_BIND --socket_out PUSH_BIND
     ports:
       - 8800:8800
   SentSplitPrep:
