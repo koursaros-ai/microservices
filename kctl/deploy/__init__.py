@@ -74,10 +74,6 @@ def swarm(obj):
 
 @pipeline.command()
 @click.pass_obj
-def minikube(obj):
-
-
-
 def k8s(*args, **kwargs):
     raise NotImplementedError
 
