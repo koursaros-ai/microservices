@@ -24,5 +24,9 @@ def swarm(flow, log):
     log('Saved swarm yaml to %s' % str(out_path))
 
 
-def k8s(*args, **kwargs):
-    raise NotImplementedError
+def k8s(flow, log):
+    for k, v in flow._service_nodes:
+        log(k)
+        log(v)
+    import pdb
+    pdb.set_trace()

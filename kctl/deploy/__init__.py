@@ -5,22 +5,19 @@ import time
 
 
 @click.group()
-@click.argument('runtime')
-@click.pass_context
-def deploy(ctx, runtime):
+def deploy():
     """Deploy gnes services."""
-    ctx.obj = (ctx.obj, runtime)
 
 
-@click.group()
+@deploy.command()
 @click.argument('pipeline_name')
+@click.option('-r', '--runtime', required=True)
+@click.option('-p', '--platform', required=True, default='minikube',
+              type=click.Choice(['k8s', 'swarm', 'shell']))
 @click.pass_context
-def pipeline(ctx, pipeline_name):
+def pipeline(*args, platform):
     """Deploy a pipeline with compose or k8s. """
-    ctx.obj += (pipeline_name,)
-
-
-deploy.add_command(pipeline)
+    globals()[platform](*args)
 
 
 @deploy.command()
@@ -41,10 +38,7 @@ def client(obj, client_name, yaml_path, creds):
     app_manager.subprocess_call(run)
 
 
-@pipeline.command()
-@click.pass_obj
-def swarm(obj):
-    app_manager, runtime, pipeline_name = obj
+def swarm(app_manager, pipeline_name, runtime):
     run_path = str(app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml'))
 
     rm = ['docker', 'stack', 'rm', pipeline_name]
@@ -72,8 +66,6 @@ def swarm(obj):
         app_manager.thread(target=stream_container_logs, args=[container])
 
 
-@pipeline.command()
-@click.pass_obj
-def k8s(*args, **kwargs):
+def k8s(app_manager, pipeline_name, runtime):
     raise NotImplementedError
 

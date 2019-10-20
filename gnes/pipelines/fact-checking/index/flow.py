@@ -1,5 +1,4 @@
 from gnes.flow import Flow
-import webbrowser
 
 flow = (
     Flow(check_version=True)
