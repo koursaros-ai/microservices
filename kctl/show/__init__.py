@@ -4,14 +4,13 @@ import webbrowser
 
 
 @click.group()
-@click.pass_context
-def show(ctx):
+def show():
     """Show gnes architecture."""
 
 
 @show.command()
 @click.argument('pipeline_name')
-@click.argument('-r', '--runtime', required=True)
+@click.option('-r', '--runtime', required=True)
 @click.pass_obj
 def pipeline(app_manager, pipeline_name, runtime):
     """Deploy a pipeline with compose or k8s. """
