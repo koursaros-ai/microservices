@@ -4,7 +4,8 @@ import webbrowser
 
 
 @click.group()
-def show():
+@click.pass_context
+def show(ctx):
     """Show gnes architecture."""
 
 
