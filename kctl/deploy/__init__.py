@@ -48,7 +48,7 @@ def swarm(obj):
     run_path = str(app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml'))
 
     rm = ['docker', 'stack', 'rm', pipeline_name]
-    prune = ['docker', 'system', 'prune', '-y']
+    prune = ['docker', 'system', 'prune', '-f']
     build = ['docker-compose', '-f', run_path, 'build']
     stack = ['docker', 'stack', 'deploy', '-c', run_path, pipeline_name]
 
