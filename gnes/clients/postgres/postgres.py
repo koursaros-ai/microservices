@@ -24,7 +24,7 @@ class PostgresClient(CLIClient):
 
             columns = ', '.join([args.id_column] + args.data_columns)
             query = '''SELECT %s FROM %s''' % (columns, args.table)
-            query += ' ORDER BY %s DESC' % args.id_column
+            query += ' ORDER BY %s ASC' % args.id_column
             query += ' LIMIT %d' % args.limit if args.limit > 0 else ''
 
             connection = psycopg2.connect(user=psql.username,
@@ -39,13 +39,16 @@ class PostgresClient(CLIClient):
                 raise ValueError('"mode" parameter must be one of %s' % VALID_MODES)
             else:
                 for i, (_id, *row) in enumerate(cursor):
-                    if _id != id:
-                        raise ValueError('"%s" column must by an incremental id')
+                    msg_id = i + 1
+                    if msg_id != _id:
+                        raise ValueError(
+                            '"%s" column must by an incremental id starting from 1. '
+                            'Got id %s for row %s' % (args.id_column, _id, msg_id))
 
                     if args.send_type == 'json':
                         yield (json.dumps(zip(columns, row))).encode()
                     elif args.send_type == 'raw':
-                        yield b''.join(row)
+                        yield ''.join(row).encode()
 
         except:
             self.logger.error('wut')
