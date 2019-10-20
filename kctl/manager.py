@@ -3,7 +3,7 @@
 from collections import defaultdict
 from gnes.helper import set_logger
 from importlib import machinery
-from typing import Tuple, List
+from typing import List
 from gnes.flow import Flow
 from pathlib import Path
 import subprocess
@@ -53,7 +53,7 @@ class AppManager:
     def cache(self):
         self.cache_path.write_text('\n'.join(self.app_paths))
 
-    def find_app_file(self, *dirs: Tuple[str]) -> 'Path':
+    def find_app_file(self, *dirs: str) -> 'Path':
         _ = self.root
         for path in self.app_paths:
             check_path = Path(path).joinpath(*dirs)
@@ -100,8 +100,8 @@ class AppManager:
         for t in self.threads:
             t.join()
 
-    def get_flow(self, *dirs: Tuple[str]) -> 'Flow':
-        flow_path = self.find_app_file(*dirs).joinpath('flow.py')
+    def get_flow(self, *dirs: str) -> 'Flow':
+        flow_path = self.find_app_file(*dirs, 'flow.py')
         os.chdir(str(flow_path.parent))
         flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
         flow.path = flow_path
