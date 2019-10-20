@@ -1,13 +1,18 @@
 
-from pathlib import Path
+
+from collections import defaultdict
 from gnes.helper import set_logger
+from importlib import machinery
 from typing import Tuple, List
+from gnes.flow import Flow
+from pathlib import Path
 import subprocess
 import threading
 import atexit
 import time
 import sys
-from collections import defaultdict
+import os
+
 
 THREAD_LOG_INTERVAL = 0.1
 
@@ -95,3 +100,9 @@ class AppManager:
         for t in self.threads:
             t.join()
 
+    def get_flow(self, *dirs: Tuple[str]) -> 'Flow':
+        flow_path = self.find_app_file(*dirs).joinpath('flow.py')
+        os.chdir(str(flow_path.parent))
+        flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
+        flow.path = flow_path
+        return flow

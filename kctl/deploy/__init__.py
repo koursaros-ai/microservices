@@ -56,7 +56,7 @@ def swarm(obj):
     app_manager.subprocess_call(prune)
     app_manager.subprocess_call(build)
     app_manager.logger.critical('Waiting for docker network resources...')
-    # time.sleep(20)
+    time.sleep(20)
 
     start = round(time.time())
     app_manager.subprocess_call(stack)
@@ -70,6 +70,12 @@ def swarm(obj):
 
     for container in docker.from_env().containers.list(all=True):
         app_manager.thread(target=stream_container_logs, args=[container])
+
+
+@pipeline.command()
+@click.pass_obj
+def minikube(obj):
+
 
 
 def k8s(*args, **kwargs):
