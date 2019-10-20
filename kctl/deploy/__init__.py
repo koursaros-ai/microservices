@@ -66,6 +66,7 @@ def swarm(obj):
         for log in cont.logs(stream=True, since=start):
             app_manager.thread_logs[name] += [log.decode()]
 
+    print('Containers')
     for container in docker.from_env().containers.list(all=True):
         app_manager.thread(target=stream_container_logs, args=[container])
 
