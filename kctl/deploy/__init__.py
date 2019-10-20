@@ -48,10 +48,12 @@ def swarm(obj):
     run_path = str(app_manager.find_app_file('pipelines', pipeline_name, runtime, 'docker-compose.yml'))
 
     rm = ['docker', 'stack', 'rm', pipeline_name]
+    prune = ['docker', 'system', 'prune', '-y']
     build = ['docker-compose', '-f', run_path, 'build']
     stack = ['docker', 'stack', 'deploy', '-c', run_path, pipeline_name]
 
     app_manager.subprocess_call(rm)
+    app_manager.subprocess_call(prune)
     app_manager.subprocess_call(build)
     app_manager.logger.critical('Waiting for docker network resources...')
     time.sleep(20)
@@ -65,7 +67,7 @@ def swarm(obj):
 
         for log in cont.logs(stream=True, since=start):
             app_manager.thread_logs[name] += [log.decode()]
-    
+
     for container in docker.from_env().containers.list(all=True):
         app_manager.thread(target=stream_container_logs, args=[container])
 
