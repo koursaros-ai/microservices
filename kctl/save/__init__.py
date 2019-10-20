@@ -25,7 +25,7 @@ def swarm(flow, log):
 
 
 def k8s(flow, log):
-    for k, v in flow._service_nodes:
+    for k, v in flow._service_nodes.items():
         log(k)
         log(v)
     import pdb
