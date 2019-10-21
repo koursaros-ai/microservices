@@ -1,7 +1,8 @@
-import click
-from .helper import *
+from ..decorators import *
+from .utils import *
 from ruamel import yaml
 import re
+
 
 @click.group()
 def save():
@@ -9,28 +10,23 @@ def save():
 
 
 @save.command()
-@click.argument('pipeline_name')
-@click.option('-r', '--runtime', required=True)
-@click.option('-p', '--platform', required=True, default='minikube',
-              type=click.Choice(['k8s', 'swarm', 'shell']))
+@pipeline_options
+@click.option('-f', '--filename', required=True)
 @click.pass_obj
-def pipeline(app_manager, pipeline_name, runtime, platform):
+def pipeline(app_manager, pipeline_name, runtime, platform, filename):
     """Deploy a pipeline with compose or k8s. """
-    flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
-    globals()[platform](flow.build(), app_manager.logger.critical)
+    flow = app_manager.get_flow('pipelines', pipeline_name, runtime).build()
+    out_path = flow.path.parent.joinpath(filename)
 
+    if platform == 'swarm':
+        out_path.write_text(flow.to_swarm_yaml())
 
-def swarm(flow, log):
-    out_path = flow.path.parent.joinpath('docker-compose-gen.yml')
-    out_path.write_text(flow.to_swarm_yaml())
-    log('Saved swarm yaml to %s' % str(out_path))
+    elif platform == 'helm':
+        values = yaml.load(flow.to_swarm_yaml())
+        dict_merge(values['services'], flow._service_nodes)
+        out_path.write_text(re.sub('!!python.*?\n', '\n', yaml.dump(values)))
 
+    elif platform == 'shell':
+        raise NotImplementedError
 
-def k8s(flow, log):
-    values = yaml.load(flow.to_swarm_yaml())
-    dict_merge(values['services'], flow._service_nodes)
-    out_path = flow.path.parent.joinpath('values-gen.yaml')
-    out_path.write_text(re.sub('!!python.*?\n', '\n', yaml.dump(values)))
-    log('Saved values.yaml to %s' % str(out_path))
-    import pdb
-    pdb.set_trace()
+    app_manager.logger.critical('Saved %s yaml to %s' % (platform, str(out_path)))
