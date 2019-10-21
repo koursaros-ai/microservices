@@ -9,9 +9,12 @@ def deploy():
     """Deploy gnes services."""
 
 
-@deploy.command()
+@click.group()
 def pipeline():
     """Deploy a pipeline with compose or k8s. """
+
+
+deploy.add_command(pipeline)
 
 
 @deploy.command()
