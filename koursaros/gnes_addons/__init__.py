@@ -55,5 +55,5 @@ class Flow(_Flow):
             )]
 
         stream = StringIO()
-        _yaml.dump(self.helm_yaml, stream)
+        _yaml.dump(dict(self.helm_yaml), stream)
         return stream.getvalue().strip()
