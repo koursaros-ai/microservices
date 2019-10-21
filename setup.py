@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='koursaros',
     packages=find_packages(),
-    data_files=[('koursaros', ['charts/*'],)],
+    data_files=[('koursaros', ['charts'],)],
     version='0.0.1',
     license='MIT',
     description='Koursaros is a distributed, cloud-'
