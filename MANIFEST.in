@@ -1,0 +1,3 @@
+recursive-include koursaros *
+recursive-include gnes *
+recursive-include kctl *
