@@ -1,5 +1,7 @@
 import click
-
+from .helper import *
+from ruamel import yaml
+from io import StringIO
 
 @click.group()
 def save():
@@ -19,14 +21,16 @@ def pipeline(app_manager, pipeline_name, runtime, platform):
 
 
 def swarm(flow, log):
-    out_path = flow.path.parent.joinpath('docker-compose-temp.yml')
+    out_path = flow.path.parent.joinpath('docker-compose-gen.yml')
     out_path.write_text(flow.to_swarm_yaml())
     log('Saved swarm yaml to %s' % str(out_path))
 
 
 def k8s(flow, log):
-    for k, v in flow._service_nodes.items():
-        log(k)
-        log(v)
+    flow_nodes = dict_merge(flow._service_nodes, yaml.load(flow.to_swarm_yaml()))
+    values = StringIO()
+    yaml.dump(flow_nodes, values)
+    out_path = flow.path.parent.joinpath('values-gen.yaml')
+    log('Saved values.yaml to %s' % str(out_path))
     import pdb
     pdb.set_trace()

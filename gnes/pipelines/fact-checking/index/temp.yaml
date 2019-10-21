@@ -1,0 +1,35 @@
+FaissIdx:
+  command: index --port_in 56614 --port_out 51236 --socket_in PULL_CONNECT --socket_out
+    PUSH_CONNECT --port_ctrl 55162 --parallel_backend process --yaml_path ../../../services/indexers/faiss-cpu/base.yml
+  deploy: {replicas: 2}
+  image: gnes/gnes:latest-alpine
+Frontend0: {command: frontend --port_in 64055 --port_out 58314 --port_ctrl 57896 --parallel_backend
+    process, image: gnes/gnes:latest-alpine}
+KeywordIdx:
+  command: index --port_in 56238 --port_out 51236 --socket_in PULL_CONNECT --socket_out
+    PUSH_CONNECT --port_ctrl 51979 --parallel_backend process --yaml_path ../../../services/indexers/keyword/base.yml
+  deploy: {replicas: 2}
+  image: gnes/gnes:latest-alpine
+LevelDBIdx:
+  command: index --port_in 49364 --port_out 51236 --socket_in SUB_CONNECT --socket_out
+    PUSH_CONNECT --port_ctrl 50771 --parallel_backend process --yaml_path ../../../services/indexers/lvdb/base.yml
+  deploy: {replicas: 2}
+  image: gnes/gnes:latest-alpine
+Reduce: {command: route --port_in 51236 --port_out 64055 --socket_out PUSH_CONNECT
+    --port_ctrl 64921 --parallel_backend process --yaml_path BaseReduceRouter --num_part
+    2, image: gnes/gnes:latest-alpine}
+SentSplitPrep:
+  command: preprocess --port_in 58314 --port_out 49364 --socket_in PULL_CONNECT --socket_out
+    PUB_BIND --port_ctrl 64724 --parallel_backend process --yaml_path ../../../services/preprocessors/sent-split/json-mode.yml
+  deploy: {replicas: 2}
+  image: gnes/gnes:latest-alpine
+SiameseBertEncoder:
+  command: encode --port_in 49364 --port_out 56614 --socket_in SUB_CONNECT --port_ctrl
+    56109 --parallel_backend process --yaml_path ../../../services/encoders/siamese-bert/dim-64.yml
+  deploy: {replicas: 2}
+  image: gnes/gnes:latest-alpine
+TextByteEncoder:
+  command: encode --port_in 49364 --port_out 56238 --socket_in SUB_CONNECT --port_ctrl
+    63766 --parallel_backend process --yaml_path ../../../services/encoders/text-byte/max-256.yml
+  deploy: {replicas: 2}
+  image: gnes/gnes:latest-alpine
