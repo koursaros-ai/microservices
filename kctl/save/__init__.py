@@ -12,7 +12,7 @@ def save():
 @save.command()
 @pipeline_options
 @click.option('-p', '--platform', required=True)
-@click.option('-y', '--yes')
+@click.option('-y', '--yes', is_flag=True)
 @click.pass_obj
 def pipeline(app_manager, pipeline_name, runtime, platform, yes):
     """Deploy a pipeline with compose or k8s. """
