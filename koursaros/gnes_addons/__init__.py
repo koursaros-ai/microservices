@@ -39,10 +39,10 @@ class Flow(_Flow):
         for service_cls, configs in services.items():
             self.helm_yaml = dict(
                 name=service_cls,
-                port_in=configs['parsed_args'].get('port_in', None),
-                port_out=configs['parsed_args'].get('port_out', None),
-                ctrl_port=configs['parsed_args'].get('ctrl_port', None),
-                grpc_port=configs['parsed_args'].get('grpc_port', None),
+                port_in=getattr(configs['parsed_args'], 'port_in', None),
+                port_out=getattr(configs['parsed_args'], 'port_out', None),
+                ctrl_port=getattr(configs['parsed_args'], 'ctrl_port', None),
+                grpc_port=getattr(configs['parsed_args'], 'grpc_port', None),
                 command=configs.get('command', None),
                 replicas=configs['deploy'].get('replicas', 1) if 'deploy' in configs else 1,
                 storage=configs.get('storage', None),

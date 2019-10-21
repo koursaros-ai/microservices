@@ -1,0 +1,51 @@
+
+{{- define "statefulset" -}}
+apiVersion: apps/v1
+kind: StatefulSet
+spec:
+  replicas: {{ .replicas }}
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  volumeClaimTemplates:
+    accessModes: 'ReadWriteOnce'
+    resources:
+      requests:
+        storage: {{ .storage }}
+  template:
+    spec:
+      containers:
+        - name: {{ .name }}
+          image: {{ .image }}
+          args: {{ .command }}
+          imagePullPolicy: null
+          ports:
+            {{- if .port_in }}
+            - name: in
+              containerPort: {{ .port_in }}
+              protocol: TCP
+            {{- end }}
+            {{- if .port_out }}
+            - name: out
+              containerPort: {{ .port_out }}
+              protocol: TCP
+            {{- end -}}
+            {{- if .grpc_port }}
+            - name: grpc
+              containerPort: {{ .grpc_port }}
+              protocol: TCP
+            {{- end -}}
+            {{- if .grpc_port }}
+            - name: ctrl
+              containerPort: {{ .port_ctrl }}
+              protocol: TCP
+            {{- end -}}
+          resources:
+            requests:
+              cpu: {{ .cpu }}
+              memory: {{ .memory }}
+
+        {{- if .resources -}}
+        {{- toYaml .resources | nindent 8 -}}
+        {{- end -}}
+{{- end -}}
