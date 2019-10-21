@@ -27,7 +27,7 @@ def swarm(flow, log):
 
 
 def k8s(flow, log):
-    flow_nodes = flow.to_swarm_yaml()
+    flow_nodes = yaml.load(flow.to_swarm_yaml())
     dict_merge(flow_nodes['services'], flow._service_nodes)
     values = StringIO()
     yaml.dump(flow_nodes, values)
