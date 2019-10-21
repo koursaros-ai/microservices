@@ -1,0 +1,24 @@
+
+nameOverride: ""
+fullnameOverride: ""
+imagePullPolicy: IfNotPresent
+
+services:
+  frontend: {}
+  preprocessors: {}
+  encoders: {}
+  indexers: {}
+  routers: {}
+
+  # Valid options for all services are:
+  # - name: name of the service
+  #   image: -
+  #   port_in: -
+  #   port_out: -
+  #   command: command on container entrance
+  #   replicas: -
+  #   storage: storage on stateful claim
+  #   memory: ram
+  #   cpu: -
+  # storage and memory are suffixed with Gi(gigabits) or Mi(Megabits) (just greater than a GB and MB)
+  # cpu is suffixed with m(milliCPU or 1/1000 CPU)

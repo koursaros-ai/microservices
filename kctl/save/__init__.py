@@ -1,7 +1,7 @@
 from ..decorators import *
-from .utils import *
-from ruamel import yaml
-import re
+import koursaros
+from shutil import copytree
+from pathlib import Path
 
 
 @click.group()
@@ -11,22 +11,19 @@ def save():
 
 @save.command()
 @pipeline_options
-@click.option('-f', '--filename', required=True)
 @click.pass_obj
-def pipeline(app_manager, pipeline_name, runtime, platform, filename):
+def pipeline(app_manager, pipeline_name, runtime, platform):
     """Deploy a pipeline with compose or k8s. """
     flow = app_manager.get_flow('pipelines', pipeline_name, runtime).build()
-    out_path = flow.path.parent.joinpath(filename)
 
     if platform == 'swarm':
-        out_path.write_text(flow.to_swarm_yaml())
+        flow.path.parent.joinpath('docker-compose.yaml').write_text(flow.to_swarm_yaml())
 
     elif platform == 'helm':
-        values = yaml.load(flow.to_swarm_yaml())
-        dict_merge(values['services'], flow._service_nodes)
-        out_path.write_text(re.sub('!!python.*?\n', '\n', yaml.dump(values)))
+        copytree(Path(koursaros.__path__).joinpath('charts', 'gnes'), str(flow.path.parent))
+        flow.path.parent.joinpath('gnes', 'values.yaml').write_text(flow.to_helm_yaml())
 
-    elif platform == 'shell':
+    else:
         raise NotImplementedError
 
-    app_manager.logger.critical('Saved %s yaml to %s' % (platform, str(out_path)))
+    app_manager.logger.critical('Saved %s yaml to %s' % (platform, str(flow.path.parent)))
