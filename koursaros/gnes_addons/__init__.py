@@ -26,6 +26,7 @@ class Flow(_Flow):
 
     def add_client(self, **kwargs):
         self.client_node = kwargs
+        return self
 
     def to_helm_yaml(self):
         from ruamel.yaml import YAML, StringIO
