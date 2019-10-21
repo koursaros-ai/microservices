@@ -31,7 +31,7 @@ def k8s(flow, log):
     values = StringIO()
     yaml.dump(flow_nodes, values)
     out_path = flow.path.parent.joinpath('values-gen.yaml')
-    out_path.write_text(values)
+    out_path.write_text(values.read())
     log('Saved values.yaml to %s' % str(out_path))
     import pdb
     pdb.set_trace()
