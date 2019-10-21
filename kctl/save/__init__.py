@@ -22,7 +22,7 @@ def pipeline(app_manager, pipeline_name, runtime, platform):
 
     elif platform == 'k8s':
         import pdb; pdb.set_trace()
-        copytree(Path(koursaros.__path__).joinpath('charts', 'gnes'), str(flow.path.parent))
+        copytree(str(Path(koursaros.__path__[0]).joinpath('charts', 'gnes')), str(flow.path.parent))
         flow.path.parent.joinpath('gnes', 'values.yaml').write_text(flow.to_helm_yaml())
 
     else:
