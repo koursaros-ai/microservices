@@ -10,4 +10,4 @@ RUN pip install git+https://git@github.com/colethienes/gnes.git
 
 ADD *.py *.yml ./
 
-ENTRYPOINT ["python", "postgres.py", "--grpc_port", "8800", "--start_doc_id", "1"]
+ENTRYPOINT ["python", "postgres.py", "--start_doc_id", "1"]
