@@ -27,10 +27,11 @@ def swarm(flow, log):
 
 
 def k8s(flow, log):
-    flow_nodes = dict_merge(flow._service_nodes, yaml.load(flow.to_swarm_yaml()))
+    flow_nodes = dict_merge(yaml.load(flow.to_swarm_yaml())['services'], flow._service_nodes)
     values = StringIO()
     yaml.dump(flow_nodes, values)
     out_path = flow.path.parent.joinpath('values-gen.yaml')
+    out_path.write_text(values)
     log('Saved values.yaml to %s' % str(out_path))
     import pdb
     pdb.set_trace()
