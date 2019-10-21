@@ -21,7 +21,10 @@ def pipeline(app_manager, pipeline_name, runtime, platform):
         flow.path.parent.joinpath('docker-compose.yaml').write_text(flow.to_swarm_yaml())
 
     elif platform == 'k8s':
-        copytree(str(Path(koursaros.__path__[0]).joinpath('charts', 'gnes')), str(flow.path.parent))
+        copytree(
+            str(Path(koursaros.__path__[0]).joinpath('charts', 'gnes')),
+            str(flow.path.parent.joinpath('helm')))
+
         flow.path.parent.joinpath('gnes', 'values.yaml').write_text(flow.to_helm_yaml())
 
     else:
