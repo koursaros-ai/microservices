@@ -37,7 +37,7 @@ def pipeline(app_manager, pipeline_name, runtime, platform, yes):
                         break
         if not out_path.is_dir():
             copytree(str(Path(koursaros.__path__[0]).joinpath('charts', 'gnes')), str(out_path))
-            flow.path.parent.joinpath('gnes', 'values.yaml').write_text(flow.to_helm_yaml())
+            flow.path.parent.joinpath('helm', 'values.yaml').write_text(flow.to_helm_yaml())
             app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
 
     else:
