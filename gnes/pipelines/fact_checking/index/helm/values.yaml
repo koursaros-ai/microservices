@@ -1,24 +1,12 @@
-
-nameOverride: ""
-fullnameOverride: ""
-imagePullPolicy: IfNotPresent
-
-services:
-  frontend: {}
-  preprocessors: {}
-  encoders: {}
-  indexers: {}
-  routers: {}
-
-  # Valid options for all services are:
-  # - name: name of the service
-  #   image: -
-  #   port_in: -
-  #   port_out: -
-  #   command: command on container entrance
-  #   replicas: -
-  #   storage: storage on stateful claim
-  #   memory: ram
-  #   cpu: -
-  # storage and memory are suffixed with Gi(gigabits) or Mi(Megabits) (just greater than a GB and MB)
-  # cpu is suffixed with m(milliCPU or 1/1000 CPU)
+name: Reduce
+port_in: 53498
+port_out: 52739
+ctrl_port:
+grpc_port:
+command: route --port_in 53498 --port_out 52739 --socket_out PUSH_CONNECT --port_ctrl
+  61602 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+replicas: 1
+storage:
+memory:
+cpu:
+image: gnes-router:Reduce

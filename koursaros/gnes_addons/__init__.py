@@ -35,9 +35,12 @@ class Flow(_Flow):
 
         services = ruamel.yaml.load(self.to_swarm_yaml())['services']
         dict_merge(services, self._service_nodes)
+        self.helm_yaml = collections.defaultdict(lambda: [])
 
         for service_cls, configs in services.items():
-            self.helm_yaml = dict(
+            service_type = configs['service'].name.lower()
+
+            self.helm_yaml[service_type + 's'] += [dict(
                 name=service_cls,
                 port_in=getattr(configs['parsed_args'], 'port_in', None),
                 port_out=getattr(configs['parsed_args'], 'port_out', None),
@@ -48,8 +51,8 @@ class Flow(_Flow):
                 storage=configs.get('storage', None),
                 memory=configs.get('memory', None),
                 cpu=configs.get('cpu', None),
-                image='gnes-%s:%s' % (configs['service'].name.lower(), service_cls)
-            )
+                image='gnes-%s:%s' % (service_type, service_cls)
+            )]
 
         stream = StringIO()
         _yaml.dump(self.helm_yaml, stream)
