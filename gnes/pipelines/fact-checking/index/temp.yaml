@@ -1,35 +1,286 @@
-FaissIdx:
-  command: index --port_in 56614 --port_out 51236 --socket_in PULL_CONNECT --socket_out
-    PUSH_CONNECT --port_ctrl 55162 --parallel_backend process --yaml_path ../../../services/indexers/faiss-cpu/base.yml
-  deploy: {replicas: 2}
-  image: gnes/gnes:latest-alpine
-Frontend0: {command: frontend --port_in 64055 --port_out 58314 --port_ctrl 57896 --parallel_backend
-    process, image: gnes/gnes:latest-alpine}
-KeywordIdx:
-  command: index --port_in 56238 --port_out 51236 --socket_in PULL_CONNECT --socket_out
-    PUSH_CONNECT --port_ctrl 51979 --parallel_backend process --yaml_path ../../../services/indexers/keyword/base.yml
-  deploy: {replicas: 2}
-  image: gnes/gnes:latest-alpine
-LevelDBIdx:
-  command: index --port_in 49364 --port_out 51236 --socket_in SUB_CONNECT --socket_out
-    PUSH_CONNECT --port_ctrl 50771 --parallel_backend process --yaml_path ../../../services/indexers/lvdb/base.yml
-  deploy: {replicas: 2}
-  image: gnes/gnes:latest-alpine
-Reduce: {command: route --port_in 51236 --port_out 64055 --socket_out PUSH_CONNECT
-    --port_ctrl 64921 --parallel_backend process --yaml_path BaseReduceRouter --num_part
-    2, image: gnes/gnes:latest-alpine}
-SentSplitPrep:
-  command: preprocess --port_in 58314 --port_out 49364 --socket_in PULL_CONNECT --socket_out
-    PUB_BIND --port_ctrl 64724 --parallel_backend process --yaml_path ../../../services/preprocessors/sent-split/json-mode.yml
-  deploy: {replicas: 2}
-  image: gnes/gnes:latest-alpine
-SiameseBertEncoder:
-  command: encode --port_in 49364 --port_out 56614 --socket_in SUB_CONNECT --port_ctrl
-    56109 --parallel_backend process --yaml_path ../../../services/encoders/siamese-bert/dim-64.yml
-  deploy: {replicas: 2}
-  image: gnes/gnes:latest-alpine
-TextByteEncoder:
-  command: encode --port_in 49364 --port_out 56238 --socket_in SUB_CONNECT --port_ctrl
-    63766 --parallel_backend process --yaml_path ../../../services/encoders/text-byte/max-256.yml
-  deploy: {replicas: 2}
-  image: gnes/gnes:latest-alpine
+services:
+  FaissIdx:
+    args: [--replicas, '2', --yaml_path, ../../../services/indexers/faiss-cpu/base.yml,
+      --check_version]
+    command: index --port_in 62939 --port_out 56360 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 59886 --parallel_backend process --yaml_path ../../../services/indexers/faiss-cpu/base.yml
+    deploy: {replicas: 2}
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {SiameseBertEncoder: null}
+    kwargs: {check_version: true, replicas: 2, yaml_path: ../../../services/indexers/faiss-cpu/base.yml}
+    outgoings: !!set {Reduce: null}
+    parsed_args: !!python/object:argparse.Namespace
+      as_response: true
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 2
+      parallel_backend: process
+      parallel_type: &id001 !!python/object/apply:gnes.service.base.ParallelType [
+        1]
+      port_ctrl: 59886
+      port_in: 62939
+      port_out: 56360
+      py_path: null
+      read_only: false
+      route_table: false
+      socket_in: &id002 !!python/object/apply:gnes.service.base.SocketType [1]
+      socket_out: &id003 !!python/object/apply:gnes.service.base.SocketType [3]
+      sorted_response: false
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: ../../../services/indexers/faiss-cpu/base.yml
+    service: &id004 !!python/object/apply:gnes.flow.helper.Service [3]
+    unk_args: []
+  Frontend0:
+    args: [--check_version]
+    command: frontend --port_in 54344 --port_out 53281 --port_ctrl 52360 --parallel_backend
+      process
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {Reduce: null}
+    kwargs: {check_version: true}
+    outgoings: !!set {SentSplitPrep: null}
+    parsed_args: !!python/object:argparse.Namespace
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      dump_route: null
+      grpc_host: 0.0.0.0
+      grpc_port: 8800
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      max_concurrency: 10
+      max_message_size: -1
+      max_pending_request: 100
+      num_parallel: 1
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 52360
+      port_in: 54344
+      port_out: 53281
+      proxy: false
+      read_only: true
+      route_table: false
+      socket_in: &id005 !!python/object/apply:gnes.service.base.SocketType [0]
+      socket_out: &id007 !!python/object/apply:gnes.service.base.SocketType [2]
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+    service: !!python/object/apply:gnes.flow.helper.Service [0]
+    unk_args: []
+  KeywordIdx:
+    args: [--replicas, '2', --yaml_path, ../../../services/indexers/keyword/base.yml,
+      --check_version]
+    command: index --port_in 57057 --port_out 56360 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 53837 --parallel_backend process --yaml_path ../../../services/indexers/keyword/base.yml
+    deploy: {replicas: 2}
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {TextByteEncoder: null}
+    kwargs: {check_version: true, replicas: 2, yaml_path: ../../../services/indexers/keyword/base.yml}
+    outgoings: !!set {Reduce: null}
+    parsed_args: !!python/object:argparse.Namespace
+      as_response: true
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 2
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 53837
+      port_in: 57057
+      port_out: 56360
+      py_path: null
+      read_only: false
+      route_table: false
+      socket_in: *id002
+      socket_out: *id003
+      sorted_response: false
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: ../../../services/indexers/keyword/base.yml
+    service: *id004
+    unk_args: []
+  LevelDBIdx:
+    args: [--replicas, '2', --yaml_path, ../../../services/indexers/lvdb/base.yml,
+      --check_version]
+    command: index --port_in 60529 --port_out 56360 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 55897 --parallel_backend process --yaml_path ../../../services/indexers/lvdb/base.yml
+    deploy: {replicas: 2}
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {SentSplitPrep: null}
+    kwargs: {check_version: true, replicas: 2, yaml_path: ../../../services/indexers/lvdb/base.yml}
+    outgoings: !!set {Reduce: null}
+    parsed_args: !!python/object:argparse.Namespace
+      as_response: true
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 2
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 55897
+      port_in: 60529
+      port_out: 56360
+      py_path: null
+      read_only: false
+      route_table: false
+      socket_in: &id006 !!python/object/apply:gnes.service.base.SocketType [5]
+      socket_out: *id003
+      sorted_response: false
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: ../../../services/indexers/lvdb/base.yml
+    service: *id004
+    unk_args: []
+  Reduce:
+    args: [--num_part, '2', --yaml_path, BaseReduceRouter, --check_version]
+    command: route --port_in 56360 --port_out 54344 --socket_out PUSH_CONNECT --port_ctrl
+      60723 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {FaissIdx: null, KeywordIdx: null, LevelDBIdx: null}
+    kwargs: {check_version: true, num_part: 2, yaml_path: BaseReduceRouter}
+    outgoings: !!set {}
+    parsed_args: !!python/object:argparse.Namespace
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 1
+      num_part: 2
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 60723
+      port_in: 56360
+      port_out: 54344
+      py_path: null
+      read_only: true
+      route_table: false
+      socket_in: *id005
+      socket_out: *id003
+      sorted_response: false
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: !!python/object/new:_io.StringIO
+        state: !!python/tuple ['!BaseReduceRouter {}', "\n", 0, null]
+    service: !!python/object/apply:gnes.flow.helper.Service [2]
+    unk_args: []
+  SentSplitPrep:
+    args: [--replicas, '2', --yaml_path, ../../../services/preprocessors/sent-split/json-mode.yml,
+      --check_version]
+    command: preprocess --port_in 53281 --port_out 60529 --socket_in PULL_CONNECT
+      --socket_out PUB_BIND --port_ctrl 55790 --parallel_backend process --yaml_path
+      ../../../services/preprocessors/sent-split/json-mode.yml
+    deploy: {replicas: 2}
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {Frontend0: null}
+    kwargs: {check_version: true, replicas: 2, yaml_path: ../../../services/preprocessors/sent-split/json-mode.yml}
+    outgoings: !!set {LevelDBIdx: null, SiameseBertEncoder: null, TextByteEncoder: null}
+    parsed_args: !!python/object:argparse.Namespace
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 2
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 55790
+      port_in: 53281
+      port_out: 60529
+      py_path: null
+      read_only: true
+      route_table: false
+      socket_in: *id002
+      socket_out: !!python/object/apply:gnes.service.base.SocketType [6]
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: ../../../services/preprocessors/sent-split/json-mode.yml
+    service: !!python/object/apply:gnes.flow.helper.Service [4]
+    unk_args: []
+  SiameseBertEncoder:
+    args: [--replicas, '2', --yaml_path, ../../../services/encoders/siamese-bert/dim-64.yml,
+      --check_version]
+    command: encode --port_in 60529 --port_out 62939 --socket_in SUB_CONNECT --port_ctrl
+      65283 --parallel_backend process --yaml_path ../../../services/encoders/siamese-bert/dim-64.yml
+    deploy: {replicas: 2}
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {SentSplitPrep: null}
+    kwargs: {check_version: true, replicas: 2, yaml_path: ../../../services/encoders/siamese-bert/dim-64.yml}
+    outgoings: !!set {FaissIdx: null}
+    parsed_args: !!python/object:argparse.Namespace
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 2
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 65283
+      port_in: 60529
+      port_out: 62939
+      py_path: null
+      read_only: false
+      route_table: false
+      socket_in: *id006
+      socket_out: *id007
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: ../../../services/encoders/siamese-bert/dim-64.yml
+    service: &id008 !!python/object/apply:gnes.flow.helper.Service [1]
+    unk_args: []
+  TextByteEncoder:
+    args: [--replicas, '2', --yaml_path, ../../../services/encoders/text-byte/max-256.yml,
+      --check_version]
+    command: encode --port_in 60529 --port_out 57057 --socket_in SUB_CONNECT --port_ctrl
+      63485 --parallel_backend process --yaml_path ../../../services/encoders/text-byte/max-256.yml
+    deploy: {replicas: 2}
+    image: gnes/gnes:latest-alpine
+    incomes: !!set {SentSplitPrep: null}
+    kwargs: {check_version: true, replicas: 2, yaml_path: ../../../services/encoders/text-byte/max-256.yml}
+    outgoings: !!set {KeywordIdx: null}
+    parsed_args: !!python/object:argparse.Namespace
+      check_version: true
+      ctrl_with_ipc: false
+      dump_interval: 5
+      host_in: 0.0.0.0
+      host_out: 0.0.0.0
+      identity: ''
+      num_parallel: 2
+      parallel_backend: process
+      parallel_type: *id001
+      port_ctrl: 63485
+      port_in: 60529
+      port_out: 57057
+      py_path: null
+      read_only: false
+      route_table: false
+      socket_in: *id006
+      socket_out: *id007
+      squeeze_pb: true
+      timeout: -1
+      verbose: false
+      yaml_path: ../../../services/encoders/text-byte/max-256.yml
+    service: *id008
+    unk_args: []
+version: '3.4'

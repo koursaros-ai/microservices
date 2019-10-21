@@ -1,7 +1,7 @@
 import click
 from .helper import *
 from ruamel import yaml
-from io import StringIO
+import re
 
 @click.group()
 def save():
@@ -27,12 +27,10 @@ def swarm(flow, log):
 
 
 def k8s(flow, log):
-    flow_nodes = yaml.load(flow.to_swarm_yaml())
-    dict_merge(flow_nodes['services'], flow._service_nodes)
-    values = StringIO()
-    yaml.dump(flow_nodes, values)
+    values = yaml.load(flow.to_swarm_yaml())
+    dict_merge(values['services'], flow._service_nodes)
     out_path = flow.path.parent.joinpath('values-gen.yaml')
-    out_path.write_text(values.read())
+    out_path.write_text(re.sub(r'!!python*?\n', '', yaml.dump(values)))
     log('Saved values.yaml to %s' % str(out_path))
     import pdb
     pdb.set_trace()
