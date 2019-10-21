@@ -23,7 +23,7 @@ deploy.add_command(pipeline)
 def client(app_manager, pipeline_name, runtime, creds):
     """Deploy a client with docker. """
     flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
-    cn = flow._client_node
+    cn = flow.client_node
     tag = 'gnes-client:%s' % (cn.pop('name'))
 
     switches = ['--mode', runtime,

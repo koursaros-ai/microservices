@@ -1,7 +1,7 @@
 
 
 import webbrowser
-import click
+from ..decorators import *
 
 
 @click.group()
@@ -10,8 +10,7 @@ def show():
 
 
 @show.command()
-@click.argument('pipeline_name')
-@click.option('-r', '--runtime', required=True)
+@pipeline_options
 @click.pass_obj
 def pipeline(app_manager, pipeline_name, runtime):
     """Deploy a pipeline with compose or k8s. """
