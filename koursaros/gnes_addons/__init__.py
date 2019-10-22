@@ -51,11 +51,7 @@ class Flow(_Flow):
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
 
-            if isinstance(yaml_path, str):
-                model = Path(yaml_path).parent.name
-            else:
-                import pdb; pdb.set_trace()
-                model = configs['kwargs']['yaml_path'].lower()
+            model = Path(yaml_path).parent.name if isinstance(yaml_path, str) else configs['image']
 
             self.helm_yaml['services'][app] += [dict(
                 name=name,
