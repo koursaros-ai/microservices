@@ -33,7 +33,7 @@ class Flow(_Flow):
 
         _yaml = YAML()
 
-        services = ruamel.yaml.load(self.to_swarm_yaml())['services']
+        services = ruamel.yaml.load(self.to_swarm_yaml(), Loader=ruamel.yaml.Loader)['services']
         dict_merge(services, self._service_nodes)
         self.helm_yaml = collections.defaultdict(lambda: [])
 
