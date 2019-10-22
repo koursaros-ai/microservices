@@ -1,5 +1,5 @@
 
-from koursaros.credentials import get_creds
+from koursaros.repo_creds import get_creds
 from ..decorators import *
 import docker
 
@@ -13,10 +13,10 @@ def build():
 @pipeline_options
 @click.option('-p', '--push', is_flag=True)
 @click.option('-c', '--creds')
-def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
+def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     """Build images for a pipeline. """
 
-    if push:
+    if yes:
         if creds is None:
             raise ValueError('--creds repository must be specified if pushing')
 
@@ -26,7 +26,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
     docker_client = docker.from_env()
-    flow = app_manager.get_flow('pipelines', pipeline_name, runtime).build()
+    flow = app_manager.get_flow('flows', flow_name, runtime).build()
     flow.to_helm_yaml()
 
     def docker_build(path, tag):

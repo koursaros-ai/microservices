@@ -3,7 +3,6 @@
 from collections import defaultdict
 from gnes.helper import set_logger
 from importlib import machinery
-from itertools import chain
 from gnes.flow import Flow
 from pathlib import Path
 from typing import List
@@ -26,29 +25,22 @@ class AppManager:
     :param base: base path to check for pipeline default=CWD
     """
 
-    def __init__(self, base: str = '.'):
-        self.base = Path(base).absolute()
-        self.pkg_path = Path(__file__).parent
-        self.logger = set_logger('KCTL')
+    def __init__(self):
+        self.root = Path(__file__).parent.parent
+        os.chdir(str(self.root))
+        self.logger = set_logger('kctl')
+
         self.threads = []
         self.thread_logs = defaultdict(lambda: [])
         self.thread_logging = False
 
         atexit.register(self.join)
 
-    @property
-    def root(self) -> 'Path':
-        for path in chain(self.base.parents, [self.base]):
-            if path.joinpath('.kctl').is_dir():
-                return path
-
-        raise FileNotFoundError(f'"%s" is not in an app' % str(self.base))
-
     def find(self, *dirs: str) -> 'Path':
         check_path = self.root.joinpath(*dirs)
         if check_path.exists():
             return check_path
-
+        import pdb; pdb.set_trace()
         raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))
 
     def subprocess_call(self, cmd: List[str], shell=False):
@@ -87,8 +79,7 @@ class AppManager:
             t.join()
 
     def get_flow(self, *dirs: str) -> 'Flow':
-        flow_path = self.root.joinpath(*dirs, 'flow.py')
-        os.chdir(str(self.root))
+        flow_path = self.find(*dirs, 'flow.py')
         flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
         flow.path = flow_path
         return flow
