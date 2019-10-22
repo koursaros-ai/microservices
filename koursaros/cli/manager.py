@@ -3,7 +3,6 @@
 from collections import defaultdict
 from gnes.helper import set_logger
 from importlib import machinery
-from itertools import chain
 from gnes.flow import Flow
 from pathlib import Path
 from typing import List
@@ -27,9 +26,8 @@ class AppManager:
     """
 
     def __init__(self):
-        self.root = Path(__path__).parent
+        self.root = Path(__file__).parent.parent
         os.chdir(str(self.root))
-        self.pkg_path = Path(__file__).parent
         self.logger = set_logger('kctl')
 
         self.threads = []

@@ -13,10 +13,10 @@ def build():
 @pipeline_options
 @click.option('-p', '--push', is_flag=True)
 @click.option('-c', '--creds')
-def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
+def pipeline(app_manager, flow_name, runtime, yes_flag, push_flag, creds):
     """Build images for a pipeline. """
 
-    if push:
+    if push_flag:
         if creds is None:
             raise ValueError('--creds repository must be specified if pushing')
 
@@ -26,7 +26,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
     docker_client = docker.from_env()
-    flow = app_manager.get_flow('pipelines', pipeline_name, runtime).build()
+    flow = app_manager.get_flow('hub', 'flows', flow_name, runtime).build()
     flow.to_helm_yaml()
 
     def docker_build(path, tag):
@@ -35,7 +35,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
         for res in response:
             app_manager.logger.info(res)
 
-        if push:
+        if push_flag:
             app_manager.logger.critical('Pushing %s...' % tag)
             response = docker_client.images.push(tag, auth_config=hub_auth)
             for res in response:
