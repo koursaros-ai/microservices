@@ -1,6 +1,6 @@
 from koursaros.repo_creds import get_creds
 from ..decorators import *
-import docker
+from shutil import copytree, rmtree
 
 
 @click.group()
@@ -47,3 +47,22 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
         path = str(app_manager.find('clients', client_cls))
         tag = 'gnes-client:%s' % client_cls
         docker_build(path, tag)
+
+    """save helm chart"""
+    out_path = flow.path.parent.joinpath('helm')
+    if out_path.is_dir():
+        if yes:
+            rmtree(str(out_path))
+        else:
+            while True:
+                yn = input('Overwrite %s? [y/n]' % str(out_path))
+                if yn == 'y':
+                    rmtree(str(out_path))
+                    break
+                elif yn == 'n':
+                    break
+
+    if not out_path.is_dir():
+        copytree(str(app_manager.find('chart')), str(out_path))
+        flow.path.parent.joinpath('helm', 'values.yaml').write_text(flow.to_helm_yaml())
+        app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
