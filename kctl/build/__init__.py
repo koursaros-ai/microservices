@@ -43,7 +43,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
 
     for service_type, services in flow.helm_yaml['services'].items():
         for service in services:
-            path = str(app_manager.find_app_file(
+            path = str(app_manager.find(
                 'services',
                 service_type,
                 service['name'],
@@ -53,7 +53,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
 
     if hasattr(flow, '_client_node'):
         client_cls = flow.client_node['name']
-        path = str(app_manager.find_app_file('clients', client_cls, 'Dockerfile'))
+        path = str(app_manager.find('clients', client_cls, 'Dockerfile'))
         tag = 'gnes-client:%s' % client_cls
         docker_build(path, tag)
 
