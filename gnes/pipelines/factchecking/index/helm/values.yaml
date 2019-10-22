@@ -1,18 +1,18 @@
 services:
   frontends:
   - name: Frontend0
-    port_in: 60740
-    port_out: 58037
+    port_in: 59845
+    port_out: 51144
     ctrl_port:
     grpc_port: 8800
     command:
     - frontend
     - --port_in
-    - '60740'
+    - '59845'
     - --port_out
-    - '58037'
+    - '51144'
     - --port_ctrl
-    - '58556'
+    - '54438'
     - --parallel_backend
     - process
     replicas: 1
@@ -22,22 +22,22 @@ services:
     image: gnes-frontend:Frontend0
   preprocessors:
   - name: sentsplit
-    port_in: 58037
-    port_out: 55052
+    port_in: 51144
+    port_out: 63038
     ctrl_port:
     grpc_port:
     command:
     - preprocess
     - --port_in
-    - '58037'
+    - '51144'
     - --port_out
-    - '55052'
+    - '63038'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUB_BIND
     - --port_ctrl
-    - '55627'
+    - '59997'
     - --parallel_backend
     - process
     - --yaml_path
@@ -49,20 +49,20 @@ services:
     image: gnes-preprocessor:sentsplit
   encoders:
   - name: textbyte
-    port_in: 55052
-    port_out: 52281
+    port_in: 63038
+    port_out: 50390
     ctrl_port:
     grpc_port:
     command:
     - encode
     - --port_in
-    - '55052'
+    - '63038'
     - --port_out
-    - '52281'
+    - '50390'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '56768'
+    - '50566'
     - --parallel_backend
     - process
     - --yaml_path
@@ -74,22 +74,22 @@ services:
     image: gnes-encoder:textbyte
   indexers:
   - name: keyword
-    port_in: 52281
-    port_out: 61275
+    port_in: 50390
+    port_out: 59530
     ctrl_port:
     grpc_port:
     command:
     - index
     - --port_in
-    - '52281'
+    - '50390'
     - --port_out
-    - '61275'
+    - '59530'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '56315'
+    - '55521'
     - --parallel_backend
     - process
     - --yaml_path
@@ -100,22 +100,22 @@ services:
     cpu:
     image: gnes-indexer:keyword
   - name: lvdb
-    port_in: 55052
-    port_out: 61275
+    port_in: 63038
+    port_out: 59530
     ctrl_port:
     grpc_port:
     command:
     - index
     - --port_in
-    - '55052'
+    - '63038'
     - --port_out
-    - '61275'
+    - '59530'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '62826'
+    - '60121'
     - --parallel_backend
     - process
     - --yaml_path
@@ -127,20 +127,20 @@ services:
     image: gnes-indexer:lvdb
   routers:
   - name: reduce
-    port_in: 61275
-    port_out: 60740
+    port_in: 59530
+    port_out: 59845
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '61275'
+    - '59530'
     - --port_out
-    - '60740'
+    - '59845'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '56044'
+    - '56069'
     - --parallel_backend
     - process
     - --yaml_path
