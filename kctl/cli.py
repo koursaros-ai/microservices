@@ -22,6 +22,7 @@ kctl.add_command(deploy)
 kctl.add_command(test)
 kctl.add_command(show)
 kctl.add_command(save)
+kctl.add_command(build)
 
 
 def cli():
