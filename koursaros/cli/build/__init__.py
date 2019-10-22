@@ -41,7 +41,7 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
             for res in response:
                 app_manager.logger.info(res)
 
-    for service_type, services in flow.helm_yaml['services'].items():
+    for service_type, services in flow.helm_yaml.items():
         for service in services:
             path = str(app_manager.find(
                 'services',
