@@ -14,7 +14,6 @@ def build():
 @pipeline_options
 @click.option('-p', '--push', is_flag=True)
 @click.option('-c', '--creds')
-@click.pass_obj
 def pipeline(app_manager, pipeline_name, runtime, push, creds):
     """Build images for a pipeline. """
 
