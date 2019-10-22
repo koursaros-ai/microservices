@@ -1,4 +1,3 @@
-
 from koursaros.repo_creds import get_creds
 from ..decorators import *
 import docker
@@ -43,17 +42,13 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     for services in flow.helm_yaml.values():
         for service in services:
-            path = str(app_manager.find(
-                'services',
-                service['app'],
-                service['model'],
-                'Dockerfile')
-            )
-            docker_build(path, service['image'])
+            if service['model']:
+                path = str(app_manager
+                           .find('hub', service['app'], service['model'], 'Dockerfile'))
+                docker_build(path, service['image'])
 
     if hasattr(flow, '_client_node'):
         client_cls = flow.client_node['name']
         path = str(app_manager.find('clients', client_cls, 'Dockerfile'))
         tag = 'gnes-client:%s' % client_cls
         docker_build(path, tag)
-
