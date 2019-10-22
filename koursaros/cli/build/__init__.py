@@ -41,12 +41,12 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
             for res in response:
                 app_manager.logger.info(res)
 
-    for service_type, services in flow.helm_yaml.items():
+    for services in flow.helm_yaml.values():
         for service in services:
             path = str(app_manager.find(
                 'services',
-                service_type,
-                service['name'],
+                service['app'],
+                service['model'],
                 'Dockerfile')
             )
             docker_build(path, service['image'])
