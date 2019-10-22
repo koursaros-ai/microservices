@@ -1,8 +1,8 @@
-from gnes.flow import Flow as _Flow
-import ruamel
-import collections
+from collections import Mapping
+from gnes.flow import *
 import argparse
-from pathlib import Path
+
+_Flow = Flow
 
 
 def dict_merge(dct, merge_dct):
@@ -16,7 +16,7 @@ def dict_merge(dct, merge_dct):
     """
     for k, v in merge_dct.items():
         if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], collections.Mapping)):
+                and isinstance(merge_dct[k], Mapping)):
             dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]
@@ -39,31 +39,31 @@ class Flow(_Flow):
         extra_parser.add_argument('--storage', default='500Mi')
         extra_parser.add_argument('--memory', default='500Mi')
         extra_parser.add_argument('--cpu', default='300m')
-        service_map =dict()
-        services = ruamel.yaml.load(self.to_swarm_yaml(), Loader=ruamel.yaml.Loader)['services']
+
+        services = _yaml.load(self.to_swarm_yaml())['services']
         dict_merge(services, self._service_nodes)
-        helm_yaml = collections.defaultdict(lambda: [])
+        helm_yaml = defaultdict(lambda: [])
 
         for name, configs in services.items():
 
             yp = configs['parsed_args'].yaml_path
             _type, _subtype = yp.parent.parent.name, yp.parent.name
 
-            p_args = configs['parsed_args']
-            extra_args, _ = extra_parser.parse_known_args(configs['unk_args'])
+            p_args = vars(configs['parsed_args'])
+            extra_args, _ = vars(extra_parser.parse_known_args(configs['unk_args']))
 
             helm_yaml[_type] += [dict(
                 name=name,
                 sub_type=_subtype,
-                port_in=getattr(p_args, 'port_in', None),
-                port_out=getattr(p_args, 'port_out', None),
-                ctrl_port=getattr(p_args, 'ctrl_port', None),
-                grpc_port=getattr(p_args, 'grpc_port', None),
+                port_in=p_args.get('port_in', None),
+                port_out=p_args.get('port_out', None),
+                ctrl_port=p_args.get('ctrl_port', None),
+                grpc_port=p_args.get('grpc_port', None),
                 command=configs.get('command', None).split(),
                 replicas=configs['deploy'].get('replicas', 1) if 'deploy' in configs else 1,
-                storage=getattr(extra_args, 'storage', None),
-                memory=getattr(extra_args, 'memory', None),
-                cpu=getattr(extra_args, 'cpu', None),
+                storage=extra_args.get('storage', None),
+                memory=extra_args.get('memory', None),
+                cpu=extra_args.get('cpu', None),
                 image='hub-%s' % _subtype
             )]
 
