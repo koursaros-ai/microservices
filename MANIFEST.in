@@ -1,2 +1,1 @@
-recursive-include koursaros/chart *
-recursive-include koursaros/hub *
+recursive-include koursaros *
