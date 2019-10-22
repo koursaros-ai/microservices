@@ -28,43 +28,27 @@ class AppManager:
     def __init__(self, base: str = '.'):
         self.base = Path(base).absolute()
         self.pkg_path = Path(__file__).parent
-        self.cache_path = self.pkg_path.joinpath('.cache')
         self.logger = set_logger('KCTL')
-        try:
-            self.app_paths = set(self.cache_path.read_text().split('\n'))
-        except FileNotFoundError:
-            self.app_paths = set()
-        self.root = self.find_root()
         self.threads = []
         self.thread_logs = defaultdict(lambda: [])
         self.thread_logging = False
 
         atexit.register(self.join)
 
-    def find_root(self) -> 'Path':
+    @property
+    def root(self) -> 'Path':
         if self.base.joinpath('.kctl').is_dir():
             return self.base
         for path in self.base.parents:
             if path.joinpath('.kctl').is_dir():
-                self.app_paths.add(str(path))
-                self.cache()
                 return path
 
-    def cache(self):
-        self.cache_path.write_text('\n'.join(self.app_paths))
-
     def find_app_file(self, *dirs: str) -> 'Path':
-        _ = self.root
-        for path in self.app_paths:
-            check_path = Path(path).joinpath(*dirs)
-            if check_path.is_file():
-                return check_path
+        check_path = self.root.joinpath(*dirs)
+        if check_path.is_file():
+            return check_path
 
         raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))
-
-    def raise_if_no_app_roots(self):
-        if self.app_paths == set():
-            raise NotADirectoryError(f'"%s" is not an app' % self.base)
 
     def subprocess_call(self, cmd: List[str]):
         self.logger.critical('subprocess.call: "%s"' % ' '.join(cmd))
@@ -101,8 +85,8 @@ class AppManager:
             t.join()
 
     def get_flow(self, *dirs: str) -> 'Flow':
-        flow_path = self.find_app_file(*dirs, 'flow.py')
-        os.chdir(str(flow_path.parent))
+        flow_path = self.root.joinpath(*dirs, 'flow.py')
+        os.chdir(str(self.root))
         flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
         flow.path = flow_path
         return flow
