@@ -44,7 +44,7 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     if hasattr(flow, 'client_node'):
         client_cls = flow.client_node['name']
-        path = str(app_manager.find('clients', client_cls))
+        path = str(app_manager.find('client', client_cls))
         tag = 'gnes-client:%s' % client_cls
         docker_build(path, tag)
 
