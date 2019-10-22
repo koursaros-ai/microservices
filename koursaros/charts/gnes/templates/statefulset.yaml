@@ -17,31 +17,31 @@ spec:
   template:
     spec:
       containers:
-        - name: {{ .name }}
-          image: {{ .image }}
-          args: {{ .command }}
-          imagePullPolicy: null
-          ports:
-            {{- if .port_in }}
-            - name: in
-              containerPort: {{ .port_in }}
-              protocol: TCP
-            {{- end }}
-            {{- if .port_out }}
-            - name: out
-              containerPort: {{ .port_out }}
-              protocol: TCP
-            {{- end }}
-            {{- if .grpc_port }}
-            - name: grpc
-              containerPort: {{ .grpc_port }}
-              protocol: TCP
-            {{- end }}
-            {{- if .grpc_port }}
-            - name: ctrl
-              containerPort: {{ .port_ctrl }}
-              protocol: TCP
-            {{- end }}
+      - name: {{ .name }}
+        image: {{ .image }}
+        args: {{ .command }}
+        imagePullPolicy: null
+        ports:
+        {{- if .port_in }}
+        - name: in
+          containerPort: {{ .port_in }}
+          protocol: TCP
+        {{- end }}
+        {{- if .port_out }}
+        - name: out
+          containerPort: {{ .port_out }}
+          protocol: TCP
+        {{- end }}
+        {{- if .grpc_port }}
+        - name: grpc
+          containerPort: {{ .grpc_port }}
+          protocol: TCP
+        {{- end }}
+        {{- if .grpc_port }}
+        - name: ctrl
+          containerPort: {{ .port_ctrl }}
+          protocol: TCP
+        {{- end }}
           resources:
             requests:
               cpu: {{ .cpu }}

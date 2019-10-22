@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .name }}-statefulset
+  name: {{ .name }}
 spec:
   replicas: {{ .replicas }}
   selector:
