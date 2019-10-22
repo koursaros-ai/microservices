@@ -48,7 +48,7 @@ class Flow(_Flow):
             p_args = vars(configs['parsed_args'])
             extra_args = vars(extra_parser.parse_known_args(configs['unk_args'])[0])
             yaml_path = p_args.get('yaml_path', None)
-            app = configs['service'].value.lower()
+            app = configs['service'].name.lower()
             model = yaml_path.parent.name if yaml_path else None
 
             self.helm_yaml['services'][app] += [dict(
