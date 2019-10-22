@@ -51,7 +51,7 @@ class Flow(_Flow):
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
 
-            model = Path(yaml_path).parent.name if isinstance(yaml_path, str) else configs['image']
+            model = Path(yaml_path).parent.name if isinstance(yaml_path, str) else None
 
             self.helm_yaml['services'][app] += [dict(
                 name=name,
@@ -66,7 +66,7 @@ class Flow(_Flow):
                 storage=extra_args.get('storage', None),
                 memory=extra_args.get('memory', None),
                 cpu=extra_args.get('cpu', None),
-                image='hub-%s:latest-%s' % (app, model)
+                image='hub-%s:latest-%s' % (app, model) if model else configs['image']
             )]
 
         stream = StringIO()
