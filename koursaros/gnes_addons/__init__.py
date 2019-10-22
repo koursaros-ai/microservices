@@ -39,7 +39,7 @@ class Flow(_Flow):
         extra_parser.add_argument('--storage', default='500Mi')
         extra_parser.add_argument('--memory', default='500Mi')
         extra_parser.add_argument('--cpu', default='300m')
-
+        service_map =dict()
         services = ruamel.yaml.load(self.to_swarm_yaml(), Loader=ruamel.yaml.Loader)['services']
         dict_merge(services, self._service_nodes)
         helm_yaml = collections.defaultdict(lambda: [])

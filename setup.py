@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from pathlib import Path
 
 setup(
     name='koursaros',
@@ -9,17 +10,14 @@ setup(
     description='Koursaros is a distributed, cloud-'
                 'native platform for developing and deploying '
                 'automated information retrieval and inference applications.',
+    long_description=Path('README.md').read_text(),
     author='Koursaros',
     author_email='cole.thienes@gmail.com',
     url='https://github.com/koursaros-ai/koursaros',
     # download_url='https://github.com/koursaros-ai/koursaros/archive/0.0.1.tar.gz',
     keywords=['koursaros', 'distributed', 'cloud-native', 'neural', 'inference'],
     install_requires=['PyYAML', 'gitpython', 'python-box', 'gnes', 'docker', 'pyhelm'],
-    entry_points={
-        'console_scripts': [
-            'kctl = kctl.__main__:main',
-        ],
-    },
+    entry_points={'console_scripts': ['kctl=koursaros.cli:main']},
     classifiers=[
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
