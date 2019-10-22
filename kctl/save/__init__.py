@@ -11,7 +11,8 @@ def save():
 
 @save.command()
 @pipeline_options
-def pipeline(app_manager, pipeline_name, runtime, platform, yes):
+@click.option('-p', '--platform', required=True)
+def pipeline(app_manager, pipeline_name, runtime, yes, platform):
     """Deploy a pipeline with compose or k8s. """
     flow = app_manager.get_flow('pipelines', pipeline_name, runtime).build()
 

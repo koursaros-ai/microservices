@@ -3,7 +3,7 @@ from koursaros.gnes_addons import Flow
 flow = (
     Flow(check_version=True)
     .add_client(name='postgres', yaml_path='clients/postgres/wikititles.yml')
-    .add_preprocessor(name='sentsplit', replicas=2,
+    .add_preprocessor(name='sentsplit', replicas=2, storage='1Gi',
                       yaml_path='services/preprocessors/sentsplit/jsonmode.yml')
     .add_encoder(name='textbyte', recv_from='sentsplit', replicas=2,
                  yaml_path='services/encoders/textbyte/max256.yml')

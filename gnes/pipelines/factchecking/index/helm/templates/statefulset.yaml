@@ -19,6 +19,9 @@ spec:
         requests:
           storage: {{ .storage }}
   template:
+    metadata:
+      labels:
+        app: {{ .name }}
     spec:
       containers:
       - name: {{ .name }}
