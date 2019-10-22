@@ -50,13 +50,15 @@ class Flow(_Flow):
             extra_args = vars(extra_parser.parse_known_args(configs['unk_args'])[0])
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
-            try:
-                model = Path(yaml_path).parent.name if yaml_path else None
-            except:
-                import pdb; pdb.set_trace()
+
+            if isinstance(yaml_path, str):
+                model = Path(yaml_path).parent.name
+            else:
+                model = configs['kwargs']['yaml_path'].lower()
 
             self.helm_yaml['services'][app] += [dict(
                 name=name,
+                app=app,
                 model=model,
                 port_in=p_args.get('port_in', None),
                 port_out=p_args.get('port_out', None),
@@ -67,9 +69,10 @@ class Flow(_Flow):
                 storage=extra_args.get('storage', None),
                 memory=extra_args.get('memory', None),
                 cpu=extra_args.get('cpu', None),
-                image='hub-%s:%s' % (app, model) if yaml_path else configs['image']
+                image='hub-%s:latest-%s' % (app, model)
             )]
 
         stream = StringIO()
         _yaml.dump(self.helm_yaml, stream)
         return stream.getvalue().strip()
+
