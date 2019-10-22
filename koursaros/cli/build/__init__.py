@@ -1,6 +1,7 @@
 from koursaros.repo_creds import get_creds
 from ..decorators import *
 from shutil import copytree, rmtree
+from pathlib import Path
 
 
 @click.group()
@@ -43,9 +44,9 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
                 docker_build(path, service['image'])
 
     if hasattr(flow, 'client_node'):
-        client_cls = flow.client_node['name']
-        path = str(app_manager.find('client', client_cls))
-        tag = 'gnes-client:%s' % client_cls
+        model = Path(flow.client_node['yaml_path']).parent.name
+        path = str(app_manager.find('hub', 'client', model))
+        tag = 'gnes-client:latest-%s' % model
         docker_build(path, tag)
 
     """save helm chart"""
