@@ -46,7 +46,7 @@ class Flow(_Flow):
 
         for name, configs in services.items():
             p_args = vars(configs['parsed_args'])
-            extra_args, _ = vars(extra_parser.parse_known_args(configs['unk_args']))
+            extra_args = vars(extra_parser.parse_known_args(configs['unk_args'])[0])
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].value.lower()
             model = yaml_path.parent.name if yaml_path else None
