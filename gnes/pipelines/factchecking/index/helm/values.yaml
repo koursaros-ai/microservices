@@ -1,11 +1,11 @@
 services:
   frontends:
   - name: Frontend0
-    port_in: 63007
-    port_out: 56708
+    port_in: 63584
+    port_out: 57809
     ctrl_port:
     grpc_port: 8800
-    command: frontend --port_in 63007 --port_out 56708 --port_ctrl 55047 --parallel_backend
+    command: frontend --port_in 63584 --port_out 57809 --port_ctrl 52777 --parallel_backend
       process
     replicas: 1
     storage:
@@ -14,12 +14,12 @@ services:
     image: gnes-frontend:Frontend0
   preprocessors:
   - name: sentsplit
-    port_in: 56708
-    port_out: 60161
+    port_in: 57809
+    port_out: 54051
     ctrl_port:
     grpc_port:
-    command: preprocess --port_in 56708 --port_out 60161 --socket_in PULL_CONNECT
-      --socket_out PUB_BIND --port_ctrl 64041 --parallel_backend process --yaml_path
+    command: preprocess --port_in 57809 --port_out 54051 --socket_in PULL_CONNECT
+      --socket_out PUB_BIND --port_ctrl 56083 --parallel_backend process --yaml_path
       services/preprocessors/sentsplit/jsonmode.yml
     replicas: 2
     storage:
@@ -28,12 +28,12 @@ services:
     image: gnes-preprocessor:sentsplit
   encoders:
   - name: textbyte
-    port_in: 60161
-    port_out: 54016
+    port_in: 54051
+    port_out: 51021
     ctrl_port:
     grpc_port:
-    command: encode --port_in 60161 --port_out 54016 --socket_in SUB_CONNECT --port_ctrl
-      55960 --parallel_backend process --yaml_path services/encoders/textbyte/max256.yml
+    command: encode --port_in 54051 --port_out 51021 --socket_in SUB_CONNECT --port_ctrl
+      59040 --parallel_backend process --yaml_path services/encoders/textbyte/max256.yml
     replicas: 2
     storage:
     memory:
@@ -41,24 +41,24 @@ services:
     image: gnes-encoder:textbyte
   indexers:
   - name: keyword
-    port_in: 54016
-    port_out: 64694
+    port_in: 51021
+    port_out: 52691
     ctrl_port:
     grpc_port:
-    command: index --port_in 54016 --port_out 64694 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 50040 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
+    command: index --port_in 51021 --port_out 52691 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 60404 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
     replicas: 2
     storage:
     memory:
     cpu:
     image: gnes-indexer:keyword
   - name: lvdb
-    port_in: 60161
-    port_out: 64694
+    port_in: 54051
+    port_out: 52691
     ctrl_port:
     grpc_port:
-    command: index --port_in 60161 --port_out 64694 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 63603 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
+    command: index --port_in 54051 --port_out 52691 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 60337 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
     replicas: 2
     storage:
     memory:
@@ -66,12 +66,12 @@ services:
     image: gnes-indexer:lvdb
   routers:
   - name: reduce
-    port_in: 64694
-    port_out: 63007
+    port_in: 52691
+    port_out: 63584
     ctrl_port:
     grpc_port:
-    command: route --port_in 64694 --port_out 63007 --socket_out PUSH_CONNECT --port_ctrl
-      58557 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+    command: route --port_in 52691 --port_out 63584 --socket_out PUSH_CONNECT --port_ctrl
+      61705 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
     replicas: 1
     storage:
     memory:
