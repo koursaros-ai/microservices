@@ -4,6 +4,7 @@ from .deploy import deploy
 from .test import test
 from .show import show
 from .save import save
+from .build import build
 import click
 
 
