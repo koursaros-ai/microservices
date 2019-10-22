@@ -1,6 +1,7 @@
 from gnes.flow import Flow as _Flow
 import ruamel
 import collections
+import argparse
 
 
 def dict_merge(dct, merge_dct):
@@ -33,6 +34,11 @@ class Flow(_Flow):
 
         _yaml = YAML()
 
+        extra_parser = argparse.ArgumentParser()
+        extra_parser.add_argument('storage')
+        extra_parser.add_argument('memory')
+        extra_parser.add_argument('cpu')
+
         services = ruamel.yaml.load(self.to_swarm_yaml(), Loader=ruamel.yaml.Loader)['services']
         dict_merge(services, self._service_nodes)
         self.helm_yaml = collections.defaultdict(lambda: [])
@@ -40,15 +46,20 @@ class Flow(_Flow):
         for service_cls, configs in services.items():
             service_type = configs['service'].name.lower()
 
+            p_args = configs['parsed_args']
+            extra_args, _ = extra_parser.parse_known_args(configs['unk_args'])
+
             self.helm_yaml[service_type + 's'] += [dict(
                 name=service_cls,
-                port_in=getattr(configs['parsed_args'], 'port_in', None),
-                port_out=getattr(configs['parsed_args'], 'port_out', None),
-                ctrl_port=getattr(configs['parsed_args'], 'ctrl_port', None),
-                grpc_port=getattr(configs['parsed_args'], 'grpc_port', None),
+                port_in=getattr(p_args, 'port_in', None),
+                port_out=getattr(p_args, 'port_out', None),
+                ctrl_port=getattr(p_args, 'ctrl_port', None),
+                grpc_port=getattr(p_args, 'grpc_port', None),
                 command=configs.get('command', None).split(),
                 replicas=configs['deploy'].get('replicas', 1) if 'deploy' in configs else 1,
-                storage=None, memory=None, cpu=None,
+                storage=getattr(extra_args, 'storage', None),
+                memory=getattr(extra_args, 'memory', None),
+                cpu=getattr(extra_args, 'cpu', None),
                 image='gnes-%s:%s' % (service_type, service_cls)
             )]
 
