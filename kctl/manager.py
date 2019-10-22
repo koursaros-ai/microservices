@@ -3,9 +3,10 @@
 from collections import defaultdict
 from gnes.helper import set_logger
 from importlib import machinery
-from typing import List
+from itertools import chain
 from gnes.flow import Flow
 from pathlib import Path
+from typing import List
 import subprocess
 import threading
 import atexit
@@ -37,11 +38,11 @@ class AppManager:
 
     @property
     def root(self) -> 'Path':
-        if self.base.joinpath('.kctl').is_dir():
-            return self.base
-        for path in self.base.parents:
+        for path in chain(self.base.parents, [self.base]):
             if path.joinpath('.kctl').is_dir():
                 return path
+
+        raise FileNotFoundError(f'"%s" is not in an app' % str(self.base))
 
     def find_app_file(self, *dirs: str) -> 'Path':
         check_path = self.root.joinpath(*dirs)
