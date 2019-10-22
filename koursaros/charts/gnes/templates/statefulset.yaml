@@ -15,9 +15,11 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
+      {{- if .storage }}
       resources:
         requests:
           storage: {{ .storage }}
+      {{- end }}
   template:
     metadata:
       labels:
@@ -51,8 +53,12 @@ spec:
         {{- end }}
           resources:
             requests:
+              {{- if .cpu }}
               cpu: {{ .cpu }}
+              {{- end }}
+              {{- if .memory }}
               memory: {{ .memory }}
+              {{- end }}
 
         {{- if .resources -}}
         {{- toYaml .resources | nindent 8 -}}

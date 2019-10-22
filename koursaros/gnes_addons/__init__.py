@@ -39,7 +39,7 @@ class Flow(_Flow):
 
         for service_cls, configs in services.items():
             service_type = configs['service'].name.lower()
-            import pdb; pdb.set_trace()
+
             self.helm_yaml[service_type + 's'] += [dict(
                 name=service_cls,
                 port_in=getattr(configs['parsed_args'], 'port_in', None),
@@ -48,9 +48,7 @@ class Flow(_Flow):
                 grpc_port=getattr(configs['parsed_args'], 'grpc_port', None),
                 command=configs.get('command', None).split(),
                 replicas=configs['deploy'].get('replicas', 1) if 'deploy' in configs else 1,
-                storage=getattr(configs['unk_args'], 'storage', None),
-                memory=getattr(configs['unk_args'], 'memory', None),
-                cpu=getattr(configs['unk_args'], 'cpu', None),
+                storage=None, memory=None, cpu=None,
                 image='gnes-%s:%s' % (service_type, service_cls)
             )]
 
