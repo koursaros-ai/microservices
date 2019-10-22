@@ -50,7 +50,10 @@ class Flow(_Flow):
             extra_args = vars(extra_parser.parse_known_args(configs['unk_args'])[0])
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
-            model = Path(yaml_path).parent.name if yaml_path else None
+            try:
+                model = Path(yaml_path).parent.name if yaml_path else None
+            except:
+                import pdb; pdb.set_trace()
 
             self.helm_yaml['services'][app] += [dict(
                 name=name,
