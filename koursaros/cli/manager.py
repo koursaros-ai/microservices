@@ -27,9 +27,7 @@ class AppManager:
 
     def __init__(self):
         self.root = Path(__file__).parent.parent
-        os.chdir(str(self.root))
         self.logger = set_logger('kctl')
-
         self.threads = []
         self.thread_logs = defaultdict(lambda: [])
         self.thread_logging = False
@@ -79,6 +77,7 @@ class AppManager:
             t.join()
 
     def get_flow(self, *dirs: str) -> 'Flow':
+        os.chdir(str(self.root))
         flow_path = self.find(*dirs, 'flow.py')
         flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
         flow.path = flow_path
