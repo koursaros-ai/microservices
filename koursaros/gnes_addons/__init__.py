@@ -48,9 +48,9 @@ class Flow(_Flow):
                 grpc_port=getattr(configs['parsed_args'], 'grpc_port', None),
                 command=configs.get('command', None).split(),
                 replicas=configs['deploy'].get('replicas', 1) if 'deploy' in configs else 1,
-                storage=configs.get('storage', None),
-                memory=configs.get('memory', None),
-                cpu=configs.get('cpu', None),
+                storage=getattr(configs['parsed_args'], 'storage', None),
+                memory=getattr(configs['parsed_args'], 'memory', None),
+                cpu=getattr(configs['parsed_args'], 'cpu', None),
                 image='gnes-%s:%s' % (service_type, service_cls)
             )]
 
