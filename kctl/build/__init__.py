@@ -26,7 +26,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
     docker_client = docker.from_env()
-    flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
+    flow = app_manager.get_flow('pipelines', pipeline_name, runtime).build()
     flow.to_helm_yaml()
 
     def docker_build(path, tag):
