@@ -51,9 +51,9 @@ class AppManager:
 
         raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))
 
-    def subprocess_call(self, cmd: List[str]):
+    def subprocess_call(self, cmd: List[str], **kwargs):
         self.logger.critical('subprocess.call: "%s"' % ' '.join(cmd))
-        subprocess.call(cmd)
+        subprocess.call(cmd, **kwargs)
 
     def thread(self, *args, **kwargs):
         if not self.thread_logging:

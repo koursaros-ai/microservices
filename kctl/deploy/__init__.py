@@ -32,7 +32,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, platform, dryrun):
 
     elif platform == 'k8s':
         helm_path = app_manager.find('pipelines', pipeline_name, runtime, 'helm')
-        app_manager.subprocess_call('helm delete --purge $(helm ls --all --short)'.split())
+        app_manager.subprocess_call('helm delete --purge $(helm ls --all --short)', shell=True)
         install = ['helm', 'install']
         if dryrun: install += ['--dry-run', '--debug']
         install += [str(helm_path)]
