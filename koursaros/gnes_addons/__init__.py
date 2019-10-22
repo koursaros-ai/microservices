@@ -1,4 +1,5 @@
 from collections import Mapping
+from pathlib import Path
 from gnes.flow import *
 import argparse
 
@@ -49,7 +50,7 @@ class Flow(_Flow):
             extra_args = vars(extra_parser.parse_known_args(configs['unk_args'])[0])
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
-            model = yaml_path.parent.name if yaml_path else None
+            model = Path(yaml_path).parent.name if yaml_path else None
 
             self.helm_yaml['services'][app] += [dict(
                 name=name,
