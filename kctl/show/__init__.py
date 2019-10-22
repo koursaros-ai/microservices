@@ -11,7 +11,7 @@ def show():
 
 @show.command()
 @pipeline_options
-def pipeline(app_manager, pipeline_name, runtime):
+def pipeline(app_manager, pipeline_name, runtime, yes):
     """Deploy a pipeline with compose or k8s. """
     url = app_manager.get_flow('pipelines', pipeline_name, runtime).build().to_url()
 
