@@ -1,3 +1,104 @@
+C:KCTL:[man:sub: 55]:[42m[37msubprocess.call: "helm install --dry-run --debug /Users/cole/Desktop/koursaros/gnes/pipelines/fact_checking/index/helm"[0m
+[debug] Created tunnel using local port: '62190'
+
+[debug] SERVER: "127.0.0.1:62190"
+
+[debug] Original chart version: ""
+[debug] CHART PATH: /Users/cole/Desktop/koursaros/gnes/pipelines/fact_checking/index/helm
+
+NAME:   idle-bumblebee
+REVISION: 1
+RELEASED: Tue Oct 22 09:16:42 2019
+CHART: gnes-0.1.0
+USER-SUPPLIED VALUES:
+{}
+
+COMPUTED VALUES:
+services:
+  encoders:
+  - command: encode --port_in 59806 --port_out 61741 --socket_in SUB_CONNECT --port_ctrl
+      62478 --parallel_backend process --yaml_path services/encoders/text_byte/max_256.yml
+    cpu: null
+    ctrl_port: null
+    grpc_port: null
+    image: gnes-encoder:text_byte
+    memory: null
+    name: text_byte
+    port_in: 59806
+    port_out: 61741
+    replicas: 2
+    storage: null
+  frontends:
+  - command: frontend --port_in 49283 --port_out 51979 --port_ctrl 63936 --parallel_backend
+      process
+    cpu: null
+    ctrl_port: null
+    grpc_port: 8800
+    image: gnes-frontend:Frontend0
+    memory: null
+    name: Frontend0
+    port_in: 49283
+    port_out: 51979
+    replicas: 1
+    storage: null
+  indexers:
+  - command: index --port_in 61741 --port_out 57819 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 51438 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
+    cpu: null
+    ctrl_port: null
+    grpc_port: null
+    image: gnes-indexer:keyword
+    memory: null
+    name: keyword
+    port_in: 61741
+    port_out: 57819
+    replicas: 2
+    storage: null
+  - command: index --port_in 59806 --port_out 57819 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 53900 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
+    cpu: null
+    ctrl_port: null
+    grpc_port: null
+    image: gnes-indexer:lvdb
+    memory: null
+    name: lvdb
+    port_in: 59806
+    port_out: 57819
+    replicas: 2
+    storage: null
+  preprocessors:
+  - command: preprocess --port_in 51979 --port_out 59806 --socket_in PULL_CONNECT
+      --socket_out PUB_BIND --port_ctrl 64635 --parallel_backend process --yaml_path
+      services/preprocessors/sent_split/json_mode.yml
+    cpu: null
+    ctrl_port: null
+    grpc_port: null
+    image: gnes-preprocessor:sent_split
+    memory: null
+    name: sent_split
+    port_in: 51979
+    port_out: 59806
+    replicas: 2
+    storage: null
+  routers:
+  - command: route --port_in 57819 --port_out 49283 --socket_out PUSH_CONNECT --port_ctrl
+      58884 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+    cpu: null
+    ctrl_port: null
+    grpc_port: null
+    image: gnes-router:Reduce
+    memory: null
+    name: Reduce
+    port_in: 57819
+    port_out: 49283
+    replicas: 1
+    storage: null
+
+HOOKS:
+MANIFEST:
+
+---
+# Source: gnes/templates/main.yaml
 apiVersion: apps/v1
 kind: StatefulSet
 spec:
@@ -15,14 +116,14 @@ spec:
       containers:
         - name: sent_split
           image: gnes-preprocessor:sent_split
-          args: preprocess --port_in 63742 --port_out 61899 --socket_in PULL_CONNECT --socket_out PUB_BIND --port_ctrl 51805 --parallel_backend process --yaml_path services/preprocessors/sent_split/json_mode.yml
+          args: preprocess --port_in 51979 --port_out 59806 --socket_in PULL_CONNECT --socket_out PUB_BIND --port_ctrl 64635 --parallel_backend process --yaml_path services/preprocessors/sent_split/json_mode.yml
           imagePullPolicy: null
           ports:
             - name: in
-              containerPort: 63742
+              containerPort: 51979
               protocol: TCP
             - name: out
-              containerPort: 61899
+              containerPort: 59806
               protocol: TCP
           resources:
             requests:
@@ -35,13 +136,13 @@ spec:
   selector:
     app: sent_split
   clusterIP: None
-    ports:
-      - name: in
-        port: 63742
-        protocol: TCP
-      - name: out
-        port: 61899
-        protocol: TCP
+  ports:
+    - name: in
+      port: 51979
+      protocol: TCP
+    - name: out
+      port: 59806
+      protocol: TCP
 
 
 
@@ -62,14 +163,14 @@ spec:
       containers:
         - name: text_byte
           image: gnes-encoder:text_byte
-          args: encode --port_in 61899 --port_out 62648 --socket_in SUB_CONNECT --port_ctrl 60517 --parallel_backend process --yaml_path services/encoders/text_byte/max_256.yml
+          args: encode --port_in 59806 --port_out 61741 --socket_in SUB_CONNECT --port_ctrl 62478 --parallel_backend process --yaml_path services/encoders/text_byte/max_256.yml
           imagePullPolicy: null
           ports:
             - name: in
-              containerPort: 61899
+              containerPort: 59806
               protocol: TCP
             - name: out
-              containerPort: 62648
+              containerPort: 61741
               protocol: TCP
           resources:
             requests:
@@ -82,13 +183,13 @@ spec:
   selector:
     app: text_byte
   clusterIP: None
-    ports:
-      - name: in
-        port: 61899
-        protocol: TCP
-      - name: out
-        port: 62648
-        protocol: TCP
+  ports:
+    - name: in
+      port: 59806
+      protocol: TCP
+    - name: out
+      port: 61741
+      protocol: TCP
 
 
 
@@ -109,14 +210,14 @@ spec:
       containers:
         - name: keyword
           image: gnes-indexer:keyword
-          args: index --port_in 62648 --port_out 54305 --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --port_ctrl 50136 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
+          args: index --port_in 61741 --port_out 57819 --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --port_ctrl 51438 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
           imagePullPolicy: null
           ports:
             - name: in
-              containerPort: 62648
+              containerPort: 61741
               protocol: TCP
             - name: out
-              containerPort: 54305
+              containerPort: 57819
               protocol: TCP
           resources:
             requests:
@@ -129,13 +230,13 @@ spec:
   selector:
     app: keyword
   clusterIP: None
-    ports:
-      - name: in
-        port: 62648
-        protocol: TCP
-      - name: out
-        port: 54305
-        protocol: TCP
+  ports:
+    - name: in
+      port: 61741
+      protocol: TCP
+    - name: out
+      port: 57819
+      protocol: TCP
 
 
 apiVersion: apps/v1
@@ -155,14 +256,14 @@ spec:
       containers:
         - name: lvdb
           image: gnes-indexer:lvdb
-          args: index --port_in 61899 --port_out 54305 --socket_in SUB_CONNECT --socket_out PUSH_CONNECT --port_ctrl 55399 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
+          args: index --port_in 59806 --port_out 57819 --socket_in SUB_CONNECT --socket_out PUSH_CONNECT --port_ctrl 53900 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
           imagePullPolicy: null
           ports:
             - name: in
-              containerPort: 61899
+              containerPort: 59806
               protocol: TCP
             - name: out
-              containerPort: 54305
+              containerPort: 57819
               protocol: TCP
           resources:
             requests:
@@ -175,13 +276,13 @@ spec:
   selector:
     app: lvdb
   clusterIP: None
-    ports:
-      - name: in
-        port: 61899
-        protocol: TCP
-      - name: out
-        port: 54305
-        protocol: TCP
+  ports:
+    - name: in
+      port: 59806
+      protocol: TCP
+    - name: out
+      port: 57819
+      protocol: TCP
 
 
 
@@ -202,14 +303,14 @@ spec:
       containers:
         - name: Reduce
           image: gnes-router:Reduce
-          args: route --port_in 54305 --port_out 60442 --socket_out PUSH_CONNECT --port_ctrl 53919 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+          args: route --port_in 57819 --port_out 49283 --socket_out PUSH_CONNECT --port_ctrl 58884 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
           imagePullPolicy: null
           ports:
             - name: in
-              containerPort: 54305
+              containerPort: 57819
               protocol: TCP
             - name: out
-              containerPort: 60442
+              containerPort: 49283
               protocol: TCP
           resources:
             requests:
@@ -222,13 +323,10 @@ spec:
   selector:
     app: Reduce
   clusterIP: None
-    ports:
-      - name: in
-        port: 54305
-        protocol: TCP
-      - name: out
-        port: 60442
-        protocol: TCP
-
-
-
+  ports:
+    - name: in
+      port: 57819
+      protocol: TCP
+    - name: out
+      port: 49283
+      protocol: TCP
