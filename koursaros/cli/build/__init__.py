@@ -10,12 +10,12 @@ def build():
 
 @build.command()
 @pipeline_options
-@click.option('-p', '--push', is_flag=True)
+@click.option('-p', '--push')
 @click.option('-c', '--creds')
 def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     """Build images for a pipeline. """
 
-    if yes:
+    if push:
         if creds is None:
             raise ValueError('--creds repository must be specified if pushing')
 
@@ -34,7 +34,7 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
         if push:
             app_manager.logger.critical('Pushing %s...' % tag)
-            app_manager.subprocess_call('docker push %s' % tag, shell=True)
+            app_manager.subprocess_call('docker push %s/%s' % (push, tag), shell=True)
 
     for services in flow.helm_yaml.values():
         for service in services:
