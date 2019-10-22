@@ -1,6 +1,5 @@
 
 from ..decorators import *
-import docker
 
 
 @click.group()
@@ -43,16 +42,8 @@ def pipeline(app_manager, pipeline_name, runtime, yes, platform, dryrun):
 def client(app_manager, pipeline_name, runtime, creds):
     """Deploy a client with docker. """
     flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
-    cn = flow.client_node
-    tag = 'gnes-client:%s' % (cn.pop('name'))
-
-    switches = ['--mode', runtime,
-                '--creds', creds,
-                ] + ['--%s %s' % (k, v) for k, v in cn.items()]
-
-    response = docker.from_env().containers.run(tag, stream=True, command=switches)
-
-    for stream in response:
-        app_manager.logger.info(stream)
+    tag = 'hub-client:latest-%s' % flow.client_node.pop('name')
+    app_manager.subprocess_call(
+        'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), stream=True)
 
 
