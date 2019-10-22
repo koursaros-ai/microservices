@@ -44,9 +44,9 @@ class AppManager:
 
         raise FileNotFoundError(f'"%s" is not in an app' % str(self.base))
 
-    def find_app_file(self, *dirs: str) -> 'Path':
+    def find(self, *dirs: str) -> 'Path':
         check_path = self.root.joinpath(*dirs)
-        if check_path.is_file():
+        if check_path.exists():
             return check_path
 
         raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))

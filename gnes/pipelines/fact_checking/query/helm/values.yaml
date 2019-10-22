@@ -1,24 +1,91 @@
-
-nameOverride: ""
-fullnameOverride: ""
-imagePullPolicy: IfNotPresent
-
 services:
-  frontend: {}
-  preprocessors: {}
-  encoders: {}
-  indexers: {}
-  routers: {}
-
-  # Valid options for all services are:
-  # - name: name of the service
-  #   image: -
-  #   port_in: -
-  #   port_out: -
-  #   command: command on container entrance
-  #   replicas: -
-  #   storage: storage on stateful claim
-  #   memory: ram
-  #   cpu: -
-  # storage and memory are suffixed with Gi(gigabits) or Mi(Megabits) (just greater than a GB and MB)
-  # cpu is suffixed with m(milliCPU or 1/1000 CPU)
+  frontends:
+  - name: Frontend0
+    port_in: 63152
+    port_out: 49972
+    ctrl_port:
+    grpc_port: 8800
+    command: frontend --port_in 63152 --port_out 49972 --port_ctrl 55922 --parallel_backend
+      process
+    replicas: 1
+    storage:
+    memory:
+    cpu:
+    image: gnes-frontend:Frontend0
+  preprocessors:
+  - name: sent_split
+    port_in: 49972
+    port_out: 53012
+    ctrl_port:
+    grpc_port:
+    command: preprocess --port_in 49972 --port_out 53012 --socket_in PULL_CONNECT
+      --port_ctrl 54583 --parallel_backend process --yaml_path services/preprocessors/sent_split/json_mode.yml
+    replicas: 2
+    storage:
+    memory:
+    cpu:
+    image: gnes-preprocessor:sent_split
+  encoders:
+  - name: text_byte
+    port_in: 53012
+    port_out: 54139
+    ctrl_port:
+    grpc_port:
+    command: encode --port_in 53012 --port_out 54139 --socket_in PULL_CONNECT --port_ctrl
+      51629 --parallel_backend process --yaml_path services/encoders/text_byte/max_256.yml
+    replicas: 2
+    storage:
+    memory:
+    cpu:
+    image: gnes-encoder:text_byte
+  - name: roberta_infer
+    port_in: 55961
+    port_out: 52539
+    ctrl_port:
+    grpc_port:
+    command: encode --port_in 55961 --port_out 52539 --socket_in PULL_CONNECT --port_ctrl
+      52568 --parallel_backend process --yaml_path services/encoders/roberta_infer/dim_64.yml
+    replicas: 2
+    storage:
+    memory:
+    cpu:
+    image: gnes-encoder:roberta_infer
+  indexers:
+  - name: keyword
+    port_in: 54139
+    port_out: 60943
+    ctrl_port:
+    grpc_port:
+    command: index --port_in 54139 --port_out 60943 --socket_in PULL_CONNECT --port_ctrl
+      63670 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
+    replicas: 2
+    storage:
+    memory:
+    cpu:
+    image: gnes-indexer:keyword
+  - name: lvdb
+    port_in: 60943
+    port_out: 55961
+    ctrl_port:
+    grpc_port:
+    command: index --port_in 60943 --port_out 55961 --socket_in PULL_CONNECT --port_ctrl
+      55890 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
+    replicas: 2
+    storage:
+    memory:
+    cpu:
+    image: gnes-indexer:lvdb
+  routers:
+  - name: Reduce
+    port_in: 52539
+    port_out: 63152
+    ctrl_port:
+    grpc_port:
+    command: route --port_in 52539 --port_out 63152 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 50250 --parallel_backend process --yaml_path BaseReduceRouter
+      --num_part 2
+    replicas: 1
+    storage:
+    memory:
+    cpu:
+    image: gnes-router:Reduce
