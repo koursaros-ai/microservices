@@ -1,5 +1,5 @@
 from gnes.cli.parser import set_client_cli_parser
-from koursaros.credentials import get_creds
+from koursaros.repo_creds import get_creds
 from gnes.client.cli import CLIClient
 from gnes.base import TrainableBase
 import traceback

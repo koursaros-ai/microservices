@@ -1,5 +1,5 @@
 
-from koursaros.credentials import get_creds
+from koursaros.repo_creds import get_creds
 from ..decorators import *
 import docker
 
