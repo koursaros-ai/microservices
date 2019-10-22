@@ -39,7 +39,7 @@ class Flow(_Flow):
 
         for service_cls, configs in services.items():
             service_type = configs['service'].name.lower()
-
+            import pdb; pdb.set_trace()
             self.helm_yaml[service_type + 's'] += [dict(
                 name=service_cls,
                 port_in=getattr(configs['parsed_args'], 'port_in', None),
