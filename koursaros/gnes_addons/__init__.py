@@ -45,6 +45,7 @@ class Flow(_Flow):
 
         for service_cls, configs in services.items():
             service_type = configs['service'].name.lower()
+            import pdb; pdb.set_trace()
 
             p_args = configs['parsed_args']
             extra_args, _ = extra_parser.parse_known_args(configs['unk_args'])
