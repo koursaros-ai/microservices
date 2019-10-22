@@ -1,90 +1,24 @@
-frontends:
-- name: Frontend0
-  port_in: 56519
-  port_out: 51214
-  ctrl_port:
-  grpc_port: 8800
-  command: frontend --port_in 56519 --port_out 51214 --port_ctrl 49454 --parallel_backend
-    process
-  replicas: 1
-  storage:
-  memory:
-  cpu:
-  image: gnes-frontend:Frontend0
-preprocessors:
-- name: sent_split
-  port_in: 51214
-  port_out: 51711
-  ctrl_port:
-  grpc_port:
-  command: preprocess --port_in 51214 --port_out 51711 --socket_in PULL_CONNECT --port_ctrl
-    55503 --parallel_backend process --yaml_path services/preprocessors/sent_split/json_mode.yml
-  replicas: 2
-  storage:
-  memory:
-  cpu:
-  image: gnes-preprocessor:sent_split
-encoders:
-- name: text_byte
-  port_in: 51711
-  port_out: 50869
-  ctrl_port:
-  grpc_port:
-  command: encode --port_in 51711 --port_out 50869 --socket_in PULL_CONNECT --port_ctrl
-    56218 --parallel_backend process --yaml_path services/encoders/text_byte/max_256.yml
-  replicas: 2
-  storage:
-  memory:
-  cpu:
-  image: gnes-encoder:text_byte
-- name: roberta_infer
-  port_in: 56987
-  port_out: 62889
-  ctrl_port:
-  grpc_port:
-  command: encode --port_in 56987 --port_out 62889 --socket_in PULL_CONNECT --port_ctrl
-    61468 --parallel_backend process --yaml_path services/encoders/roberta_infer/dim_64.yml
-  replicas: 2
-  storage:
-  memory:
-  cpu:
-  image: gnes-encoder:roberta_infer
-indexers:
-- name: keyword
-  port_in: 50869
-  port_out: 50843
-  ctrl_port:
-  grpc_port:
-  command: index --port_in 50869 --port_out 50843 --socket_in PULL_CONNECT --port_ctrl
-    50279 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
-  replicas: 2
-  storage:
-  memory:
-  cpu:
-  image: gnes-indexer:keyword
-- name: lvdb
-  port_in: 50843
-  port_out: 56987
-  ctrl_port:
-  grpc_port:
-  command: index --port_in 50843 --port_out 56987 --socket_in PULL_CONNECT --port_ctrl
-    56863 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
-  replicas: 2
-  storage:
-  memory:
-  cpu:
-  image: gnes-indexer:lvdb
-routers:
-- name: Reduce
-  port_in: 62889
-  port_out: 56519
-  ctrl_port:
-  grpc_port:
-  command: route --port_in 62889 --port_out 56519 --socket_in PULL_CONNECT --socket_out
-    PUSH_CONNECT --port_ctrl 61894 --parallel_backend process --yaml_path BaseReduceRouter
-    --num_part 2
-  replicas: 1
-  storage:
-  memory:
-  cpu:
-  image: gnes-router:Reduce
+
+nameOverride: ""
+fullnameOverride: ""
+imagePullPolicy: IfNotPresent
+
+services:
+  frontend: {}
+  preprocessors: {}
+  encoders: {}
+  indexers: {}
+  routers: {}
+
+  # Valid options for all services are:
+  # - name: name of the service
+  #   image: -
+  #   port_in: -
+  #   port_out: -
+  #   command: command on container entrance
+  #   replicas: -
+  #   storage: storage on stateful claim
+  #   memory: ram
+  #   cpu: -
+  # storage and memory are suffixed with Gi(gigabits) or Mi(Megabits) (just greater than a GB and MB)
+  # cpu is suffixed with m(milliCPU or 1/1000 CPU)
