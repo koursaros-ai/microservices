@@ -40,7 +40,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
             response = docker_client.images.push(tag, auth_config=hub_auth)
             for res in response:
                 app_manager.logger.info(res)
-
+    import pdb; pdb.set_trace()
     for service_type, services in flow.helm_yaml['services'].items():
         for service in services:
             path = str(app_manager.find_app_file(
