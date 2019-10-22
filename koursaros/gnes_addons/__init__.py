@@ -42,7 +42,7 @@ class Flow(_Flow):
 
         services = _yaml.load(self.to_swarm_yaml())['services']
         dict_merge(services, self._service_nodes)
-        helm_yaml = defaultdict(lambda: [])
+        self.helm_yaml = dict(services=defaultdict(lambda: []))
 
         for name, configs in services.items():
             p_args = vars(configs['parsed_args'])
@@ -51,7 +51,7 @@ class Flow(_Flow):
             app = configs['service'].value.lower()
             model = yaml_path.parent.name if yaml_path else None
 
-            helm_yaml[app] += [dict(
+            self.helm_yaml['services'][app] += [dict(
                 name=name,
                 model=model,
                 port_in=p_args.get('port_in', None),
@@ -67,6 +67,5 @@ class Flow(_Flow):
             )]
 
         stream = StringIO()
-        self.helm_yaml = dict(services=dict(helm_yaml))
         _yaml.dump(self.helm_yaml, stream)
         return stream.getvalue().strip()
