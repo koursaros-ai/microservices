@@ -45,16 +45,15 @@ class Flow(_Flow):
         helm_yaml = defaultdict(lambda: [])
 
         for name, configs in services.items():
-
-            yp = configs['parsed_args'].yaml_path
-            _type, _subtype = yp.parent.parent.name, yp.parent.name
-
             p_args = vars(configs['parsed_args'])
             extra_args, _ = vars(extra_parser.parse_known_args(configs['unk_args']))
+            yaml_path = p_args.get('yaml_path', None)
+            app = configs['service'].value.lower()
+            model = yaml_path.parent.name if yaml_path else None
 
-            helm_yaml[_type] += [dict(
+            helm_yaml[app] += [dict(
                 name=name,
-                sub_type=_subtype,
+                model=model,
                 port_in=p_args.get('port_in', None),
                 port_out=p_args.get('port_out', None),
                 ctrl_port=p_args.get('ctrl_port', None),
@@ -64,7 +63,7 @@ class Flow(_Flow):
                 storage=extra_args.get('storage', None),
                 memory=extra_args.get('memory', None),
                 cpu=extra_args.get('cpu', None),
-                image='hub-%s' % _subtype
+                image='hub-%s:%s' % (app, model) if yaml_path else configs['image']
             )]
 
         stream = StringIO()
