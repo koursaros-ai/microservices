@@ -3,7 +3,6 @@ from .manager import AppManager
 from .deploy import deploy
 from .test import test
 from .show import show
-from .save import save
 from .build import build
 import click
 
@@ -21,7 +20,6 @@ def kctl(ctx):
 kctl.add_command(deploy)
 kctl.add_command(test)
 kctl.add_command(show)
-kctl.add_command(save)
 kctl.add_command(build)
 
 
