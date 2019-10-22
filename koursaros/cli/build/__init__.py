@@ -29,8 +29,8 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     flow.to_helm_yaml()
 
     def docker_build(path, tag):
-        app_manager.logger.critical('Building %s from %s...' % (tag, path))
-        app_manager.subprocess_call('docker build -f %s -t %s' % (tag, path), shell=True)
+        app_manager.logger.critical('Building %s from %s...' % (path, tag))
+        app_manager.subprocess_call('docker build -f %s -t %s' % (path, tag), shell=True)
 
         if push:
             app_manager.logger.critical('Pushing %s...' % tag)
