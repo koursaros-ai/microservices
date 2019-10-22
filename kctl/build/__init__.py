@@ -41,10 +41,15 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
             for res in response:
                 app_manager.logger.info(res)
 
-    for service in flow.helm_yaml.values():
-        service_type = service['image'].split('-')[1].split(':')[0]
-        path = str(app_manager.find_app_file('services', service_type + 's', service['name'], 'Dockerfile'))
-        docker_build(path, service['image'])
+    for service_type, services in flow.helm_yaml['services'].items():
+        for service in services:
+            path = str(app_manager.find_app_file(
+                'services',
+                service_type,
+                service['name'],
+                'Dockerfile')
+            )
+            docker_build(path, service['image'])
 
     if hasattr(flow, '_client_node'):
         client_cls = flow.client_node['name']
