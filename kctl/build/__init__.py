@@ -25,7 +25,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, push, creds):
         hub_auth = dict(username=hub_creds.username, password=hub_creds.password)
 
     for cmd in subprocess.check_output('minikube docker-env', shell=True).split(b'\n'):
-        app_manager.subprocess_call(cmd)
+        app_manager.subprocess_call(cmd, shell=True)
 
     docker_client = docker.from_env()
     flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
