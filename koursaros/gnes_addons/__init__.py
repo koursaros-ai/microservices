@@ -2,6 +2,7 @@ from gnes.flow import Flow as _Flow
 import ruamel
 import collections
 import argparse
+from pathlib import Path
 
 
 def dict_merge(dct, merge_dct):
@@ -43,15 +44,17 @@ class Flow(_Flow):
         dict_merge(services, self._service_nodes)
         helm_yaml = collections.defaultdict(lambda: [])
 
-        for service_cls, configs in services.items():
-            service_type = configs['service'].name.lower()
-            import pdb; pdb.set_trace()
+        for name, configs in services.items():
+
+            yp = configs['parsed_args'].yaml_path
+            _type, _subtype = yp.parent.parent.name, yp.parent.name
 
             p_args = configs['parsed_args']
             extra_args, _ = extra_parser.parse_known_args(configs['unk_args'])
 
-            helm_yaml[service_type + 's'] += [dict(
-                name=service_cls,
+            helm_yaml[_type] += [dict(
+                name=name,
+                sub_type=_subtype,
                 port_in=getattr(p_args, 'port_in', None),
                 port_out=getattr(p_args, 'port_out', None),
                 ctrl_port=getattr(p_args, 'ctrl_port', None),
@@ -61,7 +64,7 @@ class Flow(_Flow):
                 storage=getattr(extra_args, 'storage', None),
                 memory=getattr(extra_args, 'memory', None),
                 cpu=getattr(extra_args, 'cpu', None),
-                image='gnes-%s:%s' % (service_type, service_cls)
+                image='hub-%s' % _subtype
             )]
 
         stream = StringIO()
