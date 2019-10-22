@@ -13,10 +13,10 @@ def build():
 @pipeline_options
 @click.option('-p', '--push', is_flag=True)
 @click.option('-c', '--creds')
-def pipeline(app_manager, flow_name, runtime, yes_flag, push_flag, creds):
+def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     """Build images for a pipeline. """
 
-    if push_flag:
+    if yes:
         if creds is None:
             raise ValueError('--creds repository must be specified if pushing')
 
@@ -35,7 +35,7 @@ def pipeline(app_manager, flow_name, runtime, yes_flag, push_flag, creds):
         for res in response:
             app_manager.logger.info(res)
 
-        if push_flag:
+        if push:
             app_manager.logger.critical('Pushing %s...' % tag)
             response = docker_client.images.push(tag, auth_config=hub_auth)
             for res in response:
