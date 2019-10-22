@@ -1,154 +1,24 @@
+
+nameOverride: ""
+fullnameOverride: ""
+imagePullPolicy: IfNotPresent
+
 services:
-  frontends:
-  - name: Frontend0
-    port_in: 60873
-    port_out: 56258
-    ctrl_port:
-    grpc_port: 8800
-    command:
-    - frontend
-    - --port_in
-    - '60873'
-    - --port_out
-    - '56258'
-    - --port_ctrl
-    - '57742'
-    - --parallel_backend
-    - process
-    replicas: 1
-    storage:
-    memory:
-    cpu:
-    image: gnes-frontend:Frontend0
-  preprocessors:
-  - name: sentsplit
-    port_in: 56258
-    port_out: 65342
-    ctrl_port:
-    grpc_port:
-    command:
-    - preprocess
-    - --port_in
-    - '56258'
-    - --port_out
-    - '65342'
-    - --socket_in
-    - PULL_CONNECT
-    - --socket_out
-    - PUB_BIND
-    - --port_ctrl
-    - '62836'
-    - --parallel_backend
-    - process
-    - --yaml_path
-    - services/preprocessors/sentsplit/jsonmode.yml
-    replicas: 2
-    storage:
-    memory:
-    cpu:
-    image: gnes-preprocessor:sentsplit
-  encoders:
-  - name: textbyte
-    port_in: 65342
-    port_out: 63548
-    ctrl_port:
-    grpc_port:
-    command:
-    - encode
-    - --port_in
-    - '65342'
-    - --port_out
-    - '63548'
-    - --socket_in
-    - SUB_CONNECT
-    - --port_ctrl
-    - '63509'
-    - --parallel_backend
-    - process
-    - --yaml_path
-    - services/encoders/textbyte/max256.yml
-    replicas: 2
-    storage:
-    memory:
-    cpu:
-    image: gnes-encoder:textbyte
-  indexers:
-  - name: keyword
-    port_in: 63548
-    port_out: 50676
-    ctrl_port:
-    grpc_port:
-    command:
-    - index
-    - --port_in
-    - '63548'
-    - --port_out
-    - '50676'
-    - --socket_in
-    - PULL_CONNECT
-    - --socket_out
-    - PUSH_CONNECT
-    - --port_ctrl
-    - '60608'
-    - --parallel_backend
-    - process
-    - --yaml_path
-    - services/indexers/keyword/base.yml
-    replicas: 2
-    storage:
-    memory:
-    cpu:
-    image: gnes-indexer:keyword
-  - name: lvdb
-    port_in: 65342
-    port_out: 50676
-    ctrl_port:
-    grpc_port:
-    command:
-    - index
-    - --port_in
-    - '65342'
-    - --port_out
-    - '50676'
-    - --socket_in
-    - SUB_CONNECT
-    - --socket_out
-    - PUSH_CONNECT
-    - --port_ctrl
-    - '61821'
-    - --parallel_backend
-    - process
-    - --yaml_path
-    - services/indexers/lvdb/base.yml
-    replicas: 2
-    storage:
-    memory:
-    cpu:
-    image: gnes-indexer:lvdb
-  routers:
-  - name: reduce
-    port_in: 50676
-    port_out: 60873
-    ctrl_port:
-    grpc_port:
-    command:
-    - route
-    - --port_in
-    - '50676'
-    - --port_out
-    - '60873'
-    - --socket_out
-    - PUSH_CONNECT
-    - --port_ctrl
-    - '65270'
-    - --parallel_backend
-    - process
-    - --yaml_path
-    - BaseReduceRouter
-    - --num_part
-    - '2'
-    replicas: 1
-    storage:
-    memory:
-    cpu:
-    image: gnes-router:reduce
+  frontend: {}
+  preprocessors: {}
+  encoders: {}
+  indexers: {}
+  routers: {}
+
+  # Valid options for all services are:
+  # - name: name of the service
+  #   image: -
+  #   port_in: -
+  #   port_out: -
+  #   command: command on container entrance
+  #   replicas: -
+  #   storage: storage on stateful claim
+  #   memory: ram
+  #   cpu: -
+  # storage and memory are suffixed with Gi(gigabits) or Mi(Megabits) (just greater than a GB and MB)
+  # cpu is suffixed with m(milliCPU or 1/1000 CPU)

@@ -35,9 +35,9 @@ class Flow(_Flow):
         _yaml = YAML()
 
         extra_parser = argparse.ArgumentParser()
-        extra_parser.add_argument('storage')
-        extra_parser.add_argument('memory')
-        extra_parser.add_argument('cpu')
+        extra_parser.add_argument('storage', default='500Mi')
+        extra_parser.add_argument('memory', default='500Mi')
+        extra_parser.add_argument('cpu', default='300m')
 
         services = ruamel.yaml.load(self.to_swarm_yaml(), Loader=ruamel.yaml.Loader)['services']
         dict_merge(services, self._service_nodes)
