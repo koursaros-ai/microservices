@@ -29,17 +29,17 @@ spec:
             - name: out
               containerPort: {{ .port_out }}
               protocol: TCP
-            {{- end -}}
+            {{- end }}
             {{- if .grpc_port }}
             - name: grpc
               containerPort: {{ .grpc_port }}
               protocol: TCP
-            {{- end -}}
+            {{- end }}
             {{- if .grpc_port }}
             - name: ctrl
               containerPort: {{ .port_ctrl }}
               protocol: TCP
-            {{- end -}}
+            {{- end }}
           resources:
             requests:
               cpu: {{ .cpu }}
