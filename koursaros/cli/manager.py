@@ -40,7 +40,7 @@ class AppManager:
         check_path = self.root.joinpath(*dirs)
         if check_path.exists():
             return check_path
-
+        import pdb; pdb.set_trace()
         raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))
 
     def subprocess_call(self, cmd: List[str], shell=False):
