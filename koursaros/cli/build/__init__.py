@@ -43,8 +43,7 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     for services in flow.helm_yaml.values():
         for service in services:
             if service['model']:
-                path = str(app_manager
-                           .find('hub', service['app'], service['model'], 'Dockerfile'))
+                path = str(app_manager.find('hub', service['app'], service['model']))
                 docker_build(path, service['image'])
 
     if hasattr(flow, '_client_node'):
