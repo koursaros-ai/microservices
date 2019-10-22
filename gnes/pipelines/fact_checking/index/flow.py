@@ -11,7 +11,7 @@ flow = (
                  yaml_path='services/indexers/keyword/base.yml')
     .add_indexer(name='lvdb', recv_from='sent_split', replicas=2,
                  yaml_path='services/indexers/lvdb/base.yml')
-    .add_router(name='Reduce', num_part=2, recv_from=['keyword', 'lvdb'],
+    .add_router(name='reduce', num_part=2, recv_from=['keyword', 'lvdb'],
                 yaml_path='BaseReduceRouter')
 )
 

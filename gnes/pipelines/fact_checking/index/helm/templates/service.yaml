@@ -2,6 +2,8 @@
 {{- define "service" -}}
 apiVersion: v1
 kind: Service
+metadata:
+  name: {{ .name }}-service
 spec:
   selector:
     app: {{ .name }}

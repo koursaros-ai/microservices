@@ -12,7 +12,7 @@ flow = (
     .add_indexer(name='lvdb', replicas=2, yaml_path='services/indexers/lvdb/base.yml')
     .add_encoder(name='roberta_infer', replicas=2,
                  yaml_path='services/encoders/roberta_infer/dim_64.yml')
-    .add_router(name='Reduce', num_part=2, yaml_path='BaseReduceRouter')
+    .add_router(name='reduce', num_part=2, yaml_path='BaseReduceRouter')
 )
 
 
