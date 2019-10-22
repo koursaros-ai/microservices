@@ -10,10 +10,14 @@ spec:
     matchLabels:
       app: {{ .name }}
   volumeClaimTemplates:
-    accessModes: 'ReadWriteOnce'
-    resources:
-      requests:
-        storage: {{ .storage }}
+  - metadata:
+      name: {{ .name }}
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .storage }}
   template:
     spec:
       containers:

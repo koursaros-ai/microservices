@@ -1,12 +1,20 @@
 services:
   frontends:
   - name: Frontend0
-    port_in: 61876
-    port_out: 63219
+    port_in: 58277
+    port_out: 57148
     ctrl_port:
     grpc_port: 8800
-    command: "['frontend', '--port_in', '61876', '--port_out', '63219', '--port_ctrl',\
-      \ '51742', '--parallel_backend', 'process']"
+    command:
+    - frontend
+    - --port_in
+    - '58277'
+    - --port_out
+    - '57148'
+    - --port_ctrl
+    - '56513'
+    - --parallel_backend
+    - process
     replicas: 1
     storage:
     memory:
@@ -14,13 +22,26 @@ services:
     image: gnes-frontend:Frontend0
   preprocessors:
   - name: sentsplit
-    port_in: 63219
-    port_out: 61870
+    port_in: 57148
+    port_out: 59430
     ctrl_port:
     grpc_port:
-    command: "['preprocess', '--port_in', '63219', '--port_out', '61870', '--socket_in',\
-      \ 'PULL_CONNECT', '--socket_out', 'PUB_BIND', '--port_ctrl', '60870', '--parallel_backend',\
-      \ 'process', '--yaml_path', 'services/preprocessors/sentsplit/jsonmode.yml']"
+    command:
+    - preprocess
+    - --port_in
+    - '57148'
+    - --port_out
+    - '59430'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUB_BIND
+    - --port_ctrl
+    - '54886'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/preprocessors/sentsplit/jsonmode.yml
     replicas: 2
     storage:
     memory:
@@ -28,13 +49,24 @@ services:
     image: gnes-preprocessor:sentsplit
   encoders:
   - name: textbyte
-    port_in: 61870
-    port_out: 61392
+    port_in: 59430
+    port_out: 59987
     ctrl_port:
     grpc_port:
-    command: "['encode', '--port_in', '61870', '--port_out', '61392', '--socket_in',\
-      \ 'SUB_CONNECT', '--port_ctrl', '58011', '--parallel_backend', 'process', '--yaml_path',\
-      \ 'services/encoders/textbyte/max256.yml']"
+    command:
+    - encode
+    - --port_in
+    - '59430'
+    - --port_out
+    - '59987'
+    - --socket_in
+    - SUB_CONNECT
+    - --port_ctrl
+    - '59635'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/encoders/textbyte/max256.yml
     replicas: 2
     storage:
     memory:
@@ -42,26 +74,52 @@ services:
     image: gnes-encoder:textbyte
   indexers:
   - name: keyword
-    port_in: 61392
-    port_out: 55534
+    port_in: 59987
+    port_out: 52512
     ctrl_port:
     grpc_port:
-    command: "['index', '--port_in', '61392', '--port_out', '55534', '--socket_in',\
-      \ 'PULL_CONNECT', '--socket_out', 'PUSH_CONNECT', '--port_ctrl', '50332', '--parallel_backend',\
-      \ 'process', '--yaml_path', 'services/indexers/keyword/base.yml']"
+    command:
+    - index
+    - --port_in
+    - '59987'
+    - --port_out
+    - '52512'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '64552'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/indexers/keyword/base.yml
     replicas: 2
     storage:
     memory:
     cpu:
     image: gnes-indexer:keyword
   - name: lvdb
-    port_in: 61870
-    port_out: 55534
+    port_in: 59430
+    port_out: 52512
     ctrl_port:
     grpc_port:
-    command: "['index', '--port_in', '61870', '--port_out', '55534', '--socket_in',\
-      \ 'SUB_CONNECT', '--socket_out', 'PUSH_CONNECT', '--port_ctrl', '53253', '--parallel_backend',\
-      \ 'process', '--yaml_path', 'services/indexers/lvdb/base.yml']"
+    command:
+    - index
+    - --port_in
+    - '59430'
+    - --port_out
+    - '52512'
+    - --socket_in
+    - SUB_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '55705'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/indexers/lvdb/base.yml
     replicas: 2
     storage:
     memory:
@@ -69,13 +127,26 @@ services:
     image: gnes-indexer:lvdb
   routers:
   - name: reduce
-    port_in: 55534
-    port_out: 61876
+    port_in: 52512
+    port_out: 58277
     ctrl_port:
     grpc_port:
-    command: "['route', '--port_in', '55534', '--port_out', '61876', '--socket_out',\
-      \ 'PUSH_CONNECT', '--port_ctrl', '51223', '--parallel_backend', 'process', '--yaml_path',\
-      \ 'BaseReduceRouter', '--num_part', '2']"
+    command:
+    - route
+    - --port_in
+    - '52512'
+    - --port_out
+    - '58277'
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '55583'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - BaseReduceRouter
+    - --num_part
+    - '2'
     replicas: 1
     storage:
     memory:

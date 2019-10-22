@@ -1,14 +1,16 @@
+C:KCTL:[man:sub: 55]:[42m[37msubprocess.call: "helm delete --purge $(helm ls --all --short)"[0m
+Error: unknown flag: --all
 C:KCTL:[man:sub: 55]:[42m[37msubprocess.call: "helm install --dry-run --debug /Users/cole/Desktop/koursaros/gnes/pipelines/factchecking/index/helm"[0m
-[debug] Created tunnel using local port: '62614'
+[debug] Created tunnel using local port: '62996'
 
-[debug] SERVER: "127.0.0.1:62614"
+[debug] SERVER: "127.0.0.1:62996"
 
 [debug] Original chart version: ""
 [debug] CHART PATH: /Users/cole/Desktop/koursaros/gnes/pipelines/factchecking/index/helm
 
-NAME:   mouthy-condor
+NAME:   quelling-armadillo
 REVISION: 1
-RELEASED: Tue Oct 22 10:06:32 2019
+RELEASED: Tue Oct 22 10:35:21 2019
 CHART: gnes-0.1.0
 USER-SUPPLIED VALUES:
 {}
@@ -16,104 +18,162 @@ USER-SUPPLIED VALUES:
 COMPUTED VALUES:
 services:
   encoders:
-  - command: encode --port_in 60161 --port_out 54016 --socket_in SUB_CONNECT --port_ctrl
-      55960 --parallel_backend process --yaml_path services/encoders/textbyte/max256.yml
+  - command:
+    - encode
+    - --port_in
+    - "59430"
+    - --port_out
+    - "59987"
+    - --socket_in
+    - SUB_CONNECT
+    - --port_ctrl
+    - "59635"
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/encoders/textbyte/max256.yml
     cpu: null
     ctrl_port: null
     grpc_port: null
     image: gnes-encoder:textbyte
     memory: null
     name: textbyte
-    port_in: 60161
-    port_out: 54016
+    port_in: 59430
+    port_out: 59987
     replicas: 2
     storage: null
   frontends:
-  - command: frontend --port_in 63007 --port_out 56708 --port_ctrl 55047 --parallel_backend
-      process
+  - command:
+    - frontend
+    - --port_in
+    - "58277"
+    - --port_out
+    - "57148"
+    - --port_ctrl
+    - "56513"
+    - --parallel_backend
+    - process
     cpu: null
     ctrl_port: null
     grpc_port: 8800
     image: gnes-frontend:Frontend0
     memory: null
     name: Frontend0
-    port_in: 63007
-    port_out: 56708
+    port_in: 58277
+    port_out: 57148
     replicas: 1
     storage: null
   indexers:
-  - command: index --port_in 54016 --port_out 64694 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 50040 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
+  - command:
+    - index
+    - --port_in
+    - "59987"
+    - --port_out
+    - "52512"
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - "64552"
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/indexers/keyword/base.yml
     cpu: null
     ctrl_port: null
     grpc_port: null
     image: gnes-indexer:keyword
     memory: null
     name: keyword
-    port_in: 54016
-    port_out: 64694
+    port_in: 59987
+    port_out: 52512
     replicas: 2
     storage: null
-  - command: index --port_in 60161 --port_out 64694 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 63603 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
+  - command:
+    - index
+    - --port_in
+    - "59430"
+    - --port_out
+    - "52512"
+    - --socket_in
+    - SUB_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - "55705"
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/indexers/lvdb/base.yml
     cpu: null
     ctrl_port: null
     grpc_port: null
     image: gnes-indexer:lvdb
     memory: null
     name: lvdb
-    port_in: 60161
-    port_out: 64694
+    port_in: 59430
+    port_out: 52512
     replicas: 2
     storage: null
   preprocessors:
-  - command: preprocess --port_in 56708 --port_out 60161 --socket_in PULL_CONNECT
-      --socket_out PUB_BIND --port_ctrl 64041 --parallel_backend process --yaml_path
-      services/preprocessors/sentsplit/jsonmode.yml
+  - command:
+    - preprocess
+    - --port_in
+    - "57148"
+    - --port_out
+    - "59430"
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUB_BIND
+    - --port_ctrl
+    - "54886"
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/preprocessors/sentsplit/jsonmode.yml
     cpu: null
     ctrl_port: null
     grpc_port: null
     image: gnes-preprocessor:sentsplit
     memory: null
     name: sentsplit
-    port_in: 56708
-    port_out: 60161
+    port_in: 57148
+    port_out: 59430
     replicas: 2
     storage: null
   routers:
-  - command: route --port_in 64694 --port_out 63007 --socket_out PUSH_CONNECT --port_ctrl
-      58557 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+  - command:
+    - route
+    - --port_in
+    - "52512"
+    - --port_out
+    - "58277"
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - "55583"
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - BaseReduceRouter
+    - --num_part
+    - "2"
     cpu: null
     ctrl_port: null
     grpc_port: null
     image: gnes-router:reduce
     memory: null
     name: reduce
-    port_in: 64694
-    port_out: 63007
+    port_in: 52512
+    port_out: 58277
     replicas: 1
     storage: null
 
 HOOKS:
 MANIFEST:
 
----
-# Source: gnes/templates/main.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: sentsplit
-spec:
-  selector:
-    app: sentsplit
-  clusterIP: None
-  ports:
-    - name: in
-      port: 56708
-      protocol: TCP
-    - name: out
-      port: 60161
-      protocol: TCP
 ---
 # Source: gnes/templates/main.yaml
 apiVersion: v1
@@ -126,10 +186,10 @@ spec:
   clusterIP: None
   ports:
     - name: in
-      port: 60161
+      port: 59430
       protocol: TCP
     - name: out
-      port: 54016
+      port: 59987
       protocol: TCP
 ---
 # Source: gnes/templates/main.yaml
@@ -143,10 +203,10 @@ spec:
   clusterIP: None
   ports:
     - name: in
-      port: 54016
+      port: 59987
       protocol: TCP
     - name: out
-      port: 64694
+      port: 52512
       protocol: TCP
 ---
 # Source: gnes/templates/main.yaml
@@ -160,10 +220,27 @@ spec:
   clusterIP: None
   ports:
     - name: in
-      port: 60161
+      port: 59430
       protocol: TCP
     - name: out
-      port: 64694
+      port: 52512
+      protocol: TCP
+---
+# Source: gnes/templates/main.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentsplit
+spec:
+  selector:
+    app: sentsplit
+  clusterIP: None
+  ports:
+    - name: in
+      port: 57148
+      protocol: TCP
+    - name: out
+      port: 59430
       protocol: TCP
 ---
 # Source: gnes/templates/main.yaml
@@ -177,10 +254,10 @@ spec:
   clusterIP: None
   ports:
     - name: in
-      port: 64694
+      port: 52512
       protocol: TCP
     - name: out
-      port: 63007
+      port: 58277
       protocol: TCP
 ---
 # Source: gnes/templates/main.yaml
@@ -201,51 +278,17 @@ spec:
   template:
     spec:
       containers:
-        - name: textbyte
-          image: gnes-encoder:textbyte
-          args: encode --port_in 60161 --port_out 54016 --socket_in SUB_CONNECT --port_ctrl 55960 --parallel_backend process --yaml_path services/encoders/textbyte/max256.yml
-          imagePullPolicy: null
-          ports:
-            - name: in
-              containerPort: 60161
-              protocol: TCP
-            - name: out
-              containerPort: 54016
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 
-              memory:
----
-# Source: gnes/templates/main.yaml
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: lvdb
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: lvdb
-  volumeClaimTemplates:
-    accessModes: 'ReadWriteOnce'
-    resources:
-      requests:
-        storage: 
-  template:
-    spec:
-      containers:
-        - name: lvdb
-          image: gnes-indexer:lvdb
-          args: index --port_in 60161 --port_out 64694 --socket_in SUB_CONNECT --socket_out PUSH_CONNECT --port_ctrl 63603 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
-          imagePullPolicy: null
-          ports:
-            - name: in
-              containerPort: 60161
-              protocol: TCP
-            - name: out
-              containerPort: 64694
-              protocol: TCP
+      - name: textbyte
+        image: gnes-encoder:textbyte
+        args: [encode --port_in 59430 --port_out 59987 --socket_in SUB_CONNECT --port_ctrl 59635 --parallel_backend process --yaml_path services/encoders/textbyte/max256.yml]
+        imagePullPolicy: null
+        ports:
+        - name: in
+          containerPort: 59430
+          protocol: TCP
+        - name: out
+          containerPort: 59987
+          protocol: TCP
           resources:
             requests:
               cpu: 
@@ -269,17 +312,17 @@ spec:
   template:
     spec:
       containers:
-        - name: reduce
-          image: gnes-router:reduce
-          args: route --port_in 64694 --port_out 63007 --socket_out PUSH_CONNECT --port_ctrl 58557 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
-          imagePullPolicy: null
-          ports:
-            - name: in
-              containerPort: 64694
-              protocol: TCP
-            - name: out
-              containerPort: 63007
-              protocol: TCP
+      - name: reduce
+        image: gnes-router:reduce
+        args: [route --port_in 52512 --port_out 58277 --socket_out PUSH_CONNECT --port_ctrl 55583 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2]
+        imagePullPolicy: null
+        ports:
+        - name: in
+          containerPort: 52512
+          protocol: TCP
+        - name: out
+          containerPort: 58277
+          protocol: TCP
           resources:
             requests:
               cpu: 
@@ -303,17 +346,17 @@ spec:
   template:
     spec:
       containers:
-        - name: sentsplit
-          image: gnes-preprocessor:sentsplit
-          args: preprocess --port_in 56708 --port_out 60161 --socket_in PULL_CONNECT --socket_out PUB_BIND --port_ctrl 64041 --parallel_backend process --yaml_path services/preprocessors/sentsplit/jsonmode.yml
-          imagePullPolicy: null
-          ports:
-            - name: in
-              containerPort: 56708
-              protocol: TCP
-            - name: out
-              containerPort: 60161
-              protocol: TCP
+      - name: sentsplit
+        image: gnes-preprocessor:sentsplit
+        args: [preprocess --port_in 57148 --port_out 59430 --socket_in PULL_CONNECT --socket_out PUB_BIND --port_ctrl 54886 --parallel_backend process --yaml_path services/preprocessors/sentsplit/jsonmode.yml]
+        imagePullPolicy: null
+        ports:
+        - name: in
+          containerPort: 57148
+          protocol: TCP
+        - name: out
+          containerPort: 59430
+          protocol: TCP
           resources:
             requests:
               cpu: 
@@ -337,17 +380,51 @@ spec:
   template:
     spec:
       containers:
-        - name: keyword
-          image: gnes-indexer:keyword
-          args: index --port_in 54016 --port_out 64694 --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --port_ctrl 50040 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
-          imagePullPolicy: null
-          ports:
-            - name: in
-              containerPort: 54016
-              protocol: TCP
-            - name: out
-              containerPort: 64694
-              protocol: TCP
+      - name: keyword
+        image: gnes-indexer:keyword
+        args: [index --port_in 59987 --port_out 52512 --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --port_ctrl 64552 --parallel_backend process --yaml_path services/indexers/keyword/base.yml]
+        imagePullPolicy: null
+        ports:
+        - name: in
+          containerPort: 59987
+          protocol: TCP
+        - name: out
+          containerPort: 52512
+          protocol: TCP
+          resources:
+            requests:
+              cpu: 
+              memory:
+---
+# Source: gnes/templates/main.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lvdb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lvdb
+  volumeClaimTemplates:
+    accessModes: 'ReadWriteOnce'
+    resources:
+      requests:
+        storage: 
+  template:
+    spec:
+      containers:
+      - name: lvdb
+        image: gnes-indexer:lvdb
+        args: [index --port_in 59430 --port_out 52512 --socket_in SUB_CONNECT --socket_out PUSH_CONNECT --port_ctrl 55705 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml]
+        imagePullPolicy: null
+        ports:
+        - name: in
+          containerPort: 59430
+          protocol: TCP
+        - name: out
+          containerPort: 52512
+          protocol: TCP
           resources:
             requests:
               cpu: 
