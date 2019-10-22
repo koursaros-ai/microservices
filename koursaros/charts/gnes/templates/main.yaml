@@ -2,9 +2,9 @@
 {{- with .Values.services }}
 {{- range list .frontend .preprocessors .encoders .indexers .routers }}
 {{- range . }}
-
+---
 {{ include "statefulset" .}}
-
+---
 {{ include "service" .}}
 {{ end }}
 {{ end }}

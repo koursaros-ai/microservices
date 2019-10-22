@@ -129,7 +129,7 @@ spec:
             requests:
               cpu: 
               memory: 
-
+---
 apiVersion: v1
 kind: Service
 spec:
