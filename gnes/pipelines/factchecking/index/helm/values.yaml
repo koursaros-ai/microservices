@@ -1,12 +1,20 @@
 services:
   frontends:
   - name: Frontend0
-    port_in: 63584
-    port_out: 57809
+    port_in: 50785
+    port_out: 52974
     ctrl_port:
     grpc_port: 8800
-    command: frontend --port_in 63584 --port_out 57809 --port_ctrl 52777 --parallel_backend
-      process
+    command:
+    - frontend
+    - --port_in
+    - '50785'
+    - --port_out
+    - '52974'
+    - --port_ctrl
+    - '65104'
+    - --parallel_backend
+    - process
     replicas: 1
     storage:
     memory:
@@ -14,13 +22,26 @@ services:
     image: gnes-frontend:Frontend0
   preprocessors:
   - name: sentsplit
-    port_in: 57809
-    port_out: 54051
+    port_in: 52974
+    port_out: 60527
     ctrl_port:
     grpc_port:
-    command: preprocess --port_in 57809 --port_out 54051 --socket_in PULL_CONNECT
-      --socket_out PUB_BIND --port_ctrl 56083 --parallel_backend process --yaml_path
-      services/preprocessors/sentsplit/jsonmode.yml
+    command:
+    - preprocess
+    - --port_in
+    - '52974'
+    - --port_out
+    - '60527'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUB_BIND
+    - --port_ctrl
+    - '63295'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/preprocessors/sentsplit/jsonmode.yml
     replicas: 2
     storage:
     memory:
@@ -28,12 +49,24 @@ services:
     image: gnes-preprocessor:sentsplit
   encoders:
   - name: textbyte
-    port_in: 54051
+    port_in: 60527
     port_out: 51021
     ctrl_port:
     grpc_port:
-    command: encode --port_in 54051 --port_out 51021 --socket_in SUB_CONNECT --port_ctrl
-      59040 --parallel_backend process --yaml_path services/encoders/textbyte/max256.yml
+    command:
+    - encode
+    - --port_in
+    - '60527'
+    - --port_out
+    - '51021'
+    - --socket_in
+    - SUB_CONNECT
+    - --port_ctrl
+    - '64755'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/encoders/textbyte/max256.yml
     replicas: 2
     storage:
     memory:
@@ -42,23 +75,51 @@ services:
   indexers:
   - name: keyword
     port_in: 51021
-    port_out: 52691
+    port_out: 50826
     ctrl_port:
     grpc_port:
-    command: index --port_in 51021 --port_out 52691 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 60404 --parallel_backend process --yaml_path services/indexers/keyword/base.yml
+    command:
+    - index
+    - --port_in
+    - '51021'
+    - --port_out
+    - '50826'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '50317'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/indexers/keyword/base.yml
     replicas: 2
     storage:
     memory:
     cpu:
     image: gnes-indexer:keyword
   - name: lvdb
-    port_in: 54051
-    port_out: 52691
+    port_in: 60527
+    port_out: 50826
     ctrl_port:
     grpc_port:
-    command: index --port_in 54051 --port_out 52691 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 60337 --parallel_backend process --yaml_path services/indexers/lvdb/base.yml
+    command:
+    - index
+    - --port_in
+    - '60527'
+    - --port_out
+    - '50826'
+    - --socket_in
+    - SUB_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '57223'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - services/indexers/lvdb/base.yml
     replicas: 2
     storage:
     memory:
@@ -66,12 +127,26 @@ services:
     image: gnes-indexer:lvdb
   routers:
   - name: reduce
-    port_in: 52691
-    port_out: 63584
+    port_in: 50826
+    port_out: 50785
     ctrl_port:
     grpc_port:
-    command: route --port_in 52691 --port_out 63584 --socket_out PUSH_CONNECT --port_ctrl
-      61705 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+    command:
+    - route
+    - --port_in
+    - '50826'
+    - --port_out
+    - '50785'
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '59315'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - BaseReduceRouter
+    - --num_part
+    - '2'
     replicas: 1
     storage:
     memory:
