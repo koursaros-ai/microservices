@@ -10,7 +10,7 @@ def deploy():
 
 @deploy.command()
 @pipeline_options
-@click.option('-d', '--dryrun')
+@click.option('-d', '--dryrun', is_flag=True)
 def pipeline(app_manager, pipeline_name, runtime, platform, yes, dryrun):
     """Deploy a pipeline with compose or k8s. """
 
