@@ -13,7 +13,7 @@ def build():
 @pipeline_options
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
-def pipeline(app_manager, flow_name, runtime, yes, push, creds):
+def flow(app_manager, flow_name, runtime, yes, push, creds):
     """Build images for a pipeline. """
 
     def docker_build(path, tag):
@@ -34,23 +34,23 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
-    flow = app_manager.get_flow(flow_name, runtime).build()
-    helm_yaml = flow.to_helm_yaml()
+    _flow = app_manager.get_flow(flow_name, runtime).build()
+    helm_yaml = _flow.to_helm_yaml()
 
-    for services in flow.helm_yaml.values():
+    for services in _flow.helm_yaml.values():
         for service in services:
             if service['model']:
                 path = str(app_manager.find_model(service['app'], service['model']))
                 docker_build(path, service['image'])
 
-    if hasattr(flow, 'client_node'):
-        model = Path(flow.client_node['yaml_path']).parent.name
+    if hasattr(_flow, 'client_node'):
+        model = Path(_flow.client_node['yaml_path']).parent.name
         path = str(app_manager.find_model('client', model))
         tag = 'gnes-client:latest-%s' % model
         docker_build(path, tag)
 
     """save helm chart"""
-    out_path = flow.path.parent.joinpath('helm')
+    out_path = _flow.path.parent.joinpath('helm')
     if out_path.is_dir():
         if yes:
             rmtree(str(out_path))
@@ -65,5 +65,5 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     if not out_path.is_dir():
         copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
-        flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
+        _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
         app_manager.logger.critical('Saved helm chart to %s' % str(out_path))

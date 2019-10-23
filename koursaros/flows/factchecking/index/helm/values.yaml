@@ -1,146 +1,158 @@
 services:
-  frontends:
+  frontend:
   - name: Frontend0
-    port_in: 64921
-    port_out: 64970
+    app: frontend
+    model:
+    port_in: 51507
+    port_out: 65251
     ctrl_port:
     grpc_port: 8800
     command:
     - frontend
     - --port_in
-    - '64921'
+    - '51507'
     - --port_out
-    - '64970'
+    - '65251'
     - --port_ctrl
-    - '64169'
+    - '52022'
     - --parallel_backend
     - process
     replicas: 1
     storage: 500Mi
     memory: 500Mi
     cpu: 300m
-    image: gnes-frontend:Frontend0
-  preprocessors:
+    image: gnes/gnes:latest-alpine
+  preprocessor:
   - name: sentsplit
-    port_in: 64970
-    port_out: 54189
+    app: preprocessor
+    model: sentsplit
+    port_in: 65251
+    port_out: 58968
     ctrl_port:
     grpc_port:
     command:
     - preprocess
     - --port_in
-    - '64970'
+    - '65251'
     - --port_out
-    - '54189'
+    - '58968'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUB_BIND
     - --port_ctrl
-    - '56443'
+    - '64471'
     - --parallel_backend
     - process
     - --yaml_path
-    - services/preprocessors/sentsplit/jsonmode.yml
+    - hub/preprocessor/sentsplit/jsonmode.yml
     replicas: 2
     storage: 1Gi
     memory: 500Mi
     cpu: 300m
-    image: gnes-preprocessor:sentsplit
-  encoders:
+    image: hub-preprocessor:latest-sentsplit
+  encoder:
   - name: textbyte
-    port_in: 54189
-    port_out: 63055
+    app: encoder
+    model: textbyte
+    port_in: 58968
+    port_out: 57870
     ctrl_port:
     grpc_port:
     command:
     - encode
     - --port_in
-    - '54189'
+    - '58968'
     - --port_out
-    - '63055'
+    - '57870'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '61633'
+    - '56653'
     - --parallel_backend
     - process
     - --yaml_path
-    - services/encoders/textbyte/max256.yml
+    - hub/encoder/textbyte/max256.yml
     replicas: 2
     storage: 500Mi
     memory: 500Mi
     cpu: 300m
-    image: gnes-encoder:textbyte
-  indexers:
+    image: hub-encoder:latest-textbyte
+  indexer:
   - name: keyword
-    port_in: 63055
-    port_out: 50577
+    app: indexer
+    model: keyword
+    port_in: 57870
+    port_out: 54495
     ctrl_port:
     grpc_port:
     command:
     - index
     - --port_in
-    - '63055'
+    - '57870'
     - --port_out
-    - '50577'
+    - '54495'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '53531'
+    - '53349'
     - --parallel_backend
     - process
     - --yaml_path
-    - services/indexers/keyword/base.yml
+    - hub/indexer/keyword/base.yml
     replicas: 2
     storage: 500Mi
     memory: 500Mi
     cpu: 300m
-    image: gnes-indexer:keyword
+    image: hub-indexer:latest-keyword
   - name: lvdb
-    port_in: 54189
-    port_out: 50577
+    app: indexer
+    model: lvdb
+    port_in: 58968
+    port_out: 54495
     ctrl_port:
     grpc_port:
     command:
     - index
     - --port_in
-    - '54189'
+    - '58968'
     - --port_out
-    - '50577'
+    - '54495'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '63536'
+    - '61904'
     - --parallel_backend
     - process
     - --yaml_path
-    - services/indexers/lvdb/base.yml
+    - hub/indexer/lvdb/base.yml
     replicas: 2
     storage: 500Mi
     memory: 500Mi
     cpu: 300m
-    image: gnes-indexer:lvdb
-  routers:
+    image: hub-indexer:latest-lvdb
+  router:
   - name: reduce
-    port_in: 50577
-    port_out: 64921
+    app: router
+    model:
+    port_in: 54495
+    port_out: 51507
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '50577'
+    - '54495'
     - --port_out
-    - '64921'
+    - '51507'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '65312'
+    - '63662'
     - --parallel_backend
     - process
     - --yaml_path
@@ -151,4 +163,4 @@ services:
     storage: 500Mi
     memory: 500Mi
     cpu: 300m
-    image: gnes-router:reduce
+    image: gnes/gnes:latest-alpine

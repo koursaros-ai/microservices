@@ -10,7 +10,7 @@ def deploy():
 @deploy.command()
 @pipeline_options
 @click.option('-d', '--dryrun', is_flag=True)
-def pipeline(app_manager, flow_name, runtime, yes, platform, dryrun):
+def flow(app_manager, flow_name, runtime, yes, platform, dryrun):
     """Deploy a pipeline with compose or k8s. """
 
     if platform == 'swarm':
@@ -40,8 +40,8 @@ def pipeline(app_manager, flow_name, runtime, yes, platform, dryrun):
 @client_options
 def client(app_manager, flow_name, runtime, creds):
     """Deploy a client with docker. """
-    flow = app_manager.get_flow(flow_name, runtime)
-    tag = 'hub-client:latest-%s' % flow.client_node.pop('name')
+    _flow = app_manager.get_flow(flow_name, runtime)
+    tag = 'hub-client:latest-%s' % _flow.client_node.pop('name')
     app_manager.subprocess_call(
         'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), stream=True)
 
