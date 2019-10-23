@@ -3,17 +3,18 @@ services:
   - name: Frontend0
     app: frontend
     model: base
-    port_in: 49672
-    port_out: 64448
+    port_in: 58448
+    port_out: 53797
     ctrl_port:
     grpc_port: 8800
     command:
+    - frontend
     - --port_in
-    - '49672'
+    - '58448'
     - --port_out
-    - '64448'
+    - '53797'
     - --port_ctrl
-    - '55724'
+    - '60113'
     - --parallel_backend
     - process
     replicas: 1
@@ -25,22 +26,21 @@ services:
   - name: sentsplit
     app: preprocessor
     model: sentsplit
-    port_in: 64448
-    port_out: 59107
+    port_in: 53797
+    port_out: 57951
     ctrl_port:
     grpc_port:
     command:
-    - preprocess
     - --port_in
-    - '64448'
+    - '53797'
     - --port_out
-    - '59107'
+    - '57951'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUB_BIND
     - --port_ctrl
-    - '63621'
+    - '63718'
     - --parallel_backend
     - process
     - --num_parallel
@@ -56,20 +56,19 @@ services:
   - name: textbyte
     app: encoder
     model: textbyte
-    port_in: 59107
-    port_out: 50848
+    port_in: 57951
+    port_out: 62275
     ctrl_port:
     grpc_port:
     command:
-    - encode
     - --port_in
-    - '59107'
+    - '57951'
     - --port_out
-    - '50848'
+    - '62275'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '63938'
+    - '60591'
     - --parallel_backend
     - process
     - --num_parallel
@@ -85,22 +84,21 @@ services:
   - name: keyword
     app: indexer
     model: keyword
-    port_in: 50848
-    port_out: 58339
+    port_in: 62275
+    port_out: 54507
     ctrl_port:
     grpc_port:
     command:
-    - index
     - --port_in
-    - '50848'
+    - '62275'
     - --port_out
-    - '58339'
+    - '54507'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '63894'
+    - '58365'
     - --parallel_backend
     - process
     - --num_parallel
@@ -115,22 +113,21 @@ services:
   - name: lvdb
     app: indexer
     model: lvdb
-    port_in: 59107
-    port_out: 58339
+    port_in: 57951
+    port_out: 54507
     ctrl_port:
     grpc_port:
     command:
-    - index
     - --port_in
-    - '59107'
+    - '57951'
     - --port_out
-    - '58339'
+    - '54507'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '53367'
+    - '58305'
     - --parallel_backend
     - process
     - --num_parallel
@@ -146,26 +143,27 @@ services:
   - name: basereducerouter
     app: router
     model: basereducerouter
-    port_in: 58339
-    port_out: 49672
+    port_in: 54507
+    port_out: 58448
     ctrl_port:
     grpc_port:
     command:
+    - route
     - --port_in
-    - '58339'
+    - '54507'
     - --port_out
-    - '49672'
+    - '58448'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '59927'
+    - '60078'
     - --parallel_backend
     - process
     - --yaml_path
     - <_io.StringIO
     - object
     - at
-    - 0x10efb27d0>
+    - 0x11b7677d0>
     - --num_part
     - '2'
     replicas: 1

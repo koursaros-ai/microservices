@@ -12,12 +12,14 @@ def build():
 @pipeline_options
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
-def flow(app_manager, flow_name, runtime, yes, push, creds):
+@click.option('-n', '--no-cache')
+def flow(app_manager, flow_name, runtime, yes, push, creds, nocache):
     """Build images for a pipeline. """
 
     def docker_build(path, tag):
         app_manager.logger.critical('Building %s from %s...' % (tag, path))
-        app_manager.subprocess_call('docker build -t %s %s' % (tag, path), shell=True)
+        _build = 'docker build ' + ('--no-cache ' if nocache else '') + '%s %s' % (tag, path)
+        app_manager.subprocess_call(_build, shell=True)
 
         if push:
             app_manager.logger.critical('Pushing %s...' % tag)
