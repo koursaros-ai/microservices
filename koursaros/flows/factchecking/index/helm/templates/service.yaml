@@ -3,10 +3,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .app }}-{{ .model }}
+  name: {{ .name }}
 spec:
   selector:
-    app: {{ .app }}-{{ .model }}
+    app: {{ .name }}
   clusterIP: None
   ports:
     {{- if .port_in }}

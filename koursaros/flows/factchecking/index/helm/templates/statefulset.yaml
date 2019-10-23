@@ -3,15 +3,15 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .app }}-{{ .model }}
+  name: {{ .name }}
 spec:
   replicas: {{ .replicas }}
   selector:
     matchLabels:
-      app: {{ .app }}-{{ .model }}
+      app: {{ .name }}
   volumeClaimTemplates:
   - metadata:
-      name: {{ .app }}-{{ .model }}
+      name: {{ .name }}
     spec:
       accessModes:
         - ReadWriteOnce
@@ -23,10 +23,10 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .app }}-{{ .model }}
+        app: {{ .name }}
     spec:
       containers:
-      - name: {{ .app }}-{{ .model }}
+      - name: {{ .name }}
         image: {{ .image }}
         args: {{ .command }}
         imagePullPolicy: null
