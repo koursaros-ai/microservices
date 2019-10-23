@@ -52,15 +52,15 @@ class Flow(_Flow):
 
     @ignore_invalid_yaml_path
     def add_encoder(self, *args, **kwargs):
-        super().add_preprocessor(*args, **kwargs)
+        super().add_encoder(*args, **kwargs)
 
     @ignore_invalid_yaml_path
     def add_indexer(self, *args, **kwargs):
-        super().add_preprocessor(*args, **kwargs)
+        super().add_indexer(*args, **kwargs)
 
     @ignore_invalid_yaml_path
     def add_router(self, *args, **kwargs):
-        super().add_preprocessor(*args, **kwargs)
+        super().add_router(*args, **kwargs)
 
     def to_helm_yaml(self):
         from ruamel.yaml import YAML, StringIO

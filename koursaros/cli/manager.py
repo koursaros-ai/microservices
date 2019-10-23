@@ -40,7 +40,7 @@ class AppManager:
         return self.find('koursaros/hub', app, model)
 
     def get_flow(self, flow_name, runtime) -> 'Flow':
-        cache_path = self.git_root.joinpath('koursaros/cache')
+        cache_path = self.git_root.joinpath('koursaros/.cache')
         cache_path.mkdir(exist_ok=True)
         os.chdir(str(cache_path))
         flow_path = self.find('koursaros', 'flows', flow_name, runtime, 'flow.py')
