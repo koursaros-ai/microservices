@@ -18,7 +18,7 @@ def flow(app_manager, flow_name, runtime, yes, push, creds, no_cache):
 
     def docker_build(path, tag):
         app_manager.logger.critical('Building %s from %s...' % (tag, path))
-        _build = 'docker build ' + ('--no-cache ' if no_cache else '') + '%s %s' % (tag, path)
+        _build = 'docker build ' + ('--no-cache ' if no_cache else '') + '-t %s %s' % (tag, path)
         app_manager.subprocess_call(_build, shell=True)
 
         if push:
