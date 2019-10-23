@@ -17,8 +17,10 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
 
     if platform == 'swarm':
         swarm_path = _flow.path.parent.joinpath('docker-compose.yml')
-        swarm = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
-        app_manager.subprocess_call(swarm, shell=True)
+        rm = 'docker stack rm %s' % flow_name
+        stack = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
+        app_manager.subprocess_call(rm, shell=True)
+        app_manager.subprocess_call(stack, shell=True)
 
     if platform == 'k8s':
         helm_path = _flow.path.parent.joinpath('helm')
