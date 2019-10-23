@@ -1,7 +1,6 @@
 from koursaros.repo_creds import get_creds
 from ..decorators import *
 from shutil import copytree, rmtree
-from pathlib import Path
 
 
 @click.group()

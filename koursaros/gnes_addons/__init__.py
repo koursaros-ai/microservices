@@ -3,7 +3,7 @@ import pathlib
 import functools
 
 _Flow = Flow
-
+DEFAULT_IMAGE = 'gnes/gnes:latest-alpine'
 
 class Flow(_Flow):
     def __init__(self, *args, **kwargs):
@@ -27,7 +27,7 @@ class Flow(_Flow):
 
         if model == 'base' or yaml_path.isidentifier():
             ret = supercall()
-            image = 'gnes/gnes:latest-alpine'
+            image = DEFAULT_IMAGE
         else:
             # ignore invalid yaml path
             path = pathlib.Path(yaml_path)
@@ -68,10 +68,8 @@ class Flow(_Flow):
             non_default_kwargs = {
                 k: v for k, v in p_args.items() if getattr(defaults_kwargs, k) != v}
 
-            command = '%s %s' % (
-                service_map[v['service']]['cmd'],
-                ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
-            )
+            command = '%s ' % ('' if v['image'] == DEFAULT_IMAGE else v['service']['cmd'])
+            command += ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
 
             self.helm_yaml[v['app']] += [dict(
                 name=k,
