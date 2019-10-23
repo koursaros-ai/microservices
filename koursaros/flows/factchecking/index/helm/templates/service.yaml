@@ -1,6 +1,6 @@
 
 {{- define "service" -}}
-{{- $name := .app-.model -}}
+{{- $name := printf "%s-%s" .app .model -}}
 apiVersion: v1
 kind: Service
 metadata:

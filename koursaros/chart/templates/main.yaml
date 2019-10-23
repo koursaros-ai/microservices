@@ -1,6 +1,6 @@
 
 {{- with .Values.services }}
-{{- range list .frontend .preprocessors .encoders .indexers .routers }}
+{{- range list .frontend .preprocessor .encoder .indexer .router }}
 {{- range . }}
 ---
 {{ include "statefulset" .}}
