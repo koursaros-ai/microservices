@@ -34,7 +34,7 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
-    flow = app_manager.get_flow('flows', flow_name, runtime).build()
+    flow = app_manager.get_flow(flow_name, runtime).build()
     helm_yaml = flow.to_helm_yaml()
 
     for services in flow.helm_yaml.values():

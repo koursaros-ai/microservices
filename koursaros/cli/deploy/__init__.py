@@ -39,9 +39,9 @@ def pipeline(app_manager, pipeline_name, runtime, yes, platform, dryrun):
 
 @deploy.command()
 @client_options
-def client(app_manager, pipeline_name, runtime, creds):
+def client(app_manager, flow_name, runtime, creds):
     """Deploy a client with docker. """
-    flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
+    flow = app_manager.get_flow(flow_name, runtime)
     tag = 'hub-client:latest-%s' % flow.client_node.pop('name')
     app_manager.subprocess_call(
         'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), stream=True)
