@@ -1,6 +1,5 @@
 
 from ..decorators import *
-import docker
 
 
 @click.group()
@@ -10,49 +9,23 @@ def deploy():
 
 @deploy.command()
 @pipeline_options
-@click.option('-p', '--platform', required=True)
 @click.option('-d', '--dryrun', is_flag=True)
-def pipeline(app_manager, pipeline_name, runtime, yes, platform, dryrun):
+def flow(app_manager, flow_name, runtime, yes, dryrun):
     """Deploy a pipeline with compose or k8s. """
-
-    if platform == 'swarm':
-        raise NotImplementedError
-
-        # start = round(time.time())
-        #
-        # def stream_container_logs(cont: 'docker.models.containers.Container'):
-        #     # get rid of uuid
-        #     name = '.'.join(cont.name.split('.')[:-1]) if '.' in cont.name else cont.name
-        #
-        #     for log in cont.logs(stream=True, since=start):
-        #         app_manager.thread_logs[name] += [log.decode()]
-        #
-        # for container in docker.from_env().containers.list(all=True):
-        #     app_manager.thread(target=stream_container_logs, args=[container])
-
-    elif platform == 'k8s':
-        helm_path = app_manager.find('pipelines', pipeline_name, runtime, 'helm')
-        purge = 'helm delete --purge $(helm ls --all --short)'
-        app_manager.subprocess_call(purge, shell=True)
-        install = 'helm install ' + '--dry-run --debug' if dryrun else '' + str(helm_path)
-        app_manager.subprocess_call(install, shell=True)
+    helm_path = app_manager.get_flow(flow_name, runtime).path.parent.joinpath('helm')
+    purge = 'helm delete --purge $(helm ls --all --short)'
+    app_manager.subprocess_call(purge, shell=True)
+    install = 'helm install ' + ('--dry-run --debug ' if dryrun else '') + str(helm_path)
+    app_manager.subprocess_call(install, shell=True)
 
 
 @deploy.command()
 @client_options
-def client(app_manager, pipeline_name, runtime, creds):
+def client(app_manager, flow_name, runtime, creds):
     """Deploy a client with docker. """
-    flow = app_manager.get_flow('pipelines', pipeline_name, runtime)
-    cn = flow.client_node
-    tag = 'gnes-client:%s' % (cn.pop('name'))
-
-    switches = ['--mode', runtime,
-                '--creds', creds,
-                ] + ['--%s %s' % (k, v) for k, v in cn.items()]
-
-    response = docker.from_env().containers.run(tag, stream=True, command=switches)
-
-    for stream in response:
-        app_manager.logger.info(stream)
+    _flow = app_manager.get_flow(flow_name, runtime)
+    tag = 'hub-client:latest-%s' % _flow.client_node.pop('name')
+    app_manager.subprocess_call(
+        'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), stream=True)
 
 

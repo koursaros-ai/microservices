@@ -1,17 +1,18 @@
 
 {{- define "statefulset" -}}
+{{- $name := printf "%s-%s" .app .model -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .name }}
+  name: {{ $name }}
 spec:
   replicas: {{ .replicas }}
   selector:
     matchLabels:
-      app: {{ .name }}
+      app: {{ $name }}
   volumeClaimTemplates:
   - metadata:
-      name: {{ .name }}
+      name: {{ $name }}
     spec:
       accessModes:
         - ReadWriteOnce
@@ -23,10 +24,10 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .name }}
+        app: {{ $name }}
     spec:
       containers:
-      - name: {{ .name }}
+      - name: {{ $name }}
         image: {{ .image }}
         args: {{ .command }}
         imagePullPolicy: null

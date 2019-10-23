@@ -42,19 +42,27 @@ class Flow(_Flow):
 
         services = _yaml.load(self.to_swarm_yaml())['services']
         dict_merge(services, self._service_nodes)
-        helm_yaml = defaultdict(lambda: [])
+        self.helm_yaml = defaultdict(lambda: [])
 
         for name, configs in services.items():
-
-            yp = configs['parsed_args'].yaml_path
-            _type, _subtype = yp.parent.parent.name, yp.parent.name
-
             p_args = vars(configs['parsed_args'])
-            extra_args, _ = vars(extra_parser.parse_known_args(configs['unk_args']))
+            extra_args = vars(extra_parser.parse_known_args(configs['unk_args'])[0])
+            yaml_path = p_args.get('yaml_path', None)
+            app = configs['service'].name.lower()
 
-            helm_yaml[_type] += [dict(
+            build = False
+            if isinstance(yaml_path, str):
+                build = True
+                model = configs['name']
+            elif 'yaml_path' in configs['kwargs']:
+                model = configs['kwargs']['yaml_path'].lower()
+            else:
+                model = 'base'
+
+            self.helm_yaml[app] += [dict(
                 name=name,
-                sub_type=_subtype,
+                app=app,
+                model=model,
                 port_in=p_args.get('port_in', None),
                 port_out=p_args.get('port_out', None),
                 ctrl_port=p_args.get('ctrl_port', None),
@@ -64,10 +72,10 @@ class Flow(_Flow):
                 storage=extra_args.get('storage', None),
                 memory=extra_args.get('memory', None),
                 cpu=extra_args.get('cpu', None),
-                image='hub-%s' % _subtype
+                image='hub-%s:latest-%s' % (app, model) if build else configs['image']
             )]
 
         stream = StringIO()
-        self.helm_yaml = dict(services=dict(helm_yaml))
-        _yaml.dump(self.helm_yaml, stream)
+        _yaml.dump(dict(services=dict(self.helm_yaml)), stream)
         return stream.getvalue().strip()
+

@@ -1,12 +1,13 @@
 
 {{- define "service" -}}
+{{- $name := printf "%s-%s" .app .model -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .name }}
+  name: {{ $name }}
 spec:
   selector:
-    app: {{ .name }}
+    app: {{ $name }}
   clusterIP: None
   ports:
     {{- if .port_in }}
@@ -24,9 +25,9 @@ spec:
       port: {{ .grpc_port }}
       protocol: TCP
     {{- end -}}
-    {{- if .grpc_port }}
+    {{- if .ctrl_port }}
     - name: ctrl
-      port: {{ .port_ctrl }}
+      port: {{ .ctrl_port }}
       protocol: TCP
     {{- end -}}
   {{ if .load_balancer }}

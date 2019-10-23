@@ -1,7 +1,7 @@
-
 from koursaros.repo_creds import get_creds
 from ..decorators import *
-import docker
+from shutil import copytree, rmtree
+from pathlib import Path
 
 
 @click.group()
@@ -11,49 +11,62 @@ def build():
 
 @build.command()
 @pipeline_options
-@click.option('-p', '--push', is_flag=True)
+@click.option('-p', '--push')
 @click.option('-c', '--creds')
-def pipeline(app_manager, flow_name, runtime, yes, push, creds):
+def flow(app_manager, flow_name, runtime, yes, push, creds):
     """Build images for a pipeline. """
 
-    if yes:
+    def docker_build(path, tag):
+        app_manager.logger.critical('Building %s from %s...' % (tag, path))
+        app_manager.subprocess_call('docker build -t %s %s' % (tag, path), shell=True)
+
+        if push:
+            app_manager.logger.critical('Pushing %s...' % tag)
+            app_manager.subprocess_call('docker push %s/%s' % (push, tag), shell=True)
+
+    if push:
         if creds is None:
             raise ValueError('--creds repository must be specified if pushing')
 
         hub_creds = get_creds(creds).dockerhub
-        hub_auth = dict(username=hub_creds.username, password=hub_creds.password)
+        app_manager.subprocess_call('docker login -u %s -p %s' % (
+            hub_creds.username, hub_creds.password), shell=True)
 
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
-    docker_client = docker.from_env()
-    flow = app_manager.get_flow('flows', flow_name, runtime).build()
-    flow.to_helm_yaml()
+    _flow = app_manager.get_flow(flow_name, runtime).build()
+    helm_yaml = _flow.to_helm_yaml()
 
-    def docker_build(path, tag):
-        app_manager.logger.critical('Building %s from %s...' % (tag, path))
-        image, response = docker_client.images.build(path=path, tag=tag)
-        for res in response:
-            app_manager.logger.info(res)
-
-        if push:
-            app_manager.logger.critical('Pushing %s...' % tag)
-            response = docker_client.images.push(tag, auth_config=hub_auth)
-            for res in response:
-                app_manager.logger.info(res)
-
-    for service_type, services in flow.helm_yaml['services'].items():
+    for services in _flow.helm_yaml.values():
         for service in services:
-            path = str(app_manager.find(
-                'services',
-                service_type,
-                service['name'],
-                'Dockerfile')
-            )
-            docker_build(path, service['image'])
+            print(service['image'])
+            if '/' in service['image']:
+                app_manager.subprocess_call('docker pull %s' % service['image'], shell=True)
+            else:
+                path = str(app_manager.find_model(service['app'], service['model']))
+                docker_build(path, service['image'])
 
-    if hasattr(flow, '_client_node'):
-        client_cls = flow.client_node['name']
-        path = str(app_manager.find('clients', client_cls, 'Dockerfile'))
-        tag = 'gnes-client:%s' % client_cls
+    if hasattr(_flow, 'client_node'):
+        model = Path(_flow.client_node['yaml_path']).parent.name
+        path = str(app_manager.find_model('client', model))
+        tag = 'gnes-client:latest-%s' % model
         docker_build(path, tag)
 
+    """save helm chart"""
+    out_path = _flow.path.parent.joinpath('helm')
+    if out_path.is_dir():
+        if yes:
+            rmtree(str(out_path))
+        else:
+            while True:
+                yn = input('Overwrite %s? [y/n]' % str(out_path))
+                if yn == 'y':
+                    rmtree(str(out_path))
+                    break
+                elif yn == 'n':
+                    break
+
+    if not out_path.is_dir():
+        copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
+        _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
+        app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
