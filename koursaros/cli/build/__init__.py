@@ -12,8 +12,8 @@ def build():
 @pipeline_options
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
-@click.option('-n', '--no-cache', is_flag=True)
-def flow(app_manager, flow_name, runtime, push, creds, no_cache):
+@click.option('-n', '--no-caches', nargs=-1)
+def flow(app_manager, flow_name, runtime, push, creds, no_caches):
     """Build images for a pipeline. """
 
     if push:
@@ -39,7 +39,7 @@ def flow(app_manager, flow_name, runtime, push, creds, no_cache):
                     path = str(app_manager.find_model(service['app'], service['model']))
                     tag = service['image']
                     app_manager.logger.critical('Building %s from %s...' % (tag, path))
-                    cache = '--no-cache ' if no_cache else ''
+                    cache = '--no-cache ' if service['name'] in no_caches else ''
                     _build = 'docker build ' + cache + '-t %s %s' % (tag, path)
                     app_manager.subprocess_call(_build, shell=True)
 
