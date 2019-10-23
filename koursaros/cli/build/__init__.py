@@ -36,21 +36,15 @@ def flow(app_manager, flow_name, runtime, yes, push, creds):
 
     _flow = app_manager.get_flow(flow_name, runtime).build()
     helm_yaml = _flow.to_helm_yaml()
-
-    for services in _flow.helm_yaml.values():
-        for service in services:
-            print(service['image'])
+    helm_yaml['services']['client'] = _flow.client_node
+    import pdb; pdb.set_trace()
+    for app in _flow.helm_yaml.values():
+        for service in app:
             if '/' in service['image']:
                 app_manager.subprocess_call('docker pull %s' % service['image'], shell=True)
             else:
                 path = str(app_manager.find_model(service['app'], service['model']))
                 docker_build(path, service['image'])
-
-    if hasattr(_flow, 'client_node'):
-        model = Path(_flow.client_node['yaml_path']).parent.name
-        path = str(app_manager.find_model('client', model))
-        tag = 'gnes-client:latest-%s' % model
-        docker_build(path, tag)
 
     """save helm chart"""
     out_path = _flow.path.parent.joinpath('helm')

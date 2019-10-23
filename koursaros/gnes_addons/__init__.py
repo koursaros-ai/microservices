@@ -5,33 +5,26 @@ import functools
 _Flow = Flow
 
 
-class Service(BetterEnum):
-    Frontend = 0
-    Encoder = 1
-    Router = 2
-    Indexer = 3
-    Preprocessor = 4
-    Client = 5
-
-
 class Flow(_Flow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.client_node = {}
 
     def add_client(self, **kwargs):
-        return self.add(Service.Client, **kwargs)
+        self.client_node = dict(
+            app='client',
+            model=kwargs['name'],
+            image='hub-client:latest-%s' % kwargs['name'],
+            yaml_path=kwargs['yaml_path']
+        )
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
         app = service.name.lower()
         model = name if name else 'base'
         yaml_path = kwargs.get('yaml_path', None)
-        image = 'hub-%s:latest-%s' % (app, model)
 
-        if service == Service.Client:
-            self._service_nodes[name] = dict()
-            ret = self
-        elif model == 'base' or yaml_path.isidentifier():
+        if model == 'base' or yaml_path.isidentifier():
             ret = supercall()
             image = 'gnes/gnes:latest-alpine'
         else:
@@ -40,6 +33,7 @@ class Flow(_Flow):
             path.touch()
             ret = supercall()
             path.unlink()
+            image = 'hub-%s:latest-%s' % (app, model)
 
         # add custom kwargs
         try:
