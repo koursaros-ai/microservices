@@ -19,9 +19,9 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
     helm_path = _flow.path.parent.joinpath('helm')
 
     if platform == 'compose':
-        down = 'docker compose down -f %s' % str(swarm_path)
+        down = 'docker-compose -f %s down' % str(swarm_path)
         app_manager.subprocess_call(down, shell=True)
-        up = 'docker compose up -f %s' % str(swarm_path)
+        up = 'docker-compose-f %s up' % str(swarm_path)
         app_manager.subprocess_call(up, shell=True)
 
     elif platform == 'swarm':
