@@ -14,32 +14,26 @@ class Flow(_Flow):
         return self
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
+        supercall = functools.partial(super().add, service, name, *args, **kwargs)
         app = service.name.lower()
         model = name if name else 'base'
-        image = 'gnes/gnes:latest-alpine'
-        supercall = functools.partial(super().add, service, name, *args, **kwargs)
+        yaml_path = kwargs.get('yaml_path', None)
 
-        if model == 'base':
+        if model == 'base' or yaml_path.isidentifier():
             ret = supercall()
+            image = 'gnes/gnes:latest-alpine'
         else:
-            yaml_path = kwargs['yaml_path']
-
-            if yaml_path.isidentifier():
-                ret = supercall()
-                model = yaml_path.lower()
-            else:
-                # ignore invalid yaml path
-                path = pathlib.Path(yaml_path)
-                path.touch()
-                ret = supercall()
-                path.unlink()
-                model = yaml_path
-                image = 'hub-%s:latest-%s' % (app, model)
+            # ignore invalid yaml path
+            path = pathlib.Path(yaml_path)
+            path.touch()
+            ret = supercall()
+            path.unlink()
+            image = 'hub-%s:latest-%s' % (app, model)
 
         # add custom kwargs
         try:
-            name = '%s%d' % (service, self._service_name_counter[service]-1) if not name else name
-
+            name = name if name else '%s%d' % (service, self._service_name_counter[service]-1)
+            
             v = ret._service_nodes[name]
             v['storage'] = kwargs.get('storage', '500Mi')
             v['memory'] = kwargs.get('storage', '500Mi')
