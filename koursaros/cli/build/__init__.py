@@ -36,7 +36,6 @@ def flow(app_manager, flow_name, runtime, yes, push, creds):
 
     _flow = app_manager.get_flow(flow_name, runtime).build()
     helm_yaml = _flow.to_helm_yaml()
-    import pdb; pdb.set_trace()
     _flow.helm_yaml['client'] = [_flow.client_node]
 
     for app in _flow.helm_yaml.values():
