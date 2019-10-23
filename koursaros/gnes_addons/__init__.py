@@ -96,10 +96,9 @@ class Flow(_Flow):
             )
             if node['replicas'] > 1:
                 swarm_yml['services'][name]['deploy'] = {'replicas': node['replicas']}
-            ports = [node.get('grpc_port', None)]
+            ports = node['parsed_args'].get('grpc_port', None)
             if ports:
-                swarm_yml['services'][name]['ports'] = ports
-
+                swarm_yml['services'][name]['ports'] = list(ports)
 
         return self.yaml_stream(swarm_yml)
 
