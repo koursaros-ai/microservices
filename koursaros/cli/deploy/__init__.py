@@ -15,7 +15,7 @@ def flow(app_manager, flow_name, runtime, yes, dryrun):
     helm_path = app_manager.get_flow(flow_name, runtime).path.parent.joinpath('helm/values.yaml')
     purge = 'helm delete --purge $(helm ls --all --short)'
     app_manager.subprocess_call(purge, shell=True)
-    install = 'helm install ' + '--dry-run --debug' if dryrun else '' + str(helm_path)
+    install = 'helm install ' + ('--dry-run --debug' if dryrun else '') + str(helm_path)
     app_manager.subprocess_call(install, shell=True)
 
 
