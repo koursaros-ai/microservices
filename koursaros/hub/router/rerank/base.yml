@@ -1,1 +1,3 @@
-!RerankRouter {}
+!RerankRouter
+parameters:
+  model_name: roberta-rerank
