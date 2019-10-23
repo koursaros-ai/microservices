@@ -17,6 +17,7 @@ class Flow(_Flow):
             image='hub-client:latest-%s' % kwargs['name'],
             yaml_path=kwargs['yaml_path']
         )
+        return self
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
