@@ -1,6 +1,8 @@
-from collections import Mapping
+import collections
 from gnes.flow import *
 import argparse
+import functools
+import pathlib
 
 _Flow = Flow
 
@@ -16,10 +18,21 @@ def dict_merge(dct, merge_dct):
     """
     for k, v in merge_dct.items():
         if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], Mapping)):
+                and isinstance(merge_dct[k], collections.Mapping)):
             dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]
+
+
+def ignore_invalid_yaml_path(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        yaml_path = pathlib.Path(kwargs['yaml_path'])
+        yaml_path.touch()
+        ret = f(*args, **kwargs)
+        yaml_path.unlink()
+        return ret
+    return wrapped
 
 
 class Flow(_Flow):
@@ -29,6 +42,22 @@ class Flow(_Flow):
     def add_client(self, **kwargs):
         self.client_node = kwargs
         return self
+
+    @ignore_invalid_yaml_path
+    def add_preprocessor(self, *args, **kwargs):
+        super().add_preprocessor(*args, **kwargs)
+
+    @ignore_invalid_yaml_path
+    def add_encoder(self, *args, **kwargs):
+        super().add_preprocessor(*args, **kwargs)
+
+    @ignore_invalid_yaml_path
+    def add_indexer(self, *args, **kwargs):
+        super().add_preprocessor(*args, **kwargs)
+
+    @ignore_invalid_yaml_path
+    def add_router(self, *args, **kwargs):
+        super().add_preprocessor(*args, **kwargs)
 
     def to_helm_yaml(self):
         from ruamel.yaml import YAML, StringIO
