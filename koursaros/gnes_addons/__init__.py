@@ -29,13 +29,8 @@ def ignore_invalid_yaml_path(f):
     def wrapped(*args, **kwargs):
         yaml_path = pathlib.Path(kwargs['yaml_path'])
         yaml_path.touch()
-        try:
-            ret = f(*args, **kwargs)
-        except:
-            import pdb; pdb.set_trace()
+        ret = f(*args, **kwargs)
         yaml_path.unlink()
-        import pdb;
-        pdb.set_trace()
         return ret
     return wrapped
 
