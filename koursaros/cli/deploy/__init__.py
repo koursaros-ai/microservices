@@ -45,6 +45,7 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
 def client(app_manager, flow_name, runtime, creds):
     """Deploy a client with docker. """
     _flow = app_manager.get_flow(flow_name, runtime)
+    _flow.build()
     tag = 'hub-client:latest-%s' % _flow.client_node.pop('name')
     app_manager.subprocess_call(
         'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), stream=True)
