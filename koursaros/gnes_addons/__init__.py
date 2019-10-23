@@ -68,7 +68,7 @@ class Flow(_Flow):
             non_default_kwargs = {
                 k: v for k, v in p_args.items() if getattr(defaults_kwargs, k) != v}
 
-            command = '%s ' % ('' if v['image'] == DEFAULT_IMAGE else service_map[v['service']['cmd']])
+            command = '%s ' % ('' if v['image'] == DEFAULT_IMAGE else service_map[v['service']]['cmd'])
             command += ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
 
             self.helm_yaml[v['app']] += [dict(
