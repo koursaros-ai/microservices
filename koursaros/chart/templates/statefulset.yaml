@@ -31,7 +31,7 @@ spec:
         image: {{ .image }}
         args:
         {{- range .command }}
-        - {{ . }}
+        - {{ . | quote }}
         {{- end }}
         imagePullPolicy: null
         ports:
