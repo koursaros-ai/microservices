@@ -39,7 +39,7 @@ def flow(app_manager, flow_name, runtime, push, creds, no_caches):
                     path = str(app_manager.find_model(service['app'], service['model']))
                     tag = service['image']
                     app_manager.logger.critical('Building %s from %s...' % (tag, path))
-                    cache = '--no-cache ' if service['name'] in no_caches else ''
+                    cache = '--no-cache ' if service.get('name', None) in no_caches else ''
                     _build = 'docker build ' + cache + '-t %s %s' % (tag, path)
                     app_manager.subprocess_call(_build, shell=True)
 
