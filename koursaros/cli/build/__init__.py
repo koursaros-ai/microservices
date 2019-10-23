@@ -33,7 +33,7 @@ def flow(app_manager, flow_name, runtime, yes, push, creds, no_cache):
         app_manager.subprocess_call('docker login -u %s -p %s' % (
             hub_creds.username, hub_creds.password), shell=True)
 
-    app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
+    # app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
     _flow = app_manager.get_flow(flow_name, runtime).build()
     helm_yaml = _flow.to_helm_yaml()
