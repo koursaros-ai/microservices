@@ -18,20 +18,20 @@ class Flow(_Flow):
         model = kwargs.get('name', 'base')
         image = 'gnes/gnes:latest-alpine'
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
-
         if model == 'base':
             ret = supercall()
         else:
             yaml_path = kwargs['yaml_path']
 
             if yaml_path.isidentifier():
+                import pdb;
+                pdb.set_trace()
                 ret = supercall()
                 model = yaml_path.lower()
             else:
                 # ignore invalid yaml path
                 path = pathlib.Path(yaml_path)
                 path.touch()
-                import pdb; pdb.set_trace()
                 ret = supercall()
                 path.unlink()
                 model = yaml_path
