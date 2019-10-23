@@ -39,6 +39,7 @@ def flow(app_manager, flow_name, runtime, yes, push, creds):
 
     for services in _flow.helm_yaml.values():
         for service in services:
+            print(service['image'])
             if '/' in service['image']:
                 app_manager.subprocess_call('docker pull %s' % service['image'])
             else:
