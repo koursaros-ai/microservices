@@ -21,7 +21,7 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
     if platform == 'compose':
         down = 'docker-compose -f %s down' % str(swarm_path)
         app_manager.subprocess_call(down, shell=True)
-        up = 'docker-compose-f %s up' % str(swarm_path)
+        up = 'docker-compose -f %s up' % str(swarm_path)
         app_manager.subprocess_call(up, shell=True)
 
     elif platform == 'swarm':
