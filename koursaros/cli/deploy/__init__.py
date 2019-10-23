@@ -13,27 +13,11 @@ def deploy():
 def flow(app_manager, flow_name, runtime, yes, dryrun):
     """Deploy a pipeline with compose or k8s. """
 
-    if platform == 'swarm':
-        raise NotImplementedError
-
-        # start = round(time.time())
-        #
-        # def stream_container_logs(cont: 'docker.models.containers.Container'):
-        #     # get rid of uuid
-        #     name = '.'.join(cont.name.split('.')[:-1]) if '.' in cont.name else cont.name
-        #
-        #     for log in cont.logs(stream=True, since=start):
-        #         app_manager.thread_logs[name] += [log.decode()]
-        #
-        # for container in docker.from_env().containers.list(all=True):
-        #     app_manager.thread(target=stream_container_logs, args=[container])
-
-    elif platform == 'k8s':
-        helm_path = app_manager.find('pipelines', flow_name, runtime, 'helm', pkg=True)
-        purge = 'helm delete --purge $(helm ls --all --short)'
-        app_manager.subprocess_call(purge, shell=True)
-        install = 'helm install ' + '--dry-run --debug' if dryrun else '' + str(helm_path)
-        app_manager.subprocess_call(install, shell=True)
+    helm_path = app_manager.find('pipelines', flow_name, runtime, 'helm', pkg=True)
+    purge = 'helm delete --purge $(helm ls --all --short)'
+    app_manager.subprocess_call(purge, shell=True)
+    install = 'helm install ' + '--dry-run --debug' if dryrun else '' + str(helm_path)
+    app_manager.subprocess_call(install, shell=True)
 
 
 @deploy.command()
