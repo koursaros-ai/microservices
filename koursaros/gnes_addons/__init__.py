@@ -38,12 +38,12 @@ def add_wrapper(f):
             ret = f(*args, **kwargs)
 
         # add custom kwargs
+        import pdb; pdb.set_trace()
         service = ret._service_nodes[args[1]]
         service['storage'] = kwargs.get('storage', '500Mi')
         service['memory'] = kwargs.get('storage', '500Mi')
         service['cpu'] = kwargs.get('storage', '300m')
         service['replicas'] = kwargs.get('replicas', 1)
-        import pdb; pdb.set_trace()
         service['app'] = service['service'].name.lower()
         # service['model'] =
         return ret
