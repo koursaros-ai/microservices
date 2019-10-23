@@ -47,6 +47,6 @@ def client(app_manager, flow_name, runtime, creds):
     _flow = app_manager.get_flow(flow_name, runtime)
     tag = 'hub-client:latest-%s' % _flow.client_node.pop('model')
     app_manager.subprocess_call(
-        'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), stream=True)
+        'docker run -it %s --mode %s --creds %s' % (tag, runtime, creds), shell=True)
 
 
