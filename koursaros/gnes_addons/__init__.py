@@ -1,5 +1,4 @@
 from collections import Mapping
-from pathlib import Path
 from gnes.flow import *
 import argparse
 
@@ -54,7 +53,7 @@ class Flow(_Flow):
             build = False
             if isinstance(yaml_path, str):
                 build = True
-                model = Path(yaml_path).parent.name
+                model = configs['name']
             elif 'yaml_path' in configs['kwargs']:
                 model = configs['kwargs']['yaml_path'].lower()
             else:
