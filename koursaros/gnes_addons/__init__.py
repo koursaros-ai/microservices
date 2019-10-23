@@ -14,6 +14,8 @@ class Flow(_Flow):
         return self
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
+        import pdb;
+        pdb.set_trace()
         app = service.name.lower()
         model = kwargs.get('name', 'base')
         image = 'gnes/gnes:latest-alpine'
@@ -24,8 +26,6 @@ class Flow(_Flow):
             yaml_path = kwargs['yaml_path']
 
             if yaml_path.isidentifier():
-                import pdb;
-                pdb.set_trace()
                 ret = supercall()
                 model = yaml_path.lower()
             else:
