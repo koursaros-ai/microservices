@@ -64,6 +64,6 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
                     break
 
     if not out_path.is_dir():
-        copytree(str(app_manager.find('chart')), str(out_path))
+        copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
         flow.path.parent.joinpath('helm', 'values.yaml').write_text(helm_yaml)
         app_manager.logger.critical('Saved helm chart to %s' % str(out_path))

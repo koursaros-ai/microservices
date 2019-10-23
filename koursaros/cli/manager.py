@@ -10,6 +10,7 @@ import subprocess
 import threading
 import atexit
 import time
+import git
 import sys
 import os
 
@@ -26,7 +27,8 @@ class AppManager:
     """
 
     def __init__(self):
-        self.root = Path(__file__).parent.parent
+        self.git_root = Path(git.Repo('.', search_parent_directories=True).working_tree_dir)
+        self.pkg_root = Path(__file__).parent.parent
         self.logger = set_logger('kctl')
         self.threads = []
         self.thread_logs = defaultdict(lambda: [])
@@ -34,8 +36,9 @@ class AppManager:
 
         atexit.register(self.join)
 
-    def find(self, *dirs: str) -> 'Path':
-        check_path = self.root.joinpath(*dirs)
+    def find(self, *dirs: str, pkg=False) -> 'Path':
+        search_path = self.pkg_root if pkg else self.git_root
+        check_path = search_path.joinpath(*dirs)
         if check_path.exists():
             return check_path
         import pdb; pdb.set_trace()
@@ -77,7 +80,7 @@ class AppManager:
             t.join()
 
     def get_flow(self, *dirs: str) -> 'Flow':
-        os.chdir(str(self.root))
+        os.chdir(str(self.git_root))
         flow_path = self.find(*dirs, 'flow.py')
         flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
         flow.path = flow_path
