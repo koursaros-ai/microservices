@@ -25,9 +25,9 @@ spec:
       port: {{ .grpc_port }}
       protocol: TCP
     {{- end -}}
-    {{- if .grpc_port }}
+    {{- if .ctrl_port }}
     - name: ctrl
-      port: {{ .port_ctrl }}
+      port: {{ .ctrl_port }}
       protocol: TCP
     {{- end -}}
   {{ if .load_balancer }}
