@@ -80,7 +80,7 @@ class AppManager:
             t.join()
 
     def get_flow(self, flow_name, runtime) -> 'Flow':
-        os.chdir(str(self.git_root))
+        os.chdir(str(self.git_root.joinpath('koursaros')))
         flow_path = self.find('koursaros', 'flows', flow_name, runtime, 'flow.py')
         flow = machinery.SourceFileLoader('flow', str(flow_path)).load_module().flow
         flow.path = flow_path
