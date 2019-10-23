@@ -14,7 +14,7 @@ class Flow(_Flow):
 
     def add(self, *args, **kwargs):
         # ignore invalid yaml path
-        f = super().add_preprocessor(*args, **kwargs)
+        f = super().add(*args, **kwargs)
         yaml_path = kwargs.get('yaml_path', None)
         build = False
 
