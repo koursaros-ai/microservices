@@ -96,7 +96,7 @@ class Flow(_Flow):
             )
             if node['replicas'] > 1:
                 swarm_yml['services'][name]['deploy'] = {'replicas': node['replicas']}
-            ports = node['parsed_args'].get('grpc_port', None)
+            ports = vars(node['parsed_args']).get('grpc_port', None)
             if ports:
                 swarm_yml['services'][name]['ports'] = list(ports)
 
