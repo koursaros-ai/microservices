@@ -2,7 +2,12 @@ from gnes.flow import *
 import pathlib
 import functools
 
+_Service = Service
 _Flow = Flow
+
+
+class Service(_Service):
+    Client = 5
 
 
 class Flow(_Flow):
@@ -10,16 +15,19 @@ class Flow(_Flow):
         super().__init__(*args, **kwargs)
 
     def add_client(self, **kwargs):
-        self.client_node = kwargs
-        return self
+        return self.add(Service.Client, **kwargs)
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
         app = service.name.lower()
         model = name if name else 'base'
         yaml_path = kwargs.get('yaml_path', None)
+        image = 'hub-%s:latest-%s' % (app, model)
 
-        if model == 'base' or yaml_path.isidentifier():
+        if service == Service.Client:
+            self._service_nodes[name] = dict()
+            ret = self
+        elif model == 'base' or yaml_path.isidentifier():
             ret = supercall()
             image = 'gnes/gnes:latest-alpine'
         else:
@@ -28,12 +36,11 @@ class Flow(_Flow):
             path.touch()
             ret = supercall()
             path.unlink()
-            image = 'hub-%s:latest-%s' % (app, model)
 
         # add custom kwargs
         try:
             name = name if name else '%s%d' % (service, self._service_name_counter[service]-1)
-            
+
             v = ret._service_nodes[name]
             v['storage'] = kwargs.get('storage', '500Mi')
             v['memory'] = kwargs.get('storage', '500Mi')
