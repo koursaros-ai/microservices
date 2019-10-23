@@ -1,14 +1,20 @@
 from gnes.flow import *
-import functools
 import pathlib
 
 _Flow = Flow
 
 
-def add_wrapper(f):
-    @functools.wraps(f)
-    def wrapped(*args, **kwargs):
+class Flow(_Flow):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def add_client(self, **kwargs):
+        self.client_node = kwargs
+        return self
+
+    def add(self, service, name, *args, **kwargs):
         # ignore invalid yaml path
+        f = super().add_preprocessor(*args, **kwargs)
         yaml_path = kwargs.get('yaml_path', None)
         build = False
 
@@ -38,34 +44,7 @@ def add_wrapper(f):
         v['image'] = kwargs.get(
             'image', 'hub-%s:latest-%s' % (v['app'], v['model']) if build else 'gnes/gnes:latest-alpine'
         )
-
         return ret
-    return wrapped
-
-
-class Flow(_Flow):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def add_client(self, **kwargs):
-        self.client_node = kwargs
-        return self
-
-    @add_wrapper
-    def add_preprocessor(self, *args, **kwargs):
-        return super().add_preprocessor(*args, **kwargs)
-
-    @add_wrapper
-    def add_encoder(self, *args, **kwargs):
-        return super().add_encoder(*args, **kwargs)
-
-    @add_wrapper
-    def add_indexer(self, *args, **kwargs):
-        return super().add_indexer(*args, **kwargs)
-
-    @add_wrapper
-    def add_router(self, *args, **kwargs):
-        return super().add_router(*args, **kwargs)
 
     def to_helm_yaml(self):
         from ruamel.yaml import YAML, StringIO
