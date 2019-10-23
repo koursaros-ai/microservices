@@ -18,7 +18,7 @@ class Flow(_Flow):
         model = name if name else 'base'
         image = 'gnes/gnes:latest-alpine'
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
-        
+
         if model == 'base':
             ret = supercall()
         else:
@@ -60,11 +60,13 @@ class Flow(_Flow):
         self.helm_yaml = defaultdict(lambda: [])
 
         for k, v in self._service_nodes.items():
+            p_args = vars(v['parsed_args'])
+
             defaults_kwargs, _ = service_map[
                 v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
 
             non_default_kwargs = {
-                k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
+                k: v for k, v in p_args.items() if getattr(defaults_kwargs, k) != v}
 
             command = '%s %s' % (
                 service_map[v['service']]['cmd'],
@@ -75,10 +77,10 @@ class Flow(_Flow):
                 name=k,
                 app=v['app'],
                 model=v['model'],
-                port_in=v['parsed_args'].get('port_in', None),
-                port_out=v['parsed_args'].get('port_out', None),
-                ctrl_port=v['parsed_args'].get('ctrl_port', None),
-                grpc_port=v['parsed_args'].get('grpc_port', None),
+                port_in=p_args.get('port_in', None),
+                port_out=p_args.get('port_out', None),
+                ctrl_port=p_args.get('ctrl_port', None),
+                grpc_port=p_args.get('grpc_port', None),
                 command=command.split(),
                 replicas=v['replicas'],
                 storage=v['storage'],
