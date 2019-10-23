@@ -1,0 +1,37 @@
+version: '3.4'
+services:
+  Frontend0:
+    image: gnes/gnes:latest-alpine
+    command: frontend --port_in 62299 --port_out 61056 --port_ctrl 53424 --parallel_backend
+      process
+  sentsplit:
+    image: hub-preprocessor:latest-sentsplit
+    command: --port_in 61056 --port_out 58086 --socket_in PULL_CONNECT --socket_out
+      PUB_BIND --port_ctrl 51431 --parallel_backend process --num_parallel 2 --yaml_path
+      jsonmode.yml
+    deploy:
+      replicas: 2
+  textbyte:
+    image: hub-encoder:latest-textbyte
+    command: --port_in 58086 --port_out 62414 --socket_in SUB_CONNECT --port_ctrl
+      57319 --parallel_backend process --num_parallel 2 --yaml_path max256.yml
+    deploy:
+      replicas: 2
+  keyword:
+    image: hub-indexer:latest-keyword
+    command: --port_in 62414 --port_out 49675 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 50559 --parallel_backend process --num_parallel 2 --yaml_path
+      base.yml
+    deploy:
+      replicas: 2
+  lvdb:
+    image: hub-indexer:latest-lvdb
+    command: --port_in 58086 --port_out 49675 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 61326 --parallel_backend process --num_parallel 2 --yaml_path
+      base.yml
+    deploy:
+      replicas: 2
+  basereducerouter:
+    image: gnes/gnes:latest-alpine
+    command: route --port_in 49675 --port_out 62299 --socket_out PUSH_CONNECT --port_ctrl
+      53708 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2

@@ -4,7 +4,6 @@ import click
 pipeline_options = decorator_group([
     click.argument('flow_name'),
     click.option('-r', '--runtime', required=True),
-    click.option('-y', '--yes', is_flag=True),
     click.pass_obj
 ])
 

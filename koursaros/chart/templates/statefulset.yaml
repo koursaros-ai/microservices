@@ -29,7 +29,10 @@ spec:
       containers:
       - name: {{ $name }}
         image: {{ .image }}
-        args: {{ .command }}
+        args:
+        {{- range .command }}
+        - {{ . | quote }}
+        {{- end }}
         imagePullPolicy: null
         ports:
         {{- if .port_in }}

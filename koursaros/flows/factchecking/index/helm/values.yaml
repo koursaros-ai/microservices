@@ -3,18 +3,18 @@ services:
   - name: Frontend0
     app: frontend
     model: base
-    port_in: 61945
-    port_out: 52870
+    port_in: 62299
+    port_out: 61056
     ctrl_port:
     grpc_port: 8800
     command:
     - frontend
     - --port_in
-    - '61945'
+    - '62299'
     - --port_out
-    - '52870'
+    - '61056'
     - --port_ctrl
-    - '55411'
+    - '53424'
     - --parallel_backend
     - process
     replicas: 1
@@ -26,53 +26,55 @@ services:
   - name: sentsplit
     app: preprocessor
     model: sentsplit
-    port_in: 52870
-    port_out: 49366
+    port_in: 61056
+    port_out: 58086
     ctrl_port:
     grpc_port:
     command:
-    - preprocess
     - --port_in
-    - '52870'
+    - '61056'
     - --port_out
-    - '49366'
+    - '58086'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUB_BIND
     - --port_ctrl
-    - '56556'
+    - '51431'
     - --parallel_backend
     - process
+    - --num_parallel
+    - '2'
     - --yaml_path
-    - hub/preprocessor/sentsplit/jsonmode.yml
+    - jsonmode.yml
     replicas: 2
     storage: 1Gi
-    memory: 500Mi
-    cpu: 300m
+    memory: 1Gi
+    cpu: 1Gi
     image: hub-preprocessor:latest-sentsplit
   encoder:
   - name: textbyte
     app: encoder
     model: textbyte
-    port_in: 49366
-    port_out: 56996
+    port_in: 58086
+    port_out: 62414
     ctrl_port:
     grpc_port:
     command:
-    - encode
     - --port_in
-    - '49366'
+    - '58086'
     - --port_out
-    - '56996'
+    - '62414'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '55886'
+    - '57319'
     - --parallel_backend
     - process
+    - --num_parallel
+    - '2'
     - --yaml_path
-    - hub/encoder/textbyte/max256.yml
+    - max256.yml
     replicas: 2
     storage: 500Mi
     memory: 500Mi
@@ -82,26 +84,27 @@ services:
   - name: keyword
     app: indexer
     model: keyword
-    port_in: 56996
-    port_out: 58768
+    port_in: 62414
+    port_out: 49675
     ctrl_port:
     grpc_port:
     command:
-    - index
     - --port_in
-    - '56996'
+    - '62414'
     - --port_out
-    - '58768'
+    - '49675'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '58057'
+    - '50559'
     - --parallel_backend
     - process
+    - --num_parallel
+    - '2'
     - --yaml_path
-    - hub/indexer/keyword/base.yml
+    - base.yml
     replicas: 2
     storage: 500Mi
     memory: 500Mi
@@ -110,49 +113,50 @@ services:
   - name: lvdb
     app: indexer
     model: lvdb
-    port_in: 49366
-    port_out: 58768
+    port_in: 58086
+    port_out: 49675
     ctrl_port:
     grpc_port:
     command:
-    - index
     - --port_in
-    - '49366'
+    - '58086'
     - --port_out
-    - '58768'
+    - '49675'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '55105'
+    - '61326'
     - --parallel_backend
     - process
+    - --num_parallel
+    - '2'
     - --yaml_path
-    - hub/indexer/lvdb/base.yml
+    - base.yml
     replicas: 2
     storage: 500Mi
     memory: 500Mi
     cpu: 300m
     image: hub-indexer:latest-lvdb
   router:
-  - name: reduce
+  - name: basereducerouter
     app: router
     model: basereducerouter
-    port_in: 58768
-    port_out: 61945
+    port_in: 49675
+    port_out: 62299
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '58768'
+    - '49675'
     - --port_out
-    - '61945'
+    - '62299'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '50271'
+    - '53708'
     - --parallel_backend
     - process
     - --yaml_path
