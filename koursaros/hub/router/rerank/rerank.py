@@ -6,13 +6,13 @@ from transformers import *
 
 class RerankRouter(BaseReduceRouter):
 
-    def __init__(self, model, *args, **kwargs):
+    def __init__(self, model_name: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._model = model
+        self.model_name = model_name
 
     def post_init(self):
-        self.model = AutoModelForSequenceClassification.from_pretrained(self._model)
-        self.tokenizer = AutoTokenizer.from_pretrained(self._model)
+        self.rerank_model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
     def get_key(self, x: 'gnes_pb2.Response.QueryResponse.ScoredResult') -> str:
         raise NotImplementedError
