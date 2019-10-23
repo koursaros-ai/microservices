@@ -35,7 +35,7 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
 
     flow = app_manager.get_flow('flows', flow_name, runtime).build()
-    flow.to_helm_yaml()
+    helm_yaml = flow.to_helm_yaml()
 
     for services in flow.helm_yaml.values():
         for service in services:
@@ -65,5 +65,5 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     if not out_path.is_dir():
         copytree(str(app_manager.find('chart')), str(out_path))
-        flow.path.parent.joinpath('helm', 'values.yaml').write_text(flow.to_helm_yaml())
+        flow.path.parent.joinpath('helm', 'values.yaml').write_text(helm_yaml)
         app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
