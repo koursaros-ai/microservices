@@ -12,7 +12,7 @@ def build():
 @pipeline_options
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
-@click.option('-n', '--no-caches', nargs=-1)
+@click.argument('-n', '--no-caches', multiple=True)
 def flow(app_manager, flow_name, runtime, push, creds, no_caches):
     """Build images for a pipeline. """
 
