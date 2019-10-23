@@ -19,10 +19,10 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
     if platform == 'swarm':
         swarm_path = _flow.path.parent.joinpath('docker-compose.yml')
         rm = 'docker stack rm %s' % flow_name
-        app_manager.logger.critical('Waiting for docker network resources...')
-        [time.sleep(0.2) for _ in tqdm(range(100))]
-        stack = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
         app_manager.subprocess_call(rm, shell=True)
+        app_manager.logger.critical('Waiting for docker network resources...')
+        [time.sleep(0.15) for _ in tqdm(range(100))]
+        stack = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
         app_manager.subprocess_call(stack, shell=True)
 
     if platform == 'k8s':
