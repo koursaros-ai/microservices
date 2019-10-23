@@ -51,7 +51,12 @@ class Flow(_Flow):
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
 
-            model = Path(yaml_path).parent.name if isinstance(yaml_path, str) else None
+            if isinstance(yaml_path, str):
+                model = Path(yaml_path).parent.name
+            elif 'yaml_path' in configs['kwargs']:
+                model = configs['kwargs']['yaml_path']
+            else:
+                model = 'base'
 
             self.helm_yaml[app] += [dict(
                 name=name,
