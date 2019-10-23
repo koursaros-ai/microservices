@@ -1,6 +1,6 @@
 FROM pytorch/pytorch
 
-RUN pip install -U pytorch-transformers gnes --no-cache-dir --compile
+RUN pip install -U transformers gnes --no-cache-dir --compile && echo 'yo'
 
 ADD *.py *.yml ./
 
