@@ -14,21 +14,20 @@ class Flow(_Flow):
 
     def add(self, *args, **kwargs):
         # ignore invalid yaml path
-        f = super().add(*args, **kwargs)
         yaml_path = kwargs.get('yaml_path', None)
         build = False
 
         if yaml_path is None:
-            ret = f(*args, **kwargs)
+            super().add(*args, **kwargs)
             model = 'base'
 
         elif yaml_path.isidentifier():
-            ret = f(*args, **kwargs)
+            super().add(*args, **kwargs)
             model = yaml_path.lower()
         else:
             path = pathlib.Path(yaml_path)
             path.touch()
-            ret = f(*args, **kwargs)
+            super().add(*args, **kwargs)
             path.unlink()
             model = yaml_path
             build = True
