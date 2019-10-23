@@ -7,7 +7,7 @@ flow = (
     .add_encoder(name='textbyte', recv_from='sentsplit', replicas=2, yaml_path='max256.yml')
     .add_indexer(name='keyword', replicas=2, yaml_path='base.yml')
     .add_indexer(name='lvdb', recv_from='sentsplit', replicas=2, yaml_path='base.yml')
-    .add_router(name='reduce', num_part=2, recv_from=['keyword', 'lvdb'], yaml_path='BaseReduceRouter')
+    .add_router(name='basereducerouter', num_part=2, recv_from=['keyword', 'lvdb'], yaml_path='BaseReduceRouter')
 )
 
 # checkout how the flow looks like (...and post it on Twitter, but hey what do I know about promoting OSS)
