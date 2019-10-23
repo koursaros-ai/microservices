@@ -3,6 +3,7 @@ from ..decorators import *
 from tqdm import tqdm
 import time
 
+
 @click.group()
 def deploy():
     """Deploy gnes services."""
@@ -33,12 +34,10 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
         app_manager.subprocess_call(stack, shell=True)
 
     if platform == 'k8s':
-
         purge = 'helm delete --purge $(helm ls --all --short)'
         app_manager.subprocess_call(purge, shell=True)
         install = 'helm install ' + ('--dry-run --debug ' if dryrun else '') + str(helm_path)
         app_manager.subprocess_call(install, shell=True)
-
 
 
 @deploy.command()
