@@ -33,16 +33,20 @@ class Flow(_Flow):
             build = True
 
         # add custom kwargs
-        v = ret._service_nodes[kwargs['name']]
-        v['storage'] = kwargs.get('storage', '500Mi')
-        v['memory'] = kwargs.get('storage', '500Mi')
-        v['cpu'] = kwargs.get('storage', '300m')
-        v['replicas'] = kwargs.get('replicas', 1)
-        v['app'] = v['service'].name.lower()
-        v['model'] = model
-        v['image'] = kwargs.get(
-            'image', 'hub-%s:latest-%s' % (v['app'], v['model']) if build else 'gnes/gnes:latest-alpine'
-        )
+        try:
+            v = ret._service_nodes[kwargs['name']]
+            v['storage'] = kwargs.get('storage', '500Mi')
+            v['memory'] = kwargs.get('storage', '500Mi')
+            v['cpu'] = kwargs.get('storage', '300m')
+            v['replicas'] = kwargs.get('replicas', 1)
+            v['app'] = v['service'].name.lower()
+            v['model'] = model
+            v['image'] = kwargs.get(
+                'image', 'hub-%s:latest-%s' % (v['app'], v['model']) if build else 'gnes/gnes:latest-alpine'
+            )
+        except Exception as e:
+            print(e)
+            import pdb; pdb.set_trace()
         return ret
 
     def to_helm_yaml(self):
