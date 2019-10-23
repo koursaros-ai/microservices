@@ -28,7 +28,6 @@ def add_wrapper(f):
             build = True
 
         # add custom kwargs
-        import pdb; pdb.set_trace()
         v = ret._service_nodes[kwargs['name']]
         v['storage'] = kwargs.get('storage', '500Mi')
         v['memory'] = kwargs.get('storage', '500Mi')
