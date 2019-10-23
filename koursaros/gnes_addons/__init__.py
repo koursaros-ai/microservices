@@ -90,14 +90,15 @@ class Flow(_Flow):
                      'services': {}}
 
         for name, node in self._service_nodes.items():
-            import pdb; pdb.set_trace()
             swarm_yml['services'][name] = dict(
                 image=node['image'],
-                command=self.get_service_command(name),
-                ports=node['grpc_port']
+                command=self.get_service_command(name)
             )
             if node['replicas'] > 1:
                 swarm_yml['services'][name]['deploy'] = {'replicas': node['replicas']}
+            ports = [node.get('grpc_port', None)]
+            if ports:
+                swarm_yml['ports'] = ports
 
         return self.yaml_stream(swarm_yml)
 
