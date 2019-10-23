@@ -34,6 +34,8 @@ def ignore_invalid_yaml_path(f):
         except:
             import pdb; pdb.set_trace()
         yaml_path.unlink()
+        import pdb;
+        pdb.set_trace()
         return ret
     return wrapped
 
