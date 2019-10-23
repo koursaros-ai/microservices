@@ -18,16 +18,16 @@ class Flow(_Flow):
         build = False
 
         if yaml_path is None:
-            super().add(*args, **kwargs)
+            ret = super().add(*args, **kwargs)
             model = 'base'
 
         elif yaml_path.isidentifier():
-            super().add(*args, **kwargs)
+            ret = super().add(*args, **kwargs)
             model = yaml_path.lower()
         else:
             path = pathlib.Path(yaml_path)
             path.touch()
-            super().add(*args, **kwargs)
+            ret = super().add(*args, **kwargs)
             path.unlink()
             model = yaml_path
             build = True
