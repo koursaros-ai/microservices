@@ -20,7 +20,7 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
         swarm_path = _flow.path.parent.joinpath('docker-compose.yml')
         rm = 'docker stack rm %s' % flow_name
         app_manager.logger.critical('Waiting for docker network resources...')
-        [time.sleep(20) for _ in tqdm(range(10))]
+        [time.sleep(1) for _ in tqdm(range(20))]
         stack = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
         app_manager.subprocess_call(rm, shell=True)
         app_manager.subprocess_call(stack, shell=True)
