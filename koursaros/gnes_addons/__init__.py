@@ -31,6 +31,7 @@ class Flow(_Flow):
                 # ignore invalid yaml path
                 path = pathlib.Path(yaml_path)
                 path.touch()
+                import pdb; pdb.set_trace()
                 ret = supercall()
                 path.unlink()
                 model = yaml_path
