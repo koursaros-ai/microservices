@@ -10,7 +10,7 @@ def deploy():
 @deploy.command()
 @pipeline_options
 @click.option('-d', '--dryrun', is_flag=True)
-def flow(app_manager, flow_name, runtime, yes, platform, dryrun):
+def flow(app_manager, flow_name, runtime, yes, dryrun):
     """Deploy a pipeline with compose or k8s. """
 
     if platform == 'swarm':
