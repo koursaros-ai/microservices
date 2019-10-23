@@ -28,6 +28,7 @@ class FileCred(yaml.YAMLObject):
 
 def get_creds(git_dsn):
     login, repo = git_dsn.split('@')
+    login += '@'
     repo_path = DIR.joinpath(repo)
     repo_path.parent.mkdir(exist_ok=True)
     FileCred.set_repo_path(repo_path)
@@ -37,7 +38,7 @@ def get_creds(git_dsn):
         g.pull()
     else:
         g = git.Git(repo_path.parent)
-        g.clone("https://%s@github.com/%s" % (login, repo))
+        g.clone("https://%sgithub.com/%s" % (login, repo))
 
     creds = yaml.safe_load(repo_path.joinpath('creds.yaml').read_text())
     return Box(creds['creds'])
