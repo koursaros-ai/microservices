@@ -1,6 +1,7 @@
 
 from ..decorators import *
-
+from tqdm import tqdm
+import time
 
 @click.group()
 def deploy():
@@ -18,6 +19,8 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
     if platform == 'swarm':
         swarm_path = _flow.path.parent.joinpath('docker-compose.yml')
         rm = 'docker stack rm %s' % flow_name
+        app_manager.logger('Waiting for docker network resources...')
+        [time.sleep(20) for _ in tqdm(range(10))]
         stack = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
         app_manager.subprocess_call(rm, shell=True)
         app_manager.subprocess_call(stack, shell=True)
