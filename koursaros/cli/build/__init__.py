@@ -47,6 +47,10 @@ def flow(app_manager, flow_name, runtime, yes, push, creds, no_cache):
                 path = str(app_manager.find_model(service['app'], service['model']))
                 docker_build(path, service['image'])
 
+    """save swarm yaml"""
+    out_path = _flow.path.parent.joinpath('docker-compose.yml')
+    out_path.write_text(_flow.to_swarm_yaml())
+
     """save helm chart"""
     out_path = _flow.path.parent.joinpath('helm')
     if out_path.is_dir():

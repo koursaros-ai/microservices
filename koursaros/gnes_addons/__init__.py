@@ -5,6 +5,7 @@ import functools
 _Flow = Flow
 DEFAULT_IMAGE = 'gnes/gnes:latest-alpine'
 
+
 class Flow(_Flow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
