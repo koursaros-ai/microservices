@@ -49,6 +49,6 @@ def client(app_manager, flow_name, runtime, creds):
     path = _flow.client_node.pop('yaml_path')
     app_manager.subprocess_call(
         'docker run -i %s --mode %s --yaml_path %s --network %s --creds %s' % (
-            tag, runtime, path, creds), shell=True)
+            tag, runtime, path, 'host', creds), shell=True)
 
 
