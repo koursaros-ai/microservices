@@ -51,10 +51,12 @@ class Flow(_Flow):
             yaml_path = p_args.get('yaml_path', None)
             app = configs['service'].name.lower()
 
+            build = False
             if isinstance(yaml_path, str):
+                build = True
                 model = Path(yaml_path).parent.name
             elif 'yaml_path' in configs['kwargs']:
-                model = configs['kwargs']['yaml_path']
+                model = configs['kwargs']['yaml_path'].lower()
             else:
                 model = 'base'
 
@@ -71,7 +73,7 @@ class Flow(_Flow):
                 storage=extra_args.get('storage', None),
                 memory=extra_args.get('memory', None),
                 cpu=extra_args.get('cpu', None),
-                image='hub-%s:latest-%s' % (app, model) if model else configs['image']
+                image='hub-%s:latest-%s' % (app, model) if build else configs['image']
             )]
 
         stream = StringIO()
