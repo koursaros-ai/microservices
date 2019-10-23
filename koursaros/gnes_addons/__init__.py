@@ -1,5 +1,6 @@
 from gnes.flow import *
 import pathlib
+import functools
 
 _Flow = Flow
 
@@ -12,38 +13,41 @@ class Flow(_Flow):
         self.client_node = kwargs
         return self
 
-    def add(self, *args, **kwargs):
-        # ignore invalid yaml path
-        yaml_path = kwargs.get('yaml_path', None)
-        build = False
+    def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
+        app = service.name.lower()
+        model = kwargs.get('name', 'base')
+        image = 'gnes/gnes:latest-alpine'
+        supercall = functools.partial(super().add, service, name, *args, **kwargs)
 
-        if yaml_path is None:
-            ret = super().add(*args, **kwargs)
-            model = 'base'
-
-        elif yaml_path.isidentifier():
-            ret = super().add(*args, **kwargs)
-            model = yaml_path.lower()
+        if model == 'base':
+            ret = supercall()
         else:
-            path = pathlib.Path(yaml_path)
-            path.touch()
-            ret = super().add(*args, **kwargs)
-            path.unlink()
-            model = yaml_path
-            build = True
+            yaml_path = kwargs['yaml_path']
+
+            if yaml_path.isidentifier():
+                ret = supercall()
+                model = yaml_path.lower()
+            else:
+                # ignore invalid yaml path
+                path = pathlib.Path(yaml_path)
+                path.touch()
+                ret = supercall()
+                path.unlink()
+                model = yaml_path
+                image = 'hub-%s:latest-%s' % (app, model)
 
         # add custom kwargs
         try:
-            v = ret._service_nodes[kwargs['name']]
+            name = '%s%d' % (service, self._service_name_counter[service]-1) if not name else name
+
+            v = ret._service_nodes[name]
             v['storage'] = kwargs.get('storage', '500Mi')
             v['memory'] = kwargs.get('storage', '500Mi')
             v['cpu'] = kwargs.get('storage', '300m')
             v['replicas'] = kwargs.get('replicas', 1)
-            v['app'] = v['service'].name.lower()
+            v['app'] = app
             v['model'] = model
-            v['image'] = kwargs.get(
-                'image', 'hub-%s:latest-%s' % (v['app'], v['model']) if build else 'gnes/gnes:latest-alpine'
-            )
+            v['image'] = image
         except Exception as e:
             print(e)
             import pdb; pdb.set_trace()
