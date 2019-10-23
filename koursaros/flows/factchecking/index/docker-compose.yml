@@ -2,36 +2,36 @@ version: '3.4'
 services:
   Frontend0:
     image: gnes/gnes:latest-alpine
-    command: frontend --port_in 49706 --port_out 49931 --port_ctrl 51268 --parallel_backend
+    command: frontend --port_in 64867 --port_out 51889 --port_ctrl 64874 --parallel_backend
       process
   sentsplit:
     image: hub-preprocessor:latest-sentsplit
-    command: ' --port_in 49931 --port_out 55215 --socket_in PULL_CONNECT --socket_out
-      PUB_BIND --port_ctrl 63185 --parallel_backend process --num_parallel 2 --yaml_path
+    command: ' --port_in 51889 --port_out 54483 --socket_in PULL_CONNECT --socket_out
+      PUB_BIND --port_ctrl 64011 --parallel_backend process --num_parallel 2 --yaml_path
       jsonmode.yml'
     deploy:
       replicas: 2
   textbyte:
     image: hub-encoder:latest-textbyte
-    command: ' --port_in 55215 --port_out 56609 --socket_in SUB_CONNECT --port_ctrl
-      52739 --parallel_backend process --num_parallel 2 --yaml_path max256.yml'
+    command: ' --port_in 54483 --port_out 53294 --socket_in SUB_CONNECT --port_ctrl
+      53235 --parallel_backend process --num_parallel 2 --yaml_path max256.yml'
     deploy:
       replicas: 2
   keyword:
     image: hub-indexer:latest-keyword
-    command: ' --port_in 56609 --port_out 64357 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 52351 --parallel_backend process --num_parallel 2 --yaml_path
+    command: ' --port_in 53294 --port_out 59713 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 60097 --parallel_backend process --num_parallel 2 --yaml_path
       base.yml'
     deploy:
       replicas: 2
   lvdb:
     image: hub-indexer:latest-lvdb
-    command: ' --port_in 55215 --port_out 64357 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 49603 --parallel_backend process --num_parallel 2 --yaml_path
+    command: ' --port_in 54483 --port_out 59713 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 64020 --parallel_backend process --num_parallel 2 --yaml_path
       base.yml'
     deploy:
       replicas: 2
   basereducerouter:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 64357 --port_out 49706 --socket_out PUSH_CONNECT --port_ctrl
-      52793 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
+    command: route --port_in 59713 --port_out 64867 --socket_out PUSH_CONNECT --port_ctrl
+      49390 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2

@@ -75,7 +75,7 @@ class Flow(_Flow):
         if not isinstance(non_default_kwargs.get('yaml_path', ''), str):
             non_default_kwargs['yaml_path'] = v['kwargs']['yaml_path']
 
-        command = '%s ' % ('' if v['image'] != DEFAULT_IMAGE else service_map[v['service']]['cmd'])
+        command = '' if v['image'] != DEFAULT_IMAGE else service_map[v['service']]['cmd'] + ' '
         command += ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
         return command
 

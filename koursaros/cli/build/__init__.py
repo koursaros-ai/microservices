@@ -51,6 +51,7 @@ def flow(app_manager, flow_name, runtime, push, creds, no_cache):
     """save swarm yaml"""
     out_path = _flow.path.parent.joinpath('docker-compose.yml')
     out_path.write_text(_flow.to_swarm_yaml())
+    app_manager.logger.critical('Saved swarm yaml to %s' % str(out_path))
 
     """save helm chart"""
     out_path = _flow.path.parent.joinpath('helm')
