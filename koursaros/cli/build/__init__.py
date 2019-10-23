@@ -13,7 +13,7 @@ def build():
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
 @click.option('-n', '--no-cache', is_flag=True)
-def flow(app_manager, flow_name, runtime, yes, push, creds, no_cache):
+def flow(app_manager, flow_name, runtime, push, creds, no_cache):
     """Build images for a pipeline. """
 
     def docker_build(path, tag):
@@ -54,19 +54,6 @@ def flow(app_manager, flow_name, runtime, yes, push, creds, no_cache):
 
     """save helm chart"""
     out_path = _flow.path.parent.joinpath('helm')
-    if out_path.is_dir():
-        if yes:
-            rmtree(str(out_path))
-        else:
-            while True:
-                yn = input('Overwrite %s? [y/n]' % str(out_path))
-                if yn == 'y':
-                    rmtree(str(out_path))
-                    break
-                elif yn == 'n':
-                    break
-
-    if not out_path.is_dir():
-        copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
-        _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
-        app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
+    copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
+    _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
+    app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
