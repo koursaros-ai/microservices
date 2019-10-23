@@ -14,12 +14,11 @@ class Flow(_Flow):
         return self
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
-        import pdb;
-        pdb.set_trace()
         app = service.name.lower()
-        model = kwargs.get('name', 'base')
+        model = name if name else 'base'
         image = 'gnes/gnes:latest-alpine'
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
+        
         if model == 'base':
             ret = supercall()
         else:
