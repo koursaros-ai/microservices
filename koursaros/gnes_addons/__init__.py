@@ -1,51 +1,45 @@
-import collections
 from gnes.flow import *
-import argparse
 import functools
 import pathlib
 
 _Flow = Flow
 
 
-def dict_merge(dct, merge_dct):
-    """ Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
-    updating only top-level keys, dict_merge recurses down into dicts nested
-    to an arbitrary depth, updating keys. The ``merge_dct`` is merged into
-    ``dct``.
-    :param dct: dict onto which the merge is executed
-    :param merge_dct: dct merged into dct
-    :return: None
-    """
-    for k, v in merge_dct.items():
-        if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], collections.Mapping)):
-            dict_merge(dct[k], merge_dct[k])
-        else:
-            dct[k] = merge_dct[k]
-
-
 def add_wrapper(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
         # ignore invalid yaml path
-        path = kwargs['yaml_path']
-        if not path.isidentifier():
-            yaml_path = pathlib.Path(path)
-            yaml_path.touch()
+        yaml_path = kwargs.get('yaml_path', None)
+        build = False
+
+        if yaml_path is None:
             ret = f(*args, **kwargs)
-            yaml_path.unlink()
+            model = 'base'
+
+        elif yaml_path.isidentifier():
+            ret = f(*args, **kwargs)
+            model = yaml_path.lower()
         else:
+            path = pathlib.Path(yaml_path)
+            path.touch()
             ret = f(*args, **kwargs)
+            path.unlink()
+            model = yaml_path
+            build = True
 
         # add custom kwargs
         import pdb; pdb.set_trace()
-        service = ret._service_nodes[args[1]]
-        service['storage'] = kwargs.get('storage', '500Mi')
-        service['memory'] = kwargs.get('storage', '500Mi')
-        service['cpu'] = kwargs.get('storage', '300m')
-        service['replicas'] = kwargs.get('replicas', 1)
-        service['app'] = service['service'].name.lower()
-        # service['model'] =
+        v = ret._service_nodes[kwargs['name']]
+        v['storage'] = kwargs.get('storage', '500Mi')
+        v['memory'] = kwargs.get('storage', '500Mi')
+        v['cpu'] = kwargs.get('storage', '300m')
+        v['replicas'] = kwargs.get('replicas', 1)
+        v['app'] = v['service'].name.lower()
+        v['model'] = model
+        v['image'] = kwargs.get(
+            'image', 'hub-%s:latest-%s' % (v['app'], v['model']) if build else 'gnes/gnes:latest-alpine'
+        )
+
         return ret
     return wrapped
 
@@ -76,40 +70,36 @@ class Flow(_Flow):
 
     def to_helm_yaml(self):
         from ruamel.yaml import YAML, StringIO
-
         _yaml = YAML()
 
-        services = _yaml.load(self.to_swarm_yaml())['services']
-        dict_merge(services, self._service_nodes)
         self.helm_yaml = defaultdict(lambda: [])
 
-        for name, service in services.items():
-            p_args = vars(configs['parsed_args'])
-            yaml_path = p_args.get('yaml_path', None)
+        for k, v in self._service_nodes.items():
+            defaults_kwargs, _ = service_map[
+                v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
 
-            build = False
-            if isinstance(yaml_path, str):
-                build = True
-                model = name
-            elif 'yaml_path' in configs['kwargs']:
-                model = configs['kwargs']['yaml_path'].lower()
-            else:
-                model = 'base'
+            non_default_kwargs = {
+                k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
 
-            self.helm_yaml[app] += [dict(
-                name=name,
-                app=service['app'],
-                model=model,
-                port_in=p_args.get('port_in', None),
-                port_out=p_args.get('port_out', None),
-                ctrl_port=p_args.get('ctrl_port', None),
-                grpc_port=p_args.get('grpc_port', None),
-                command=service.get('command', None).split(),
-                replicas=service['replicas'],
-                storage=service['storage'],
-                memory=service['memory'],
-                cpu=service['cpu'],
-                image='hub-%s:latest-%s' % (app, model) if build else configs['image']
+            command = '%s %s' % (
+                service_map[v['service']]['cmd'],
+                ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
+            )
+
+            self.helm_yaml[v['app']] += [dict(
+                name=k,
+                app=v['app'],
+                model=v['model'],
+                port_in=v['parsed_args'].get('port_in', None),
+                port_out=v['parsed_args'].get('port_out', None),
+                ctrl_port=v['parsed_args'].get('ctrl_port', None),
+                grpc_port=v['parsed_args'].get('grpc_port', None),
+                command=command.split(),
+                replicas=v['replicas'],
+                storage=v['storage'],
+                memory=v['memory'],
+                cpu=v['cpu'],
+                image=v['image']
             )]
 
         stream = StringIO()
