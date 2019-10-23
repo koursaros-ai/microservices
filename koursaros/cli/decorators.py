@@ -10,5 +10,4 @@ pipeline_options = decorator_group([
 client_options = decorator_group([
     pipeline_options,
     click.option('-c', '--creds'),
-    click.pass_obj
 ])
