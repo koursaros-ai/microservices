@@ -3,6 +3,7 @@ from ..decorators import *
 from tqdm import tqdm
 import time
 
+
 @click.group()
 def deploy():
     """Deploy gnes services."""
