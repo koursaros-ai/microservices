@@ -82,7 +82,10 @@ class Flow(_Flow):
             build = False
             if isinstance(yaml_path, str):
                 build = True
-                model = configs['name']
+                try:
+                    model = configs['name']
+                except:
+                    import pdb; pdb.set_trace()
             elif 'yaml_path' in configs['kwargs']:
                 model = configs['kwargs']['yaml_path'].lower()
             else:
