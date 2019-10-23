@@ -12,8 +12,7 @@ def deploy():
 @click.option('-d', '--dryrun', is_flag=True)
 def flow(app_manager, flow_name, runtime, yes, dryrun):
     """Deploy a pipeline with compose or k8s. """
-
-    helm_path = app_manager.find('pipelines', flow_name, runtime, 'helm', pkg=True)
+    helm_path = app_manager.get_flow(flow_name, runtime).path.parent.joinpath('helm')
     purge = 'helm delete --purge $(helm ls --all --short)'
     app_manager.subprocess_call(purge, shell=True)
     install = 'helm install ' + '--dry-run --debug' if dryrun else '' + str(helm_path)
