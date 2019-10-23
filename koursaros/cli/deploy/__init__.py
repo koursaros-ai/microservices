@@ -9,14 +9,24 @@ def deploy():
 
 @deploy.command()
 @pipeline_options
+@click.option('-p', '--platform', type=click.Choice(['swarm', 'k8s']))
 @click.option('-d', '--dryrun', is_flag=True)
-def flow(app_manager, flow_name, runtime, dryrun):
+def flow(app_manager, flow_name, runtime, platform, dryrun):
     """Deploy a pipeline with compose or k8s. """
-    helm_path = app_manager.get_flow(flow_name, runtime).path.parent.joinpath('helm')
-    purge = 'helm delete --purge $(helm ls --all --short)'
-    app_manager.subprocess_call(purge, shell=True)
-    install = 'helm install ' + ('--dry-run --debug ' if dryrun else '') + str(helm_path)
-    app_manager.subprocess_call(install, shell=True)
+    _flow = app_manager.get_flow(flow_name, runtime)
+
+    if platform == 'swarm':
+        swarm_path = _flow.path.parent.joinpath('docker-compose.yml')
+        swarm = 'docker stack deploy --compose-file %s %s' % (str(swarm_path), flow_name)
+        app_manager.subprocess_call(swarm, shell=True)
+
+    if platform == 'k8s':
+        helm_path = _flow.path.parent.joinpath('helm')
+        purge = 'helm delete --purge $(helm ls --all --short)'
+        app_manager.subprocess_call(purge, shell=True)
+        install = 'helm install ' + ('--dry-run --debug ' if dryrun else '') + str(helm_path)
+        app_manager.subprocess_call(install, shell=True)
+
 
 
 @deploy.command()
