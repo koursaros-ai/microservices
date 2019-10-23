@@ -1,0 +1,35 @@
+version: '3.4'
+services:
+  Frontend0:
+    image: gnes/gnes:latest-alpine
+    command: frontend --port_in 56414 --port_out 59806 --port_ctrl 65022 --parallel_backend
+      process
+  sentsplit:
+    image: gnes/gnes:latest-alpine
+    command: preprocess --port_in 59806 --port_out 51225 --socket_in PULL_CONNECT
+      --socket_out PUB_BIND --port_ctrl 54558 --parallel_backend process --yaml_path
+      jsonmode.yml
+    deploy:
+      replicas: 2
+  textbyte:
+    image: gnes/gnes:latest-alpine
+    command: encode --port_in 51225 --port_out 55432 --socket_in SUB_CONNECT --port_ctrl
+      55721 --parallel_backend process --yaml_path max256.yml
+    deploy:
+      replicas: 2
+  keyword:
+    image: gnes/gnes:latest-alpine
+    command: index --port_in 55432 --port_out 53475 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 60339 --parallel_backend process --yaml_path base.yml
+    deploy:
+      replicas: 2
+  lvdb:
+    image: gnes/gnes:latest-alpine
+    command: index --port_in 51225 --port_out 53475 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 55576 --parallel_backend process --yaml_path base.yml
+    deploy:
+      replicas: 2
+  basereducerouter:
+    image: gnes/gnes:latest-alpine
+    command: route --port_in 53475 --port_out 56414 --socket_out PUSH_CONNECT --port_ctrl
+      60447 --parallel_backend process --yaml_path BaseReduceRouter --num_part 2
