@@ -16,15 +16,6 @@ def build():
 def flow(app_manager, flow_name, runtime, push, creds, no_cache):
     """Build images for a pipeline. """
 
-    def docker_build(path, tag):
-        app_manager.logger.critical('Building %s from %s...' % (tag, path))
-        _build = 'docker build ' + ('--no-cache ' if no_cache else '') + '-t %s %s' % (tag, path)
-        app_manager.subprocess_call(_build, shell=True)
-
-        if push:
-            app_manager.logger.critical('Pushing %s...' % tag)
-            app_manager.subprocess_call('docker push %s/%s' % (push, tag), shell=True)
-
     if push:
         if creds is None:
             raise ValueError('--creds repository must be specified if pushing')
@@ -46,7 +37,16 @@ def flow(app_manager, flow_name, runtime, push, creds, no_cache):
                     app_manager.subprocess_call('docker pull %s' % service['image'], shell=True)
                 else:
                     path = str(app_manager.find_model(service['app'], service['model']))
-                    docker_build(path, service['image'])
+                    tag = service['image']
+                    app_manager.logger.critical('Building %s from %s...' % (tag, path))
+                    cache = '--no-cache ' if no_cache else ''
+                    _build = 'docker build ' + cache + '-t %s %s' % (tag, path)
+                    app_manager.subprocess_call(_build, shell=True)
+
+                    if push:
+                        app_manager.logger.critical('Pushing %s...' % tag)
+                        app_manager.subprocess_call('docker push %s/%s' % (push, tag), shell=True)
+
 
     """save swarm yaml"""
     out_path = _flow.path.parent.joinpath('docker-compose.yml')
