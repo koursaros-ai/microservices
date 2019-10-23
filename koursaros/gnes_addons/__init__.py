@@ -100,6 +100,7 @@ class Flow(_Flow):
             if ports:
                 swarm_yml['services'][name]['ports'] = ports
 
+
         return self.yaml_stream(swarm_yml)
 
     @build_required(BuildLevel.GRAPH)
