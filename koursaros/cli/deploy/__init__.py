@@ -9,9 +9,8 @@ def deploy():
 
 @deploy.command()
 @pipeline_options
-@click.option('-p', '--platform', required=True)
 @click.option('-d', '--dryrun', is_flag=True)
-def pipeline(app_manager, pipeline_name, runtime, yes, platform, dryrun):
+def pipeline(app_manager, flow_name, runtime, yes, platform, dryrun):
     """Deploy a pipeline with compose or k8s. """
 
     if platform == 'swarm':
@@ -30,7 +29,7 @@ def pipeline(app_manager, pipeline_name, runtime, yes, platform, dryrun):
         #     app_manager.thread(target=stream_container_logs, args=[container])
 
     elif platform == 'k8s':
-        helm_path = app_manager.find('pipelines', pipeline_name, runtime, 'helm', pkg=True)
+        helm_path = app_manager.find('pipelines', flow_name, runtime, 'helm', pkg=True)
         purge = 'helm delete --purge $(helm ls --all --short)'
         app_manager.subprocess_call(purge, shell=True)
         install = 'helm install ' + '--dry-run --debug' if dryrun else '' + str(helm_path)

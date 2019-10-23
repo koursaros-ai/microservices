@@ -40,12 +40,12 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
     for services in flow.helm_yaml.values():
         for service in services:
             if service['model']:
-                path = str(app_manager.find('hub', service['app'], service['model']))
+                path = str(app_manager.find_model(service['app'], service['model']))
                 docker_build(path, service['image'])
 
     if hasattr(flow, 'client_node'):
         model = Path(flow.client_node['yaml_path']).parent.name
-        path = str(app_manager.find('hub', 'client', model))
+        path = str(app_manager.find_model('client', model))
         tag = 'gnes-client:latest-%s' % model
         docker_build(path, tag)
 
@@ -65,5 +65,5 @@ def pipeline(app_manager, flow_name, runtime, yes, push, creds):
 
     if not out_path.is_dir():
         copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
-        flow.path.parent.joinpath('helm', 'values.yaml').write_text(helm_yaml)
+        flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
         app_manager.logger.critical('Saved helm chart to %s' % str(out_path))

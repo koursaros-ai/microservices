@@ -36,6 +36,9 @@ class AppManager:
         self.logger.critical('subprocess.call: "%s"' % string)
         subprocess.call(cmd, shell=shell)
 
+    def find_model(self, app, model) -> 'Path':
+        return self.find('koursaros/hub', app, model)
+
     def get_flow(self, flow_name, runtime) -> 'Flow':
         os.chdir(str(self.git_root.joinpath('koursaros')))
         flow_path = self.find('koursaros', 'flows', flow_name, runtime, 'flow.py')
