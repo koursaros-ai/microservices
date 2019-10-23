@@ -12,7 +12,7 @@ class Flow(_Flow):
         self.client_node = kwargs
         return self
 
-    def add(self, service, name, *args, **kwargs):
+    def add(self, *args, **kwargs):
         # ignore invalid yaml path
         f = super().add_preprocessor(*args, **kwargs)
         yaml_path = kwargs.get('yaml_path', None)
