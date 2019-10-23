@@ -2,11 +2,15 @@ from gnes.flow import *
 import pathlib
 import functools
 
-_Service = Service
 _Flow = Flow
 
 
-class Service(_Service):
+class Service(BetterEnum):
+    Frontend = 0
+    Encoder = 1
+    Router = 2
+    Indexer = 3
+    Preprocessor = 4
     Client = 5
 
 
