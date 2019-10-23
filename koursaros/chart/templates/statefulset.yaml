@@ -1,6 +1,6 @@
 
 {{- define "statefulset" -}}
-{{- $name := .app-.model -}}
+{{- $name := printf "%s-%s" .app .model -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
