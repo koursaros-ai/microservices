@@ -85,7 +85,7 @@ class Flow(_Flow):
         defaults_kwargs, _ = service_map[
             v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
 
-        v['parsed_args'].pop('socket_out', None)
+        vars(v['parsed_args']).pop('socket_out', None)
 
         try:
             non_default_kwargs = {
