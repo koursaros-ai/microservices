@@ -11,6 +11,7 @@ def show():
 
 @show.command()
 @click.argument('flow_name')
+@click.pass_obj
 def flow(app_manager, flow_name):
     """Deploy a pipeline with compose or k8s. """
     url = app_manager.get_flow(flow_name).build().to_url()
