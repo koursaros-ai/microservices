@@ -1,31 +1,31 @@
 version: '3.4'
 services:
-  HTTPClient0:
-    image: gnes/gnes:latest-alpine
-    command: 'client http '
+  base:
+    image: hub-httpclient:latest-base
+    command: ''
     ports:
     - 80:80
   Frontend0:
     image: gnes/gnes:latest-alpine
-    command: frontend --port_in 59495 --port_out 53880 --port_ctrl 49501 --parallel_backend
+    command: frontend --port_in 55922 --port_out 50043 --port_ctrl 53831 --parallel_backend
       process
   Router0:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 53880 --port_out 64300 --socket_in PULL_CONNECT --socket_out
-      PUB_BIND --port_ctrl 65143 --parallel_backend process --yaml_path BaseUnaryRouter
+    command: route --port_in 50043 --port_out 61212 --socket_in PULL_CONNECT --socket_out
+      PUB_BIND --port_ctrl 58978 --parallel_backend process --yaml_path BaseUnaryRouter
   textbyte:
     image: hub-encoder:latest-textbyte
-    command: --port_in 64300 --port_out 51779 --socket_in SUB_CONNECT --port_ctrl
-      62987 --parallel_backend process --yaml_path max256.yml
+    command: --port_in 61212 --port_out 61725 --socket_in SUB_CONNECT --port_ctrl
+      58114 --parallel_backend process --yaml_path max256.yml
   keyword:
     image: hub-indexer:latest-keyword
-    command: --port_in 51779 --port_out 62055 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 55601 --parallel_backend process --yaml_path base.yml
+    command: --port_in 61725 --port_out 64816 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 54238 --parallel_backend process --yaml_path base.yml
   Router1:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 64300 --port_out 62055 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 56257 --parallel_backend process --yaml_path BaseUnaryRouter
+    command: route --port_in 61212 --port_out 64816 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 64175 --parallel_backend process --yaml_path BaseUnaryRouter
   rerank:
     image: hub-router:latest-rerank
-    command: --port_in 62055 --port_out 59495 --socket_out PUSH_CONNECT --port_ctrl
-      57375 --parallel_backend process --yaml_path base.yml
+    command: --port_in 64816 --port_out 55922 --socket_out PUSH_CONNECT --port_ctrl
+      63829 --parallel_backend process --yaml_path base.yml

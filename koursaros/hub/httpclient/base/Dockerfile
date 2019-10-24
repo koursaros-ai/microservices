@@ -2,6 +2,7 @@ FROM gnes/gnes:latest-alpine
 
 RUN pip install aiohttp
 
-ADD *.py *.yml ./
+COPY . ./workspace
+WORKDIR /workspace
 
 ENTRYPOINT ["gnes", "client", "http"]
