@@ -13,8 +13,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     ln -s /usr/bin/python3 python && \
     apt-get autoremove && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ADD setup.py MANIFEST.in requirements.txt README.md ./
-ADD gnes ./gnes/
 
 RUN apt-get install git
 RUN pip uninstall gnes -y
