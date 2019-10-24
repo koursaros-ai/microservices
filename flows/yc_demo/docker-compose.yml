@@ -7,25 +7,25 @@ services:
     - 80:80
   Frontend0:
     image: gnes/gnes:latest-alpine
-    command: frontend --port_in 63235 --port_out 52923 --port_ctrl 58205 --parallel_backend
+    command: frontend --port_in 56553 --port_out 52938 --port_ctrl 53863 --parallel_backend
       process
   Router0:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 52923 --port_out 62256 --socket_in PULL_CONNECT --socket_out
-      PUB_BIND --port_ctrl 62958 --parallel_backend process --yaml_path BaseRouter
+    command: route --port_in 52938 --port_out 50010 --socket_in PULL_CONNECT --socket_out
+      PUB_BIND --port_ctrl 60877 --parallel_backend process --yaml_path BaseRouter
   textbyte:
     image: hub-encoder:latest-textbyte
-    command: --port_in 62256 --port_out 54514 --socket_in SUB_CONNECT --port_ctrl
-      55313 --parallel_backend process --yaml_path max256.yml
+    command: --port_in 50010 --port_out 59838 --socket_in SUB_CONNECT --port_ctrl
+      50009 --parallel_backend process --yaml_path max256.yml
   keyword:
     image: hub-indexer:latest-keyword
-    command: --port_in 54514 --port_out 64827 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 51786 --parallel_backend process --yaml_path base.yml
+    command: --port_in 59838 --port_out 54869 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 55259 --parallel_backend process --yaml_path base.yml
   Router1:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 62256 --port_out 64827 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 59228 --parallel_backend process --yaml_path BaseRouter
+    command: route --port_in 50010 --port_out 54869 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 55069 --parallel_backend process --yaml_path BaseRouter
   rerank:
     image: hub-router:latest-rerank
-    command: --port_in 64827 --port_out 63235 --socket_out PUSH_CONNECT --port_ctrl
-      59340 --parallel_backend process --yaml_path base.yml
+    command: --port_in 54869 --port_out 56553 --socket_out PUSH_CONNECT --port_ctrl
+      49275 --parallel_backend process --yaml_path base.yml
