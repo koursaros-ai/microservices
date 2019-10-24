@@ -1,5 +1,5 @@
 from koursaros.repo_creds import get_creds
-from ..decorators import *
+import click
 from shutil import copytree, rmtree
 
 
@@ -9,11 +9,12 @@ def build():
 
 
 @build.command()
-@pipeline_options
+@click.argument('flow_name')
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
 @click.option('-n', '--no-caches', multiple=True)
-def flow(app_manager, flow_name, runtime, push, creds, no_caches):
+@click.pass_obj
+def flow(app_manager, flow_name, push, creds, no_caches):
     """Build images for a pipeline. """
 
     if push:
@@ -21,31 +22,31 @@ def flow(app_manager, flow_name, runtime, push, creds, no_caches):
             raise ValueError('--creds repository must be specified if pushing')
 
         hub_creds = get_creds(creds).dockerhub
-        app_manager.subprocess_call('docker login -u %s -p %s' % (
+        app_manager.call('docker login -u %s -p %s' % (
             hub_creds.username, hub_creds.password), shell=True)
 
-    # app_manager.subprocess_call('eval $(minikube docker-env)', shell=True)
+    # app_manager.call('eval $(minikube docker-env)', shell=True)
 
-    _flow = app_manager.get_flow(flow_name, runtime).build()
+    _flow = app_manager.get_flow(flow_name).build()
     helm_yaml = _flow.to_helm_yaml()
     _flow.helm_yaml['services']['client'] = [_flow.client_node]
 
-    for app in _flow.helm_yaml.values():
-        for services in app.values():
-            for service in services:
-                if '/' in service['image']:
-                    app_manager.subprocess_call('docker pull %s' % service['image'], shell=True)
-                else:
-                    path = str(app_manager.find_model(service['app'], service['model']))
-                    tag = service['image']
-                    app_manager.logger.critical('Building %s from %s...' % (tag, path))
-                    cache = '--no-cache ' if service.get('name', None) in no_caches else ''
-                    _build = 'docker build ' + cache + '-t %s %s' % (tag, path)
-                    app_manager.subprocess_call(_build, shell=True)
+    services = [service for app in _flow.helm_yaml.values() for service in app.values()]
 
-                    if push:
-                        app_manager.logger.critical('Pushing %s...' % tag)
-                        app_manager.subprocess_call('docker push %s/%s' % (push, tag), shell=True)
+    for service in services:
+        if '/' in service['image']:
+            app_manager.call('docker pull %s' % service['image'], shell=True)
+        else:
+            path = str(app_manager.find_model(service['app'], service['model']))
+            tag = service['image']
+            app_manager.logger.critical('Building %s from %s...' % (tag, path))
+            cache = '--no-cache ' if service.get('name', None) in no_caches else ''
+            _build = 'docker build ' + cache + '-t %s %s' % (tag, path)
+            app_manager.call(_build, shell=True)
+
+            if push:
+                app_manager.logger.critical('Pushing %s...' % tag)
+                app_manager.call('docker push %s/%s' % (push, tag), shell=True)
 
     """save swarm yaml"""
     out_path = _flow.path.parent.joinpath('docker-compose.yml')

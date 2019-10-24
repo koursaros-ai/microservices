@@ -1,5 +1,5 @@
 
-from ..decorators import *
+import click
 from tqdm import tqdm
 import time
 
@@ -10,9 +10,10 @@ def deploy():
 
 
 @deploy.command()
-@pipeline_options
+@click.argument('flow_name')
 @click.option('-p', '--platform', type=click.Choice(['compose', 'swarm', 'k8s']))
 @click.option('-d', '--dryrun', is_flag=True)
+@click.pass_obj
 def flow(app_manager, flow_name, runtime, platform, dryrun):
     """Deploy a pipeline with compose or k8s. """
     _flow = app_manager.get_flow(flow_name, runtime)
@@ -41,7 +42,7 @@ def flow(app_manager, flow_name, runtime, platform, dryrun):
 
 
 @deploy.command()
-@client_options
+@click.option('-c', '--creds')
 def client(app_manager, flow_name, runtime, creds):
     """Deploy a client with docker. """
     _flow = app_manager.get_flow(flow_name, runtime)
