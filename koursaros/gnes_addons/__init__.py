@@ -86,12 +86,10 @@ class Flow(_Flow):
             v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
 
         vars(v['parsed_args']).pop('socket_out', None)
+        vars(v['parsed_args']).pop('topk', None)
 
-        try:
-            non_default_kwargs = {
-                k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
-        except:
-            import pdb; pdb.set_trace()
+        non_default_kwargs = {
+            k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
 
         if not isinstance(non_default_kwargs.get('yaml_path', ''), str):
             non_default_kwargs['yaml_path'] = v['kwargs']['yaml_path']
