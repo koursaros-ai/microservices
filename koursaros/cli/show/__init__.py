@@ -1,7 +1,7 @@
 
 
 import webbrowser
-from ..decorators import *
+import click
 
 
 @click.group()
@@ -10,10 +10,10 @@ def show():
 
 
 @show.command()
-@pipeline_options
-def flow(app_manager, flow_name, runtime):
+@click.argument('flow_name')
+def flow(app_manager, flow_name):
     """Deploy a pipeline with compose or k8s. """
-    url = app_manager.get_flow(flow_name, runtime).build().to_url()
+    url = app_manager.get_flow(flow_name).build().to_url()
 
     try:
         webbrowser.open_new_tab(url)
