@@ -58,20 +58,17 @@ class Flow(_Flow):
             image = 'hub-%s:latest-%s' % (app, model)
 
         # add custom kwargs
-        try:
-            name = name if name else '%s%d' % (service, self._service_name_counter[service]-1)
+        name = name if name else '%s%d' % (service, self._service_name_counter[service]-1)
 
-            v = ret._service_nodes[name]
-            v['storage'] = kwargs.get('storage', '500Mi')
-            v['memory'] = kwargs.get('storage', '500Mi')
-            v['cpu'] = kwargs.get('storage', '300m')
-            v['replicas'] = kwargs.get('replicas', 1)
-            v['app'] = app
-            v['model'] = model
-            v['image'] = image
-        except Exception as e:
-            print(e)
-            import pdb; pdb.set_trace()
+        v = ret._service_nodes[name]
+        v['storage'] = kwargs.get('storage', '500Mi')
+        v['memory'] = kwargs.get('storage', '500Mi')
+        v['cpu'] = kwargs.get('storage', '300m')
+        v['replicas'] = kwargs.get('replicas', 1)
+        v['app'] = app
+        v['model'] = model
+        v['image'] = image
+
         return ret
 
     @staticmethod
