@@ -55,6 +55,6 @@ def flow(app_manager, flow_name, push, creds, no_caches):
     """save helm chart"""
     out_path = _flow.path.parent.joinpath('helm')
     rmtree(str(out_path), ignore_errors=True)
-    copytree(str(app_manager.find('chart', pkg=True)), str(out_path))
+    copytree(str(app_manager.find('chart')), str(out_path))
     _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
     app_manager.logger.critical('Saved helm chart to %s' % str(out_path))

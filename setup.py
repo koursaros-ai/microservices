@@ -16,7 +16,8 @@ setup(
     url='https://github.com/koursaros-ai/koursaros',
     # download_url='https://github.com/koursaros-ai/koursaros/archive/0.0.1.tar.gz',
     keywords=['koursaros', 'distributed', 'cloud-native', 'neural', 'inference'],
-    install_requires=['PyYAML', 'gitpython', 'python-box', 'gnes', 'tqdm', 'tabulate'],
+    install_requires=[
+        'PyYAML', 'gitpython', 'python-box', 'gnes', 'tqdm', 'tabulate', 'click'],
     entry_points={'console_scripts': ['kctl=koursaros.cli.__main__:main']},
     classifiers=[
         'Intended Audience :: Education',

@@ -10,12 +10,12 @@ import click
 @click.group()
 @click.option('-d', '--dev', is_flag=True)
 @click.pass_context
-def kctl(ctx, dev):
+def kctl(ctx):
     """
     kctl controls the \033[1;3;4;34mKoursaros\033[0m platform.
     Find more information at: https://github.com/koursaros-ai/koursaros
     """
-    ctx.obj = AppManager(dev)
+    ctx.obj = AppManager()
 
 
 kctl.add_command(deploy)

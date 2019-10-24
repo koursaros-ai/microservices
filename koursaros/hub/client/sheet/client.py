@@ -42,9 +42,11 @@ class Client:
         d = lambda x, y: str(x.iloc[y].values[0])
 
         for i in range(len(self.df)):
-            dump = json.dumps(dict(
-                data=d(data_col, i),
-                label=d(label_col, i)
-            ))
-            print('a')
+            dump = json.dumps({
+                'docs': {
+                    'data': d(data_col, i),
+                    'label': d(label_col, i)
+                }
+            })
+            import pdb; pdb.set_trace()
 
