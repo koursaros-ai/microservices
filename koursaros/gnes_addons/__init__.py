@@ -146,7 +146,7 @@ class Flow(_Flow):
         return self.yaml_stream(self.helm_yaml)
 
     def to_mermaid(self, *args, **kwargs):
-        super().to_mermaid(*args, **kwargs)
+        return super().to_mermaid(*args, **kwargs)
 
     # @build_required(BuildLevel.GRAPH)
     # def to_mermaid(self, left_right: bool = True) -> str:
