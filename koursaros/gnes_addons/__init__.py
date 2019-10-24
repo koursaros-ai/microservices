@@ -90,7 +90,7 @@ class Flow(_Flow):
         for k, v in vars(defaults_kwargs).items():
             if v == p_args.get(k, None):
                 p_args.pop(k, None)
-
+        import pdb; pdb.set_trace()
         if not isinstance(p_args.get('yaml_path', ''), str):
             p_args['yaml_path'] = svc['kwargs']['yaml_path']
 
@@ -115,9 +115,10 @@ class Flow(_Flow):
             )
             if node['replicas'] > 1:
                 swarm_yml['services'][name]['deploy'] = {'replicas': node['replicas']}
-            grpc_port = vars(node['parsed_args']).get('grpc_port', None)
-            if grpc_port:
-                swarm_yml['services'][name]['ports'] = ['%s:%s' % (grpc_port, grpc_port)]
+
+            if node['service'] == Service.HTTPClient:
+                http_port = vars(node['parsed_args']).get('http_port', 80)
+                swarm_yml['services'][name]['ports'] = ['%s:%s' % (http_port, http_port)]
 
         return self.yaml_stream(swarm_yml)
 

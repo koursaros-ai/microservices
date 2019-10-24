@@ -1,0 +1,186 @@
+services:
+  httpclient:
+  - name: HTTPClient0
+    app: httpclient
+    model: base
+    port_in:
+    port_out: 54526
+    ctrl_port:
+    grpc_port:
+    command:
+    - client
+    - http
+    - --socket_out
+    - PUSH_CONNECT
+    - --host_out
+    - 0.0.0.0
+    - --port_out
+    - '54526'
+    - --parallel_backend
+    - process
+    - --host_in
+    - 0.0.0.0
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: gnes/gnes:latest-alpine
+  frontend:
+  - name: Frontend0
+    app: frontend
+    model: base
+    port_in: 54526
+    port_out: 59207
+    ctrl_port:
+    grpc_port:
+    command:
+    - frontend
+    - --port_in
+    - '54526'
+    - --port_out
+    - '59207'
+    - --port_ctrl
+    - '57878'
+    - --parallel_backend
+    - process
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: gnes/gnes:latest-alpine
+  router:
+  - name: Router0
+    app: router
+    model: base
+    port_in: 59207
+    port_out: 49696
+    ctrl_port:
+    grpc_port:
+    command:
+    - route
+    - --port_in
+    - '59207'
+    - --port_out
+    - '49696'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUB_BIND
+    - --port_ctrl
+    - '52038'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - BaseUnaryRouter
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: gnes/gnes:latest-alpine
+  - name: Router1
+    app: router
+    model: base
+    port_in: 49696
+    port_out: 60473
+    ctrl_port:
+    grpc_port:
+    command:
+    - route
+    - --port_in
+    - '49696'
+    - --port_out
+    - '60473'
+    - --socket_in
+    - SUB_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '62410'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - BaseUnaryRouter
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: gnes/gnes:latest-alpine
+  - name: rerank
+    app: router
+    model: rerank
+    port_in: 60473
+    port_out: 54526
+    ctrl_port:
+    grpc_port:
+    command:
+    - --port_in
+    - '60473'
+    - --port_out
+    - '54526'
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '62767'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - base.yml
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: hub-router:latest-rerank
+  encoder:
+  - name: textbyte
+    app: encoder
+    model: textbyte
+    port_in: 49696
+    port_out: 55678
+    ctrl_port:
+    grpc_port:
+    command:
+    - --port_in
+    - '49696'
+    - --port_out
+    - '55678'
+    - --socket_in
+    - SUB_CONNECT
+    - --port_ctrl
+    - '59045'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - max256.yml
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: hub-encoder:latest-textbyte
+  indexer:
+  - name: keyword
+    app: indexer
+    model: keyword
+    port_in: 55678
+    port_out: 60473
+    ctrl_port:
+    grpc_port:
+    command:
+    - --port_in
+    - '55678'
+    - --port_out
+    - '60473'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUSH_CONNECT
+    - --port_ctrl
+    - '60276'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - base.yml
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: hub-indexer:latest-keyword
