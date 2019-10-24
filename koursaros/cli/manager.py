@@ -22,7 +22,7 @@ class AppManager:
         self.root = (Path(
             git.Repo('.', search_parent_directories=True)
             .working_tree_dir) if dev
-            else Path(__file__).parent)
+            else Path(__file__).parent.parent.parent)
 
         self.logger = set_logger('kctl')
         self.cache = self.root.joinpath('.k')
