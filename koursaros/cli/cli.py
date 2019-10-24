@@ -8,14 +8,14 @@ import click
 
 
 @click.group()
-@click.option('-d', '--dev')
+@click.option('-d', '--dev', is_flag=True)
 @click.pass_context
-def kctl(ctx):
+def kctl(ctx, dev):
     """
     kctl controls the \033[1;3;4;34mKoursaros\033[0m platform.
     Find more information at: https://github.com/koursaros-ai/koursaros
     """
-    ctx.obj = AppManager()
+    ctx.obj = AppManager(dev)
 
 
 kctl.add_command(deploy)

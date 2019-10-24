@@ -18,7 +18,7 @@ class AppManager:
     :param base: base path to check for pipeline default=CWD
     """
 
-    def __init__(self, dev=False):
+    def __init__(self, dev: bool):
         self.root = (Path(
             git.Repo('.', search_parent_directories=True)
             .working_tree_dir) if dev
