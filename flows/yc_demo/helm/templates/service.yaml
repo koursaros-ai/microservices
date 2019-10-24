@@ -1,0 +1,36 @@
+
+{{- define "service" -}}
+{{- $name := printf "%s-%s" .app .model -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+spec:
+  selector:
+    app: {{ $name }}
+  clusterIP: None
+  ports:
+    {{- if .port_in }}
+    - name: in
+      port: {{ .port_in }}
+      protocol: TCP
+    {{- end }}
+    {{- if .port_out }}
+    - name: out
+      port: {{ .port_out }}
+      protocol: TCP
+    {{- end -}}
+    {{- if .grpc_port }}
+    - name: grpc
+      port: {{ .grpc_port }}
+      protocol: TCP
+    {{- end -}}
+    {{- if .ctrl_port }}
+    - name: ctrl
+      port: {{ .ctrl_port }}
+      protocol: TCP
+    {{- end -}}
+  {{ if .load_balancer }}
+  type: LoadBalancer
+  {{ end }}
+{{- end -}}
