@@ -2,6 +2,7 @@
 import click
 from tqdm import tqdm
 import time
+import importlib.util
 
 
 @click.group()
@@ -53,15 +54,13 @@ def k8s(app_manager, flow_name, dryrun):
     app_manager.call(install, shell=True)
 
 
-# @deploy.command()
-# @click.option('-c', '--creds')
-# def client(app_manager, flow_name, runtime, creds):
-#     """Deploy a client with docker. """
-#     _flow = app_manager.get_flow(flow_name, runtime)
-#     tag = 'hub-client:latest-%s' % _flow.client_node.pop('model')
-#     path = _flow.client_node.pop('yaml_path')
-#     app_manager.subprocess_call(
-#         'docker run --network %s -i %s --mode %s --yaml_path %s --creds %s' % (
-#             'host', tag, runtime, path, creds), shell=True)
-#
+@deploy.command()
+@click.argument('client_name')
+@click.pass_obj
+def client(app_manager, client_name):
+    """Deploy a client. """
+    path = app_manager.find_model('client', client_name)
+    importlib.util.spec_from_file_location(client_name, path)
+    import pdb; pdb.set_trace()
+
 
