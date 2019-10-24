@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 
 RUN apt-get install git
-RUN pip uninstall gnes -y
-RUN pip install git+https://github.com/colethienes/gnes
+RUN pip3 uninstall gnes -y
+RUN pip3 install git+https://github.com/colethienes/gnes
 
 COPY . ./workspace
 WORKDIR /workspace
