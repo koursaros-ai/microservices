@@ -96,16 +96,6 @@ class Flow(_Flow):
         command += ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
         return command
 
-    def build(self, *args, **kwargs):
-        self.client_node = dict(
-            app='client',
-            model=kwargs['name'],
-            image='hub-client:latest-%s' % kwargs['name'],
-            yaml_path=kwargs['yaml_path']
-        )
-        super().build(*args, **kwargs)
-        self._service_nodes[self.client_node['model']] = self.client_node
-
     @build_required(BuildLevel.GRAPH)
     def to_swarm_yaml(self) -> str:
         """
