@@ -1,22 +1,7 @@
-FROM ubuntu:18.04 AS base
+FROM pytorch/pytorch:1.1.0-cuda10.0-cudnn7.5-runtime
 
-RUN apt-get update && apt-get install -y locales
- && locale-gen "en_US.UTF-8"
-
-ENV LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8
-
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    build-essential python3-dev python3-pip python3-setuptools libopenblas-dev && \
-    export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8 && export LC_CTYPE=en_US.UTF-8 && \
-    ln -s /usr/bin/python3 python && \
-    apt-get autoremove && apt-get clean
-
-
-RUN apt-get install git
-RUN pip3 uninstall gnes -y
-RUN pip3 install git+https://github.com/colethienes/gnes
+RUN pip install git+https://github.com/colethienes/gnes.git --no-cache-dir --compile
+RUN pip install
 
 COPY . ./workspace
 WORKDIR /workspace
