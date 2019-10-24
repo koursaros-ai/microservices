@@ -84,9 +84,11 @@ class Flow(_Flow):
 
         defaults_kwargs, _ = service_map[
             v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
-
-        non_default_kwargs = {
-            k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
+        try:
+            non_default_kwargs = {
+                k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
+        except:
+            import pdb; pdb.set_trace()
 
         if not isinstance(non_default_kwargs.get('yaml_path', ''), str):
             non_default_kwargs['yaml_path'] = v['kwargs']['yaml_path']
