@@ -58,8 +58,8 @@ def k8s(app_manager, flow_name, dryrun):
     ignore_unknown_options=True,
     allow_extra_args=True))
 @click.argument('client_name')
-@click.pass_obj
-def client(app_manager, client_name, *args, **kwargs):
+@click.pass_context
+def client(ctx, client_name, *args, **kwargs):
     """Deploy a client. """
     import pdb; pdb.set_trace()
     path = app_manager.find_model('client', client_name).joinpath('client.py')
@@ -68,6 +68,6 @@ def client(app_manager, client_name, *args, **kwargs):
     spec = importlib.util.spec_from_file_location(client_name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    module.Client().run()
+    module.Client(*args, **kwargs).run()
 
 
