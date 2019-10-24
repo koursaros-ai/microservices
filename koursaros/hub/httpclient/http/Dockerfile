@@ -1,6 +1,6 @@
-FROM gnes/gnes:latest-alpine
+FROM gnes/gnes:latest-ubuntu
 
-RUN apk add git gcc
+RUN apt-get install git
 RUN pip uninstall gnes -y
 RUN pip install git+https://github.com/colethienes/gnes
 
