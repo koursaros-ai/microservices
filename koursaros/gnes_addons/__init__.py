@@ -85,10 +85,12 @@ class Flow(_Flow):
         defaults_kwargs, _ = service_map[
             v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
 
-        vars(v['parsed_args']).pop('socket_out', None)
-        vars(v['parsed_args']).pop('topk', None)
-        vars(v['parsed_args']).pop('host_out', None)
-        vars(v['parsed_args']).pop('port_out', None)
+        pop = lambda x: vars(v['parsed_args']).pop(x, None)
+        pop('socket_out')
+        pop('topk')
+        pop('host_out')
+        pop('port_out')
+        pop('parallel_backend')
 
         non_default_kwargs = {
             k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
