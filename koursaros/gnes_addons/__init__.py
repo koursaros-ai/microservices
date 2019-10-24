@@ -25,11 +25,7 @@ service_map[Service.HTTPClient] = dict(
 
 
 class Flow(_Flow):
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.client_node = {}
-
-    def add_http_client(self, *args, **kwargs):
+    def add_client(self, *args, **kwargs):
         # self.client_node = dict(
         #     app='client',
         #     model=kwargs['name'],
@@ -37,6 +33,9 @@ class Flow(_Flow):
         #     yaml_path=kwargs['yaml_path'],
         #     replicas=kwargs.get('replicas', None)
         # )
+        raise NotImplementedError
+
+    def add_http_client(self, *args, **kwargs):
         return self.add(Service.HTTPClient, *args, **kwargs)
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
