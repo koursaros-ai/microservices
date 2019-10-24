@@ -58,7 +58,7 @@ class Flow(_Flow):
 
         # add custom kwargs
         name = name if name else '%s%d' % (service, ret._service_name_counter[service]-1)
-        # import pdb; pdb.set_trace()
+
         v = ret._service_nodes[name]
         v['storage'] = kwargs.get('storage', '500Mi')
         v['memory'] = kwargs.get('storage', '500Mi')
@@ -86,13 +86,25 @@ class Flow(_Flow):
             ['--yaml_path', 'TrainableBase'])
 
         p_args = vars(svc['parsed_args'])
+
         # remove default kwargs
         for k, v in vars(defaults_kwargs).items():
             if v == p_args.get(k, None):
                 p_args.pop(k, None)
-        import pdb; pdb.set_trace()
+
         if not isinstance(p_args.get('yaml_path', ''), str):
             p_args['yaml_path'] = svc['kwargs']['yaml_path']
+
+        # remove client's zmq
+        if svc['service'] == Service.HTTPClient:
+            pop = lambda x: vars(svc['parsed_args']).pop(x, None)
+            pop('host_in')
+            pop('host_out')
+            pop('port_in')
+            pop('port_out')
+            pop('socket_in')
+            pop('socket_out')
+            pop('parallel_backend')
 
         command = '' if svc['image'] != DEFAULT_IMAGE else service_map[svc['service']]['cmd'] + ' '
         command += ' '.join(['--%s %s' % (k, v) for k, v in p_args.items()])
