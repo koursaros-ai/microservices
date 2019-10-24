@@ -29,7 +29,7 @@ class Flow(_Flow):
     #     super().__init__(*args, **kwargs)
     #     self.client_node = {}
 
-    def add_client(self, *args, **kwargs):
+    def add_http_client(self, *args, **kwargs):
         # self.client_node = dict(
         #     app='client',
         #     model=kwargs['name'],
@@ -44,21 +44,23 @@ class Flow(_Flow):
         app = service.name.lower()
         model = name if name else 'base'
         yaml_path = kwargs.get('yaml_path', None)
+        image = 'hub-%s:latest-%s' % (app, model) if name else DEFAULT_IMAGE
 
-        if model == 'base' or yaml_path.isidentifier():
+        if image == DEFAULT_IMAGE:
             ret = supercall()
-            image = DEFAULT_IMAGE
         else:
             # ignore invalid yaml path
-            path = pathlib.Path(yaml_path)
-            path.touch()
-            ret = supercall()
-            path.unlink()
-            image = 'hub-%s:latest-%s' % (app, model)
+            if yaml_path:
+                path = pathlib.Path(yaml_path)
+                path.touch()
+                ret = supercall()
+                path.unlink()
+            else:
+                ret = supercall()
 
         # add custom kwargs
         name = name if name else '%s%d' % (service, ret._service_name_counter[service]-1)
-        # import pdb; pdb.set_trace()
+
         v = ret._service_nodes[name]
         v['storage'] = kwargs.get('storage', '500Mi')
         v['memory'] = kwargs.get('storage', '500Mi')
@@ -86,6 +88,7 @@ class Flow(_Flow):
             ['--yaml_path', 'TrainableBase'])
 
         p_args = vars(svc['parsed_args'])
+
         # remove default kwargs
         for k, v in vars(defaults_kwargs).items():
             if v == p_args.get(k, None):
@@ -93,6 +96,17 @@ class Flow(_Flow):
 
         if not isinstance(p_args.get('yaml_path', ''), str):
             p_args['yaml_path'] = svc['kwargs']['yaml_path']
+
+        # remove client's zmq
+        if svc['service'] == Service.HTTPClient:
+            pop = lambda x: vars(svc['parsed_args']).pop(x, None)
+            pop('host_in')
+            pop('host_out')
+            pop('port_in')
+            pop('port_out')
+            pop('socket_in')
+            pop('socket_out')
+            pop('parallel_backend')
 
         command = '' if svc['image'] != DEFAULT_IMAGE else service_map[svc['service']]['cmd'] + ' '
         command += ' '.join(['--%s %s' % (k, v) for k, v in p_args.items()])
@@ -115,9 +129,10 @@ class Flow(_Flow):
             )
             if node['replicas'] > 1:
                 swarm_yml['services'][name]['deploy'] = {'replicas': node['replicas']}
-            grpc_port = vars(node['parsed_args']).get('grpc_port', None)
-            if grpc_port:
-                swarm_yml['services'][name]['ports'] = ['%s:%s' % (grpc_port, grpc_port)]
+
+            if node['service'] == Service.HTTPClient:
+                http_port = vars(node['parsed_args']).get('http_port', 80)
+                swarm_yml['services'][name]['ports'] = ['%s:%s' % (http_port, http_port)]
 
         return self.yaml_stream(swarm_yml)
 

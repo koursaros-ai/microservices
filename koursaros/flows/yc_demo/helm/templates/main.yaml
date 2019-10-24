@@ -1,0 +1,11 @@
+
+{{- with .Values.services }}
+{{- range list .frontend .preprocessor .encoder .indexer .router }}
+{{- range . }}
+---
+{{ include "statefulset" .}}
+---
+{{ include "service" .}}
+{{ end }}
+{{ end }}
+{{ end }}

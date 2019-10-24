@@ -30,8 +30,8 @@ def flow(app_manager, flow_name, push, creds, no_caches):
     _flow = app_manager.get_flow(flow_name).build()
     helm_yaml = _flow.to_helm_yaml()
 
-    services = [service for app in _flow.helm_yaml.values() for service in app.values()]
-    import pdb; pdb.set_trace()
+    services = [apps for app in _flow.helm_yaml['services'].values() for apps in app]
+
     for service in services:
         if '/' in service['image']:
             app_manager.call('docker pull %s' % service['image'], shell=True)
