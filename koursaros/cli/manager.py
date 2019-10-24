@@ -24,7 +24,6 @@ class AppManager:
         self.logger = set_logger('kctl')
         self.cache = self.git_root.joinpath('.k')
         self.cache.mkdir(exist_ok=True)
-        os.chdir(str(self.cache))
 
     def find(self, *dirs: str, pkg=False) -> 'Path':
         search_path = self.pkg_root if pkg else self.git_root
@@ -43,6 +42,7 @@ class AppManager:
         return self.find('koursaros/hub', app, model)
 
     def get_flow(self, name) -> 'Flow':
+        os.chdir(str(self.cache))
         path = self.find('koursaros', 'flows', name, 'flow.py')
         flow = machinery.SourceFileLoader('flow', str(path)).load_module().flow
         flow.path = path
