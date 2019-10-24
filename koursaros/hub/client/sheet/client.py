@@ -46,5 +46,5 @@ class Client:
                 data=d(data_col, i),
                 label=d(label_col, i)
             ))
-            print(dump)
+            print('a')
 

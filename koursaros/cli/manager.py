@@ -18,16 +18,18 @@ class AppManager:
     :param base: base path to check for pipeline default=CWD
     """
 
-    def __init__(self):
-        self.git_root = Path(git.Repo('.', search_parent_directories=True).working_tree_dir)
-        self.pkg_root = Path(__file__).parent.parent
+    def __init__(self, dev=False):
+        self.root = (Path(
+            git.Repo('.', search_parent_directories=True)
+            .working_tree_dir) if dev
+            else Path(__file__).parent.parent)
+
         self.logger = set_logger('kctl')
-        self.cache = self.git_root.joinpath('.k')
+        self.cache = self.root.joinpath('.k')
         self.cache.mkdir(exist_ok=True)
 
-    def find(self, *dirs: str, pkg=False) -> 'Path':
-        search_path = self.pkg_root if pkg else self.git_root
-        check_path = search_path.joinpath(*dirs)
+    def find(self, *dirs: str) -> 'Path':
+        check_path = self.root.joinpath(*dirs)
         if check_path.exists():
             return check_path
 

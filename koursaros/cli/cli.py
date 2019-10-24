@@ -8,6 +8,7 @@ import click
 
 
 @click.group()
+@click.option('-d', '--dev')
 @click.pass_context
 def kctl(ctx):
     """
