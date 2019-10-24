@@ -1,19 +1,14 @@
 import requests
 import json
 from tabulate import tabulate
-import sys
 import pathlib
 import pandas as pd
 import os
 
 
-class SheetClient:
-    def __init__(self):
-        if len(sys.argv) < 2:
-            print('Please specify file path...')
-            raise SystemExit
-
-        self.path = pathlib.Path(sys.argv[1])
+class Client:
+    def __init__(self, path):
+        self.path = pathlib.Path(path)
         self.df = pd.read_csv(self.path)
         self.cols = len(self.df.columns)
         self.height, self.width = self.terminal_width
@@ -51,8 +46,5 @@ class SheetClient:
                 data=d(data_col, i),
                 label=d(label_col, i)
             ))
-            print(dump)
+            print('a')
 
-
-if __name__ == '__main__':
-    SheetClient().run()

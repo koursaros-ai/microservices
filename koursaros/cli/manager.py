@@ -15,24 +15,25 @@ class AppManager:
     paths and packages. Passed around at runtime to make
     things more efficient.
 
-    :param base: base path to check for pipeline default=CWD
+    :param dev: run on local koursaros repo
     """
 
-    def __init__(self):
-        self.git_root = Path(git.Repo('.', search_parent_directories=True).working_tree_dir)
-        self.pkg_root = Path(__file__).parent.parent
-        self.logger = set_logger('kctl')
-        self.cache = self.git_root.joinpath('.k')
-        self.cache.mkdir(exist_ok=True)
-        os.chdir(str(self.cache))
+    def __init__(self, dev: bool):
+        self.root = (Path(
+            git.Repo('.', search_parent_directories=True)
+            .working_tree_dir) if dev
+            else Path(__file__).parent.parent.parent)
 
-    def find(self, *dirs: str, pkg=False) -> 'Path':
-        search_path = self.pkg_root if pkg else self.git_root
-        check_path = search_path.joinpath(*dirs)
+        self.logger = set_logger('kctl')
+        self.cache = self.root.joinpath('.k')
+        self.cache.mkdir(exist_ok=True)
+
+    def find(self, *dirs: str) -> 'Path':
+        check_path = self.root.joinpath(*dirs)
         if check_path.exists():
             return check_path
 
-        raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))
+        raise FileNotFoundError(f'"%s" not found' % str(check_path))
 
     def call(self, cmd: List[str], shell=False):
         string = cmd if shell else ' '.join(cmd)
@@ -43,6 +44,7 @@ class AppManager:
         return self.find('koursaros/hub', app, model)
 
     def get_flow(self, name) -> 'Flow':
+        os.chdir(str(self.cache))
         path = self.find('koursaros', 'flows', name, 'flow.py')
         flow = machinery.SourceFileLoader('flow', str(path)).load_module().flow
         flow.path = path
