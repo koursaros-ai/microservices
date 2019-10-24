@@ -10,6 +10,7 @@ import torch
 import torch.nn
 import numpy as np
 
+
 class RerankRouter(BaseReduceRouter):
 
     def __init__(self, model_name: str = None, *args, **kwargs):
