@@ -82,8 +82,8 @@ class Flow(_Flow):
     def get_service_command(self, name):
         svc = self._service_nodes[name]
 
-        defaults_kwargs, _ = service_map[
-            svc['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
+        defaults_kwargs, _ = service_map[svc['service']]['parser']().parse_known_args(
+            ['--yaml_path', 'TrainableBase'])
 
         p_args = vars(svc['parsed_args'])
         # remove default kwargs
