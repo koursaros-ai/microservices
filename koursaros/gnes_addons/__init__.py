@@ -1,24 +1,44 @@
 from gnes.flow import *
 import pathlib
 import functools
+import copy
+from gnes.cli.parser import set_client_http_parser
+from gnes.client.http import HttpClient
 
 _Flow = Flow
 DEFAULT_IMAGE = 'gnes/gnes:latest-alpine'
 
 
-class Flow(_Flow):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.client_node = {}
+class Service(BetterEnum):
+    Frontend = 0
+    Encoder = 1
+    Router = 2
+    Indexer = 3
+    Preprocessor = 4
+    HTTPClient = 5
 
-    def add_client(self, **kwargs):
-        self.client_node = dict(
-            app='client',
-            model=kwargs['name'],
-            image='hub-client:latest-%s' % kwargs['name'],
-            yaml_path=kwargs['yaml_path']
-        )
-        return self
+
+service_map[Service.HTTPClient] = dict(
+    parser=set_client_http_parser,
+    builder=HttpClient,
+    cmd='client http'
+)
+
+
+class Flow(_Flow):
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.client_node = {}
+
+    def add_client(self, *args, **kwargs):
+        # self.client_node = dict(
+        #     app='client',
+        #     model=kwargs['name'],
+        #     image='hub-client:latest-%s' % kwargs['name'],
+        #     yaml_path=kwargs['yaml_path'],
+        #     replicas=kwargs.get('replicas', None)
+        # )
+        return self.add(Service.HTTPClient, *args, **kwargs)
 
     def add(self, service: Union['Service', str], name: str = None, *args, **kwargs):
         supercall = functools.partial(super().add, service, name, *args, **kwargs)
@@ -79,6 +99,16 @@ class Flow(_Flow):
         command += ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
         return command
 
+    def build(self, *args, **kwargs):
+        self.client_node = dict(
+            app='client',
+            model=kwargs['name'],
+            image='hub-client:latest-%s' % kwargs['name'],
+            yaml_path=kwargs['yaml_path']
+        )
+        super().build(*args, **kwargs)
+        self._service_nodes[self.client_node['model']] = self.client_node
+
     @build_required(BuildLevel.GRAPH)
     def to_swarm_yaml(self) -> str:
         """
@@ -88,6 +118,9 @@ class Flow(_Flow):
 
         swarm_yml = {'version': '3.4',
                      'services': {}}
+
+        services = copy.deepcopy(self._service_nodes)
+        services.update(self.client_node)
 
         for name, node in self._service_nodes.items():
             swarm_yml['services'][name] = dict(
