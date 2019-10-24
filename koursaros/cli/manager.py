@@ -15,7 +15,7 @@ class AppManager:
     paths and packages. Passed around at runtime to make
     things more efficient.
 
-    :param base: base path to check for pipeline default=CWD
+    :param dev: run on local koursaros repo
     """
 
     def __init__(self, dev: bool):
