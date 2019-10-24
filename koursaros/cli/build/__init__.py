@@ -48,7 +48,7 @@ def flow(app_manager, flow_name, push, creds, no_caches):
                 app_manager.call('docker push %s/%s' % (push, tag), shell=True)
 
     """save swarm yaml"""
-    out_path = _flow.path.parent.joinpath('docker-compose.yml')
+    out_path = _flow.path.parent.joinpath('docker-compose-temp.yml')
     out_path.write_text(_flow.to_swarm_yaml())
     app_manager.logger.critical('Saved swarm yaml to %s' % str(out_path))
 
