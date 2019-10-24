@@ -44,17 +44,16 @@ class Flow(_Flow):
         app = service.name.lower()
         model = name if name else 'base'
         yaml_path = kwargs.get('yaml_path', None)
+        image = 'hub-%s:latest-%s' % (app, model) if name else DEFAULT_IMAGE
 
-        if model == 'base' or yaml_path.isidentifier():
+        if image == DEFAULT_IMAGE:
             ret = supercall()
-            image = DEFAULT_IMAGE
         else:
             # ignore invalid yaml path
             path = pathlib.Path(yaml_path)
             path.touch()
             ret = supercall()
             path.unlink()
-            image = 'hub-%s:latest-%s' % (app, model)
 
         # add custom kwargs
         name = name if name else '%s%d' % (service, ret._service_name_counter[service]-1)
