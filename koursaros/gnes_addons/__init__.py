@@ -80,21 +80,21 @@ class Flow(_Flow):
 
     @build_required(BuildLevel.GRAPH)
     def get_service_command(self, name):
-        v = self._service_nodes[name]
+        svc = self._service_nodes[name]
 
-        defaults_kwargs, _ = service_map[
-            v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
+        defaults_kwargs, _ = vars(service_map[
+            svc['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase']))
 
-        p_args = vars(v['parsed_args'])
+        p_args = vars(svc['parsed_args'])
         # remove default kwargs
         for k, v in defaults_kwargs:
             if v == p_args.get(k, None):
                 p_args.pop(k, None)
 
         if not isinstance(p_args.get('yaml_path', ''), str):
-            p_args['yaml_path'] = v['kwargs']['yaml_path']
+            p_args['yaml_path'] = svc['kwargs']['yaml_path']
 
-        command = '' if v['image'] != DEFAULT_IMAGE else service_map[v['service']]['cmd'] + ' '
+        command = '' if svc['image'] != DEFAULT_IMAGE else service_map[svc['service']]['cmd'] + ' '
         command += ' '.join(['--%s %s' % (k, v) for k, v in p_args.items()])
         return command
 
