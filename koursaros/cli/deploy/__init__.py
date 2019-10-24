@@ -54,11 +54,14 @@ def k8s(app_manager, flow_name, dryrun):
     app_manager.call(install, shell=True)
 
 
-@deploy.command()
+@deploy.command(context_settings=dict(
+    ignore_unknown_options=True,
+    allow_extra_args=True))
 @click.argument('client_name')
 @click.pass_obj
-def client(app_manager, client_name):
+def client(app_manager, client_name, *args, **kwargs):
     """Deploy a client. """
+    import pdb; pdb.set_trace()
     path = app_manager.find_model('client', client_name).joinpath('client.py')
     if not path.exists():
         raise FileNotFoundError('Could not find %s' % path)

@@ -1,19 +1,14 @@
 import requests
 import json
 from tabulate import tabulate
-import sys
 import pathlib
 import pandas as pd
 import os
 
 
 class Client:
-    def __init__(self):
-        if len(sys.argv) < 2:
-            print('Please specify file path...')
-            raise SystemExit
-
-        self.path = pathlib.Path(sys.argv[1])
+    def __init__(self, path):
+        self.path = pathlib.Path(path)
         self.df = pd.read_csv(self.path)
         self.cols = len(self.df.columns)
         self.height, self.width = self.terminal_width
