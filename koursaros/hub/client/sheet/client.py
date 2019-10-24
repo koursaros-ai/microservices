@@ -48,5 +48,6 @@ class Client:
                     'label': d(label_col, i)
                 }
             })
+            res = requests.post('http://localhost:80/index', data=dump)
             import pdb; pdb.set_trace()
 
