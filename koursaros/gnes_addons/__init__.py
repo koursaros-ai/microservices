@@ -145,92 +145,89 @@ class Flow(_Flow):
         self.helm_yaml = dict(services=dict(self.helm_yaml))
         return self.yaml_stream(self.helm_yaml)
 
-    def to_mermaid(self, *args, **kwargs):
-        return super().to_mermaid(*args, **kwargs)
+    @build_required(BuildLevel.GRAPH)
+    def to_mermaid(self, left_right: bool = True) -> str:
+        """
+        Output the mermaid graph for visualization
+        :param left_right: render the flow in left-to-right manner, otherwise top-down manner.
+        :return: a mermaid-formatted string
+        """
 
-    # @build_required(BuildLevel.GRAPH)
-    # def to_mermaid(self, left_right: bool = True) -> str:
-    #     """
-    #     Output the mermaid graph for visualization
-    #     :param left_right: render the flow in left-to-right manner, otherwise top-down manner.
-    #     :return: a mermaid-formatted string
-    #     """
-    #
-    #     # fill, stroke
-    #     service_color = {
-    #         Service.Frontend: ('#FFE0E0', '#000'),
-    #         Service.Router: ('#C9E8D2', '#000'),
-    #         Service.Encoder: ('#FFDAAF', '#000'),
-    #         Service.Preprocessor: ('#CED7EF', '#000'),
-    #         Service.Indexer: ('#FFFBC1', '#000'),
-    #     }
-    #
-    #     mermaid_graph = OrderedDict()
-    #     cls_dict = defaultdict(set)
-    #     replicas_dict = {}
-    #
-    #     for k, v in self._service_nodes.items():
-    #         mermaid_graph[k] = []
-    #         num_replicas = getattr(v['parsed_args'], 'num_parallel', 1)
-    #         if num_replicas > 1:
-    #             head_router = k + '_HEAD'
-    #             tail_router = k + '_TAIL'
-    #             replicas_dict[k] = (head_router, tail_router)
-    #             cls_dict[Service.Router].add(head_router)
-    #             cls_dict[Service.Router].add(tail_router)
-    #             p_r = '((%s))'
-    #             k_service = v['service']
-    #             p_e = '((%s))' if k_service == Service.Router else '(%s)'
-    #
-    #             mermaid_graph[k].append('subgraph %s["%s (replias=%d)"]' % (k, k, num_replicas))
-    #             for j in range(num_replicas):
-    #                 r = k + '_%d' % j
-    #                 cls_dict[k_service].add(r)
-    #                 mermaid_graph[k].append('\t%s%s-->%s%s' % (head_router, p_r % 'router', r, p_e % r))
-    #                 mermaid_graph[k].append('\t%s%s-->%s%s' % (r, p_e % r, tail_router, p_r % 'router'))
-    #             mermaid_graph[k].append('end')
-    #             mermaid_graph[k].append(
-    #                 'style %s fill:%s,stroke:%s,stroke-width:2px,stroke-dasharray:5,stroke-opacity:0.3,fill-opacity:0.5' % (
-    #                     k, service_color[k_service][0], service_color[k_service][1]))
-    #
-    #     for k, ed_type in self._service_edges.items():
-    #         start_node, end_node = k.split('-')
-    #         cur_node = mermaid_graph[start_node]
-    #
-    #         s_service = self._service_nodes[start_node]['service']
-    #         e_service = self._service_nodes[end_node]['service']
-    #
-    #         start_node_text = start_node
-    #         end_node_text = end_node
-    #
-    #         # check if is in replicas
-    #         if start_node in replicas_dict:
-    #             start_node = replicas_dict[start_node][1]  # outgoing
-    #             s_service = Service.Router
-    #             start_node_text = 'router'
-    #         if end_node in replicas_dict:
-    #             end_node = replicas_dict[end_node][0]  # incoming
-    #             e_service = Service.Router
-    #             end_node_text = 'router'
-    #
-    #         # always plot frontend at the start and the end
-    #         if e_service == Service.Frontend:
-    #             end_node_text = end_node
-    #             end_node += '_END'
-    #
-    #         cls_dict[s_service].add(start_node)
-    #         cls_dict[e_service].add(end_node)
-    #         p_s = '((%s))' if s_service == Service.Router else '(%s)'
-    #         p_e = '((%s))' if e_service == Service.Router else '(%s)'
-    #         cur_node.append('\t%s%s-- %s -->%s%s' % (
-    #             start_node, p_s % start_node_text, ed_type,
-    #             end_node, p_e % end_node_text))
-    #
-    #     style = ['classDef %sCLS fill:%s,stroke:%s,stroke-width:1px;' % (k, v[0], v[1]) for k, v in
-    #              service_color.items()]
-    #     class_def = ['class %s %sCLS;' % (','.join(v), k) for k, v in cls_dict.items()]
-    #     mermaid_str = '\n'.join(
-    #         ['graph %s' % ('LR' if left_right else 'TD')] + [ss for s in mermaid_graph.values() for ss in
-    #                                                          s] + style + class_def)
-    #
-    #     return mermaid_str
+        # fill, stroke
+        service_color = {
+            Service.Frontend: ('#FFE0E0', '#000'),
+            Service.Router: ('#C9E8D2', '#000'),
+            Service.Encoder: ('#FFDAAF', '#000'),
+            Service.Preprocessor: ('#CED7EF', '#000'),
+            Service.Indexer: ('#FFFBC1', '#000'),
+        }
+
+        mermaid_graph = OrderedDict()
+        cls_dict = defaultdict(set)
+        replicas_dict = {}
+
+        for k, v in self._service_nodes.items():
+            mermaid_graph[k] = []
+            num_replicas = getattr(v['parsed_args'], 'num_parallel', 1)
+            if num_replicas > 1:
+                head_router = k + '_HEAD'
+                tail_router = k + '_TAIL'
+                replicas_dict[k] = (head_router, tail_router)
+                cls_dict[Service.Router].add(head_router)
+                cls_dict[Service.Router].add(tail_router)
+                p_r = '((%s))'
+                k_service = v['service']
+                p_e = '((%s))' if k_service == Service.Router else '(%s)'
+
+                mermaid_graph[k].append('subgraph %s["%s (replias=%d)"]' % (k, k, num_replicas))
+                for j in range(num_replicas):
+                    r = k + '_%d' % j
+                    cls_dict[k_service].add(r)
+                    mermaid_graph[k].append('\t%s%s-->%s%s' % (head_router, p_r % 'router', r, p_e % r))
+                    mermaid_graph[k].append('\t%s%s-->%s%s' % (r, p_e % r, tail_router, p_r % 'router'))
+                mermaid_graph[k].append('end')
+                mermaid_graph[k].append(
+                    'style %s fill:%s,stroke:%s,stroke-width:2px,stroke-dasharray:5,stroke-opacity:0.3,fill-opacity:0.5' % (
+                        k, service_color[k_service][0], service_color[k_service][1]))
+
+        for k, ed_type in self._service_edges.items():
+            start_node, end_node = k.split('-')
+            cur_node = mermaid_graph[start_node]
+
+            s_service = self._service_nodes[start_node]['service']
+            e_service = self._service_nodes[end_node]['service']
+
+            start_node_text = start_node
+            end_node_text = end_node
+
+            # check if is in replicas
+            if start_node in replicas_dict:
+                start_node = replicas_dict[start_node][1]  # outgoing
+                s_service = Service.Router
+                start_node_text = 'router'
+            if end_node in replicas_dict:
+                end_node = replicas_dict[end_node][0]  # incoming
+                e_service = Service.Router
+                end_node_text = 'router'
+
+            # always plot frontend at the start and the end
+            if e_service == Service.Frontend:
+                end_node_text = end_node
+                end_node += '_END'
+
+            cls_dict[s_service].add(start_node)
+            cls_dict[e_service].add(end_node)
+            p_s = '((%s))' if s_service == Service.Router else '(%s)'
+            p_e = '((%s))' if e_service == Service.Router else '(%s)'
+            cur_node.append('\t%s%s-- %s -->%s%s' % (
+                start_node, p_s % start_node_text, ed_type,
+                end_node, p_e % end_node_text))
+
+        style = ['classDef %sCLS fill:%s,stroke:%s,stroke-width:1px;' % (k, v[0], v[1]) for k, v in
+                 service_color.items()]
+        class_def = ['class %s %sCLS;' % (','.join(v), k) for k, v in cls_dict.items()]
+        mermaid_str = '\n'.join(
+            ['graph %s' % ('LR' if left_right else 'TD')] + [ss for s in mermaid_graph.values() for ss in
+                                                             s] + style + class_def)
+
+        return mermaid_str
