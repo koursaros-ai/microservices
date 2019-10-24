@@ -85,21 +85,17 @@ class Flow(_Flow):
         defaults_kwargs, _ = service_map[
             v['service']]['parser']().parse_known_args(['--yaml_path', 'TrainableBase'])
 
-        pop = lambda x: vars(v['parsed_args']).pop(x, None)
-        pop('socket_out')
-        pop('topk')
-        pop('host_out')
-        pop('port_out')
-        pop('parallel_backend')
+        p_args = vars(v['parsed_args'])
+        # remove default kwargs
+        for k, v in defaults_kwargs:
+            if v == p_args.get(k, None):
+                p_args.pop(k, None)
 
-        non_default_kwargs = {
-            k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
-
-        if not isinstance(non_default_kwargs.get('yaml_path', ''), str):
-            non_default_kwargs['yaml_path'] = v['kwargs']['yaml_path']
+        if not isinstance(p_args.get('yaml_path', ''), str):
+            p_args['yaml_path'] = v['kwargs']['yaml_path']
 
         command = '' if v['image'] != DEFAULT_IMAGE else service_map[v['service']]['cmd'] + ' '
-        command += ' '.join(['--%s %s' % (k, v) for k, v in non_default_kwargs.items()])
+        command += ' '.join(['--%s %s' % (k, v) for k, v in p_args.items()])
         return command
 
     @build_required(BuildLevel.GRAPH)
