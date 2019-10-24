@@ -29,7 +29,7 @@ class Flow(_Flow):
     #     super().__init__(*args, **kwargs)
     #     self.client_node = {}
 
-    def add_client(self, *args, **kwargs):
+    def add_http_client(self, *args, **kwargs):
         # self.client_node = dict(
         #     app='client',
         #     model=kwargs['name'],
