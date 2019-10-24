@@ -22,20 +22,44 @@ class TestReranker(unittest.TestCase):
                 if line:
                     self.test_str.append(line)
 
-    def test_rerank(self):
-        args = set_router_parser().parse_args([
+        self.args = set_router_parser().parse_args([
             '--yaml_path', self.rerank_router_yaml,
             '--socket_out', str(SocketType.PUB_BIND),
             '--py_path', self.python_code
         ])
-        c_args = _set_client_parser().parse_args([
-            '--port_in', str(args.port_out),
-            '--port_out', str(args.port_in),
+        self.c_args = _set_client_parser().parse_args([
+            '--port_in', str(self.args.port_out),
+            '--port_out', str(self.args.port_in),
             '--socket_in', str(SocketType.SUB_CONNECT)
         ])
-        with RouterService(args), ZmqClient(c_args) as c1, ZmqClient(c_args) as c2:
+
+    def test_rerank_train(self):
+        with RouterService(self.args), ZmqClient(self.c_args) as c1:
+            msg = gnes_pb2.Message()
+
+            for i, line in enumerate(self.test_str):
+                doc = msg.request.train.docs.add()
+                msg.request.train.flush = True
+                doc.doc_id = i
+                doc.weight = 1.0
+                query_chunk = doc.chunks.add()
+                query_chunk.text = 'Query'
+                query_chunk.offset = 0
+                candidate_chunk = doc.chunks.add()
+                candidate_chunk.text = line
+                candidate_chunk.offset = 1
+
+            msg.envelope.num_part.extend([1])
+            c1.send_message(msg)
+            r = c1.recv_message()
+            print(r)
+
+    # @unittest.skip("SKIPPING QUERY TEST")
+    def test_rerank(self):
+        with RouterService(self.args), ZmqClient(self.c_args) as c1:
             msg = gnes_pb2.Message()
             msg.response.search.ClearField('topk_results')
+            msg.request.search.query.raw_text = 'This is a query'
 
             for i, line in enumerate(self.test_str):
                 s = msg.response.search.topk_results.add()
