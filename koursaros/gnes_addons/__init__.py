@@ -50,10 +50,13 @@ class Flow(_Flow):
             ret = supercall()
         else:
             # ignore invalid yaml path
-            path = pathlib.Path(yaml_path)
-            path.touch()
-            ret = supercall()
-            path.unlink()
+            if yaml_path:
+                path = pathlib.Path(yaml_path)
+                path.touch()
+                ret = supercall()
+                path.unlink()
+            else:
+                ret = supercall()
 
         # add custom kwargs
         name = name if name else '%s%d' % (service, ret._service_name_counter[service]-1)
