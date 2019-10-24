@@ -59,10 +59,10 @@ def k8s(app_manager, flow_name, dryrun):
 @click.pass_obj
 def client(app_manager, client_name):
     """Deploy a client. """
-    path = app_manager.find_model('client', client_name).joinpath('clienty.py')
+    path = app_manager.find_model('client', client_name).joinpath('client.py')
     if not path.exists():
         raise FileNotFoundError('Could not find %s' % path)
-    importlib.util.spec_from_file_location(client_name, path)
+    spec = importlib.util.spec_from_file_location(client_name, path)
     import pdb; pdb.set_trace()
 
 
