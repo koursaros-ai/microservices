@@ -87,7 +87,7 @@ class Flow(_Flow):
 
         p_args = vars(svc['parsed_args'])
         # remove default kwargs
-        for k, v in defaults_kwargs:
+        for k, v in vars(defaults_kwargs):
             if v == p_args.get(k, None):
                 p_args.pop(k, None)
 
