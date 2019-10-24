@@ -18,9 +18,11 @@ class RerankRouter(BaseReduceRouter):
     def post_init(self):
         model_config = AutoConfig.from_pretrained(self.model_name)
         model_config.num_labels = 1 # set up for regression
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.rerank_model = AutoModelForSequenceClassification.from_pretrained(self.model_name,
                                                                                config=model_config)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.rerank_model.to(self.device)
 
     def get_key(self, x: 'gnes_pb2.Response.QueryResponse.ScoredResult') -> str:
         return x.doc.doc_id
@@ -30,27 +32,27 @@ class RerankRouter(BaseReduceRouter):
 
     @batching
     def apply(self, msg: 'gnes_pb2.Message', accum_msgs: List['gnes_pb2.Message'], *args, **kwargs):
-        # now convert chunk results to doc results
         all_scored_results = [sr for m in accum_msgs for sr in m.response.search.topk_results]
         score_dict = defaultdict(list)
 
-        ids = [
+        inputs = [
             self.tokenizer.encode_plus(
-            msg.request.search.query.raw_text,
-            sr.doc.raw_text,
-            add_special_tokens=True,
-            max_length=512,
-            truncate_first_sequence=True
-        ) for sr in all_scored_results]
+                msg.request.search.query.raw_text,
+                sr.doc.raw_text,
+                add_special_tokens=True
+            ) for sr in all_scored_results]
 
-        max_len = max(len(t) for t in ids)
-        ids = [t + [0] * (max_len - len(t)) for t in ids]
-        input_ids = torch.tensor(ids)
+        max_len = max(len(t['input_ids']) for t in inputs)
+        input_ids = [t['input_ids'] + [0] * (max_len - len(t['input_ids'])) for t in inputs]
+        token_type_ids = [t['token_type_ids'] + [0] * (max_len - len(t['token_type_ids'])) for t in inputs]
+
+        input_ids = torch.tensor(input_ids).to(self.device)
+        token_type_ids = torch.tensor(token_type_ids).to(self.device)
+
         with torch.no_grad():
-            logits = self.rerank_model(input_ids)[0]  # Models outputs are now tuples
+            logits = self.rerank_model(input_ids, token_type_ids=token_type_ids)[0]
             scores = np.squeeze(logits.detach().cpu().numpy())
 
-        # count score by iterating over chunks
         for c, score in zip(all_scored_results, scores):
             score_dict[self.get_key(c)].append(score)
 
@@ -61,7 +63,6 @@ class RerankRouter(BaseReduceRouter):
         score_dict = OrderedDict(sorted(score_dict.items(), key=lambda x: x[1], reverse=True)[:k])
 
         msg.response.search.ClearField('topk_results')
-
         for k, v in score_dict.items():
             r = msg.response.search.topk_results.add()
             r.score.value = float(v)
