@@ -59,7 +59,7 @@ class Flow(_Flow):
 
         # add custom kwargs
         name = name if name else '%s%d' % (service, self._service_name_counter[service]-1)
-
+        import pdb; pdb.set_trace()
         v = ret._service_nodes[name]
         v['storage'] = kwargs.get('storage', '500Mi')
         v['memory'] = kwargs.get('storage', '500Mi')
