@@ -88,6 +88,7 @@ class Flow(_Flow):
         vars(v['parsed_args']).pop('socket_out', None)
         vars(v['parsed_args']).pop('topk', None)
         vars(v['parsed_args']).pop('host_out', None)
+        vars(v['parsed_args']).pop('port_out', None)
 
         non_default_kwargs = {
             k: v for k, v in vars(v['parsed_args']).items() if getattr(defaults_kwargs, k) != v}
