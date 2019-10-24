@@ -33,12 +33,14 @@ class KeywordIndexer(BCI):
 
         ret = []
         for key in keys:
-            ret_i = defaultdict(lambda: 0)
-            for _, (doc_id, _) in self._automaton.iter(self.decode_textbytes(key)):
-                ret_i[doc_id] += 1
+            ret_i = defaultdict(int)
+            for _, (doc_id, offset) in self._automaton.iter(self.decode_textbytes(key)):
+                ret_i[(doc_id, offset)] += 1
 
+            # _doc_id, _offset, _weight, _relevance
+            results = [(*k, 1.0, v) for k, v in ret_i.items()]
             # topk by number of keyword matches
-            ret.append(sorted(enumerate(ret_i), reverse=True, key=lambda x: x[1])[:top_k])
+            ret.append(sorted(results, reverse=True, key=lambda x: x[-1])[:top_k])
 
         return ret
 
