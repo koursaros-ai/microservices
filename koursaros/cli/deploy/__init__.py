@@ -65,6 +65,6 @@ def client(app_manager, client_name):
     spec = importlib.util.spec_from_file_location(client_name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    module.Client.run()
+    module.Client().run()
 
 
