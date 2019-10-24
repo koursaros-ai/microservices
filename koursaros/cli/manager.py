@@ -22,7 +22,7 @@ class AppManager:
         self.root = (Path(
             git.Repo('.', search_parent_directories=True)
             .working_tree_dir) if dev
-            else Path(__file__).parent.parent)
+            else Path(__file__).parent)
 
         self.logger = set_logger('kctl')
         self.cache = self.root.joinpath('.k')
@@ -33,7 +33,7 @@ class AppManager:
         if check_path.exists():
             return check_path
 
-        raise FileNotFoundError(f'"%s" not found' % str(Path(*dirs)))
+        raise FileNotFoundError(f'"%s" not found' % str(check_path))
 
     def call(self, cmd: List[str], shell=False):
         string = cmd if shell else ' '.join(cmd)
