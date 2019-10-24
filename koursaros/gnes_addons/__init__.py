@@ -132,7 +132,7 @@ class Flow(_Flow):
             if node['service'] == Service.HTTPClient:
                 http_port = vars(node['parsed_args']).get('http_port', 80)
                 swarm_yml['services'][name]['ports'] = ['%s:%s' % (http_port, http_port)]
-
+        import pdb; pdb.set_trace()
         return self.yaml_stream(swarm_yml)
 
     @build_required(BuildLevel.GRAPH)
