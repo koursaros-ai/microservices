@@ -34,7 +34,15 @@ class RerankRouter(BaseReduceRouter):
         all_scored_results = [sr for m in accum_msgs for sr in m.response.search.topk_results]
         score_dict = defaultdict(list)
 
-        ids = [self.tokenizer.encode(sr.doc.raw_text) for sr in all_scored_results]
+        ids = [
+            self.tokenizer.encode_plus(
+            msg.request.search.query.raw_text,
+            sr.doc.raw_text,
+            add_special_tokens=True,
+            max_length=512,
+            truncate_first_sequence=True
+        ) for sr in all_scored_results]
+
         max_len = max(len(t) for t in ids)
         ids = [t + [0] * (max_len - len(t)) for t in ids]
         input_ids = torch.tensor(ids)
