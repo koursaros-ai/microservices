@@ -63,6 +63,8 @@ def client(app_manager, client_name):
     if not path.exists():
         raise FileNotFoundError('Could not find %s' % path)
     spec = importlib.util.spec_from_file_location(client_name, path)
-    import pdb; pdb.set_trace()
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.Client.run()
 
 

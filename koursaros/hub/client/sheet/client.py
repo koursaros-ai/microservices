@@ -7,7 +7,7 @@ import pandas as pd
 import os
 
 
-class SheetClient:
+class Client:
     def __init__(self):
         if len(sys.argv) < 2:
             print('Please specify file path...')
@@ -53,6 +53,3 @@ class SheetClient:
             ))
             print(dump)
 
-
-if __name__ == '__main__':
-    SheetClient().run()
