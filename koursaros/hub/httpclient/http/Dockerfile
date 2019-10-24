@@ -1,6 +1,7 @@
 FROM python:3.7.4-alpine AS base
 
-RUN apk add git -y
+RUN apk update
+RUN apk add add git
 RUN pip install aiohttp git+https://github.com/colethienes/gnes
 
 COPY . ./workspace
