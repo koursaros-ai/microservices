@@ -31,6 +31,7 @@ class KeywordIndexer(BCI):
         if keys.dtype != np.uint8:
             raise ValueError('vectors should be ndarray of uint8')
         elif not self.size > 0:
+            print('Warning: empty index queried')
             return []
 
         self._automaton.make_automaton()
