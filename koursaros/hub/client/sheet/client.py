@@ -4,57 +4,87 @@ import pathlib
 import pandas as pd
 import os
 import json
-import time
+from typing import Iterable, List
 
 HEADERS = {'Content-Type': 'application/json'}
+OPTIONS = dict(error_bad_lines=False)
 
 
 class Client:
-    def __init__(self, path, mode):
-        self.path = pathlib.Path(path)
-        self.mode = mode
-        try:
-            self.df = pd.read_csv(self.path)
-        except UnicodeDecodeError:
-            self.df = pd.read_csv(self.path, encoding='ISO-8859-1')
 
-        self.cols = len(self.df.columns)
-        self.height, self.width = self.terminal_width
+    def __init__(self, path):
+        self.path = pathlib.Path(path)
+        self.df = pd.read_csv(self.path, encoding='UTF-8', **OPTIONS)
 
     @property
-    def terminal_width(self):
+    def terminal(self):
         try:
             return os.get_terminal_size(0)
         except OSError:
             return os.get_terminal_size(1)
 
-    def run(self):
+    def print_table(self):
+        height, width = self.terminal
         print(tabulate(
-            self.df.head(round(self.height / 25))
+            self.df.head(round(height / 25))
                 .astype(str)
-                .apply(lambda x: x.str[:round(self.width/self.cols)]),
+                .apply(lambda x: x.str[:round(width/len(self.df))]),
             headers='keys',
             tablefmt='fancy_grid')
         )
 
-        print('\n'.join('\t%s) %s' % (k, v) for k, v in zip(
-            range(self.cols), self.df.columns)))
+    @staticmethod
+    def print_options(options: Iterable):
+        print('\n'.join('\t%s) %s' % (k, v) for k, v in enumerate(options)))
 
-        try:
-            col_names = input('Json keys? ').strip().replace(' ', '').split(',')
-            cols = dict.fromkeys(col_names, 1)
-            for col in cols:
-                cols[col] = self.df.iloc[:, [int(input('Which column is "%s"? ' % col))]]
+    @staticmethod
+    def get_parsed_input(question: str) -> List[str]:
+        return input(question).strip().replace(' ', '').split(',')
 
-        except Exception as ve:
-            print('Invalid input:', ve)
-            raise SystemExit
+    def get_input_options(self, question: str, options: Iterable) -> List[int]:
+        """returns the value matching the chosen key"""
+        options = list(options)
+        self.print_options(options)
+        return [options[int(i)] for i in self.get_parsed_input(question)]
 
-        while True:
-            for i in range(len(self.df)):
-                j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
-                print('Sending:', j)
-                res = requests.post('http://localhost:80/%s' % self.mode, data=j, headers=HEADERS)
-                print('Returned:', res.content)
+    @staticmethod
+    def post(data):
+        print('Posting:', data)
+        method = 'index'
+        res = requests.post('http://localhost:80/%s' % method, data=data, headers=HEADERS)
+        print('Returned:', res.content)
 
-            input('Again?')
+    def bytesmode(self):
+        self.print_table()
+        col = self.get_input_options('Which column?', self.df.columns)[0]
+
+        for row in self.df[col]:
+            self.post(row.encode('utf-8'))
+
+    def jsonmode(self):
+        keys = self.get_parsed_input('Json keys? ')
+        self.print_table()
+        print(', '.join(keys))
+        cols = self.get_input_options('Which columns for "%s"?' % ', '.join(keys), self.df.columns)
+
+        print([self.df[col] for col in cols])
+        quit()
+        for rows in pd.DataFrame([self.df[col] for col in cols]).iterrows():
+            print(rows)
+            # self.post(dict(zip(cols, rows)))
+
+    def run(self):
+        # try:
+        question = 'Mode?'
+        options = dict(
+            bytes=self.bytesmode,
+            json=self.jsonmode
+        )
+        options[self.get_input_options(question, options.keys())[0]]()
+
+        # except Exception as ve:
+        #     print('%s:' % self.path.absolute(), ve)
+        #     raise SystemExit
+
+import sys
+Client(sys.argv[1]).run()
