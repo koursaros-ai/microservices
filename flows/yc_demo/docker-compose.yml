@@ -1,24 +1,22 @@
 version: '3.4'
 services:
-#  http:
-#    image: hub-httpclient:latest-http
-#    command: --grpc_host Frontend0 --start_doc_id 1
-#    ports:
-#    - 80:80
+  http:
+    image: hub-httpclient:latest-http
+    command: --grpc_host Frontend0 --start_doc_id 1
+    ports:
+    - 80:80
   Frontend0:
     image: gnes/gnes:latest-alpine
     command: frontend --port_in 57205 --port_out 63834 --port_ctrl 56065
-    ports:
-    - 8800:8800
-  log:
-    image: hub-router:latest-log
+  Router0:
+    image: gnes/gnes:latest-alpine
     command: --port_in 63834 --port_out 52555 --socket_in PULL_CONNECT --socket_out
-      PUB_BIND --port_ctrl 61778 --parallel_backend process --yaml_path LogRouter
+      PUB_BIND --port_ctrl 61778 --parallel_backend process --yaml_path BaseRouter
       --host_in Frontend0
   Preprocessor0:
     image: hub-preprocessor:latest-unary
     command: --port_in 52555 --port_out 64310 --socket_in SUB_CONNECT --port_ctrl
-      54215 --parallel_backend process --yaml_path UnaryPreprocessor --host_in log
+      54215 --parallel_backend process --yaml_path UnaryPreprocessor --host_in Router0
       --yaml_path text.yml
   textbyte:
     image: hub-encoder:latest-textbyte
@@ -34,7 +32,7 @@ services:
     image: gnes/gnes:latest-alpine
     command: route --port_in 52555 --port_out 63725 --socket_in SUB_CONNECT --socket_out
       PUSH_CONNECT --port_ctrl 63115 --parallel_backend process
-      --yaml_path BaseRouter --host_in log --host_out rerank
+      --yaml_path BaseRouter --host_in Router0 --host_out rerank
   rerank:
     image: hub-router:latest-rerank
     command: --port_in 63725 --port_out 57205 --socket_out PUSH_CONNECT --port_ctrl

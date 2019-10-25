@@ -10,8 +10,9 @@ HEADERS = {'Content-Type': 'application/json'}
 
 
 class Client:
-    def __init__(self, path):
+    def __init__(self, path, mode):
         self.path = pathlib.Path(path)
+        self.mode = mode
         self.df = pd.read_csv(self.path)
         self.cols = len(self.df.columns)
         self.height, self.width = self.terminal_width
@@ -50,7 +51,7 @@ class Client:
                 j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
                 time.sleep(2)
                 print('Sending:', j)
-                res = requests.post('http://localhost:80/train', data=j, headers=HEADERS)
+                res = requests.post('http://localhost:80/%s' % self.mode, data=j, headers=HEADERS)
                 print('Returned:', res.content)
 
             input('Again?')
