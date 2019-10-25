@@ -2,7 +2,7 @@ version: '3.4'
 services:
   http:
     image: hub-httpclient:latest-http
-    command: --grpc_host Frontend0
+    command: --grpc_host Frontend0 --start_doc_id 1
     ports:
     - 80:80
   Frontend0:
