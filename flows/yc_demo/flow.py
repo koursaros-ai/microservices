@@ -2,7 +2,7 @@ from koursaros.gnes_addons import Flow
 
 
 flow = (
-    Flow(check_version=True, with_frontend=False)
+    Flow(check_version=False, with_frontend=False)
     .add_http_client(name='http') # builds but doesn't deploy
     .add_frontend(copy_flow=False)
     .add_router(yaml_path='BaseRouter')

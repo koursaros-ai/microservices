@@ -17,18 +17,18 @@ services:
   - name: Frontend0
     app: frontend
     model: base
-    port_in: 63272
-    port_out: 60328
+    port_in: 54218
+    port_out: 49752
     ctrl_port:
     grpc_port:
     command:
     - frontend
     - --port_in
-    - '63272'
+    - '54218'
     - --port_out
-    - '60328'
+    - '49752'
     - --port_ctrl
-    - '52267'
+    - '64447'
     - --parallel_backend
     - process
     replicas: 1
@@ -40,22 +40,22 @@ services:
   - name: Router0
     app: router
     model: base
-    port_in: 60328
-    port_out: 64135
+    port_in: 49752
+    port_out: 62765
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '60328'
+    - '49752'
     - --port_out
-    - '64135'
+    - '62765'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUB_BIND
     - --port_ctrl
-    - '56784'
+    - '65007'
     - --parallel_backend
     - process
     - --yaml_path
@@ -68,22 +68,22 @@ services:
   - name: Router1
     app: router
     model: base
-    port_in: 64135
-    port_out: 52766
+    port_in: 62765
+    port_out: 55857
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '64135'
+    - '62765'
     - --port_out
-    - '52766'
+    - '55857'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '64457'
+    - '62769'
     - --parallel_backend
     - process
     - --yaml_path
@@ -96,19 +96,19 @@ services:
   - name: rerank
     app: router
     model: rerank
-    port_in: 52766
-    port_out: 63272
+    port_in: 55857
+    port_out: 54218
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '52766'
+    - '55857'
     - --port_out
-    - '63272'
+    - '54218'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '57744'
+    - '61032'
     - --parallel_backend
     - process
     - --yaml_path
@@ -122,19 +122,19 @@ services:
   - name: textbyte
     app: encoder
     model: textbyte
-    port_in: 64135
-    port_out: 58868
+    port_in: 62765
+    port_out: 58769
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '64135'
+    - '62765'
     - --port_out
-    - '58868'
+    - '58769'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '61028'
+    - '58012'
     - --parallel_backend
     - process
     - --yaml_path
@@ -148,21 +148,21 @@ services:
   - name: keyword
     app: indexer
     model: keyword
-    port_in: 58868
-    port_out: 52766
+    port_in: 58769
+    port_out: 55857
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '58868'
+    - '58769'
     - --port_out
-    - '52766'
+    - '55857'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '63085'
+    - '60369'
     - --parallel_backend
     - process
     - --yaml_path
