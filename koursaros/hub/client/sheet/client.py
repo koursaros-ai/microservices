@@ -50,7 +50,7 @@ class Client:
             })
             print(dump)
             res = requests.post(
-                'http://localhost:80/index',
+                'http://localhost:80/query',
                 data=dump,
                 headers={'Content-Type': 'application/json'}
             )
