@@ -1,13 +1,15 @@
 version: '3.4'
 services:
-  http:
-    image: hub-httpclient:latest-http
-    command: --grpc_host Frontend0 --start_doc_id 1
-    ports:
-    - 80:80
+#  http:
+#    image: hub-httpclient:latest-http
+#    command: --grpc_host Frontend0 --start_doc_id 1
+#    ports:
+#    - 80:80
   Frontend0:
     image: gnes/gnes:latest-alpine
     command: frontend --port_in 57205 --port_out 63834 --port_ctrl 56065
+    ports:
+    - 8800:8800
   log:
     image: hub-router:latest-log
     command: --port_in 63834 --port_out 52555 --socket_in PULL_CONNECT --socket_out
