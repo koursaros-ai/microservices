@@ -1,9 +1,9 @@
 import requests
-import json
 from tabulate import tabulate
 import pathlib
 import pandas as pd
 import os
+import json
 
 HEADERS = {'Content-Type': 'application/json'}
 
