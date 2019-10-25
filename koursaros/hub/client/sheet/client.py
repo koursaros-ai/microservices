@@ -1,9 +1,11 @@
 import requests
-import json
 from tabulate import tabulate
 import pathlib
 import pandas as pd
 import os
+import json
+
+HEADERS = {'Content-Type': 'application/json'}
 
 
 class Client:
@@ -33,26 +35,19 @@ class Client:
             range(self.cols), self.df.columns)))
 
         try:
-            data_col = self.df.iloc[:, [int(input('Data column? '))]]
-            label_col = self.df.iloc[:, [int(input('Label column? '))]]
+            col_names = input('Json keys? ').strip().replace(' ', '').split(',')
+            cols = dict.fromkeys(col_names, 1)
+            for col in cols:
+                cols[col] = self.df.iloc[:, [int(input('Which column is "%s"? ' % col))]]
+
         except Exception as ve:
             print('Invalid input:', ve)
             raise SystemExit
 
-        d = lambda x, y: str(x.iloc[y].values[0])
-
         for i in range(len(self.df)):
-            dump = json.dumps({
-                'docs': {
-                    'data': d(data_col, i),
-                    'label': d(label_col, i)
-                }
-            })
-            print('Sending:', dump)
-            res = requests.post(
-                'http://localhost:80/query',
-                data=dump,
-                headers={'Content-Type': 'application/json'}
-            )
+            j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
+
+            print('Sending:', j)
+            res = requests.post('http://localhost:80/query', data=j, headers=HEADERS)
             print('Returned:', res.content)
 
