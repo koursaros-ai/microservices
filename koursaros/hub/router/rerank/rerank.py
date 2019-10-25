@@ -54,7 +54,7 @@ class RerankRouter(BaseReduceRouter):
             ]
             labels = torch.tensor([json.loads(doc.raw_text)['label'] for doc in msg.request.train.docs],
                                   dtype=torch.float).to(self.device)
-        else:
+        elif len(all_scored_results) > 0:
             inputs = [
                 self.tokenizer.encode_plus(
                     msg.request.search.query.raw_text,
@@ -62,6 +62,9 @@ class RerankRouter(BaseReduceRouter):
                     add_special_tokens=True,
                 ) for sr in all_scored_results]
             labels = None
+            
+        else:
+            return
 
         if len(inputs) == 0:
             print("Warning: empty input set, ignoring.")
