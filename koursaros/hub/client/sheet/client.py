@@ -52,3 +52,4 @@ class Client:
                 res = requests.post('http://localhost:80/index', data=j, headers=HEADERS)
                 print('Returned:', res.content)
 
+            input('Again?')
