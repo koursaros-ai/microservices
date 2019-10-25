@@ -17,18 +17,18 @@ services:
   - name: Frontend0
     app: frontend
     model: base
-    port_in: 57166
-    port_out: 57515
+    port_in: 57999
+    port_out: 52184
     ctrl_port:
     grpc_port:
     command:
     - frontend
     - --port_in
-    - '57166'
+    - '57999'
     - --port_out
-    - '57515'
+    - '52184'
     - --port_ctrl
-    - '64250'
+    - '60078'
     - --parallel_backend
     - process
     replicas: 1
@@ -37,52 +37,53 @@ services:
     cpu: 300m
     image: gnes/gnes:latest-alpine
   router:
-  - name: log
-    app: router
-    model: log
-    port_in: 57515
-    port_out: 50721
-    ctrl_port:
-    grpc_port:
-    command:
-    - --port_in
-    - '57515'
-    - --port_out
-    - '50721'
-    - --socket_in
-    - PULL_CONNECT
-    - --socket_out
-    - PUB_BIND
-    - --port_ctrl
-    - '51721'
-    - --parallel_backend
-    - process
-    - --yaml_path
-    - LogRouter
-    replicas: 1
-    storage: 500Mi
-    memory: 500Mi
-    cpu: 300m
-    image: hub-router:latest-log
   - name: Router0
     app: router
     model: base
-    port_in: 50721
-    port_out: 54743
+    port_in: 52184
+    port_out: 55391
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '50721'
+    - '52184'
     - --port_out
-    - '54743'
+    - '55391'
+    - --socket_in
+    - PULL_CONNECT
+    - --socket_out
+    - PUB_BIND
+    - --port_ctrl
+    - '51399'
+    - --parallel_backend
+    - process
+    - --yaml_path
+    - BaseRouter
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: gnes/gnes:latest-alpine
+  - name: Router1
+    app: router
+    model: base
+    port_in: 55391
+    port_out: 59175
+    ctrl_port:
+    grpc_port:
+    command:
+    - route
+    - --port_in
+    - '55391'
+    - --port_out
+    - '59175'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '57261'
+    - '52000'
     - --parallel_backend
     - process
     - --yaml_path
@@ -95,19 +96,19 @@ services:
   - name: rerank
     app: router
     model: rerank
-    port_in: 54743
-    port_out: 57166
+    port_in: 59175
+    port_out: 57999
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '54743'
+    - '59175'
     - --port_out
-    - '57166'
+    - '57999'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '58518'
+    - '58471'
     - --parallel_backend
     - process
     - --yaml_path
@@ -121,19 +122,19 @@ services:
   - name: unary
     app: preprocessor
     model: unary
-    port_in: 50721
-    port_out: 59083
+    port_in: 55391
+    port_out: 49394
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '50721'
+    - '55391'
     - --port_out
-    - '59083'
+    - '49394'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '49644'
+    - '52622'
     - --parallel_backend
     - process
     - --yaml_path
@@ -147,19 +148,19 @@ services:
   - name: textbyte
     app: encoder
     model: textbyte
-    port_in: 59083
-    port_out: 54731
+    port_in: 49394
+    port_out: 61911
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '59083'
+    - '49394'
     - --port_out
-    - '54731'
+    - '61911'
     - --socket_in
     - PULL_CONNECT
     - --port_ctrl
-    - '53664'
+    - '61204'
     - --parallel_backend
     - process
     - --yaml_path
@@ -173,21 +174,21 @@ services:
   - name: keyword
     app: indexer
     model: keyword
-    port_in: 54731
-    port_out: 54743
+    port_in: 61911
+    port_out: 59175
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '54731'
+    - '61911'
     - --port_out
-    - '54743'
+    - '59175'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '64661'
+    - '54133'
     - --parallel_backend
     - process
     - --yaml_path
