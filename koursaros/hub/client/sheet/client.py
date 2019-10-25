@@ -35,10 +35,10 @@ class Client:
             range(self.cols), self.df.columns)))
 
         try:
-            col_names = input('Column names?').strip().replace(' ', '').split(',')
+            col_names = input('Json keys?').strip().replace(' ', '').split(',')
             cols = dict.fromkeys(col_names, 1)
             for col in cols:
-                cols[col] = self.df.iloc[:, [int(input('Which column is %s? ' % col))]]
+                cols[col] = self.df.iloc[:, [int(input('Which column is "%s"? ' % col))]]
 
         except Exception as ve:
             print('Invalid input:', ve)
