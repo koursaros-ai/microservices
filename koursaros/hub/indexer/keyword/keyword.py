@@ -15,6 +15,7 @@ class KeywordIndexer(BCI):
         super().__init__(*args, **kwargs)
         import ahocorasick
         self._automaton = ahocorasick.Automaton()
+        self.size = 0
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
         if vectors.dtype != np.uint8:
@@ -22,12 +23,16 @@ class KeywordIndexer(BCI):
 
         for key, vector in zip(keys, vectors):
             self._automaton.add_word(self.decode_textbytes(vector), key)
+            self.size += 1
 
         self.logger.error(list(self._automaton.keys()))
 
     def query(self, keys: np.ndarray, top_k: int, *args, **kwargs) -> List[List[Tuple]]:
         if keys.dtype != np.uint8:
             raise ValueError('vectors should be ndarray of uint8')
+        elif not self.size > 0:
+            print('Warning: empty index queried')
+            return []
 
         self._automaton.make_automaton()
 
