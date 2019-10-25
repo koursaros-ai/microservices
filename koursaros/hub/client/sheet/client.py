@@ -51,8 +51,7 @@ class Client:
             print(dump)
             res = requests.post(
                 'http://localhost:80/index',
-                data=dump,
-                headers={'Content-Type': 'multipart/form-data'}
+                data=dump
             )
             print(res.content)
 
