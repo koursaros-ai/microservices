@@ -44,10 +44,11 @@ class Client:
             print('Invalid input:', ve)
             raise SystemExit
 
-        for i in range(len(self.df)):
-            j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
+        while True:
+            for i in range(len(self.df)):
+                j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
 
-            print('Sending:', j)
-            res = requests.post('http://localhost:80/query', data=j, headers=HEADERS)
-            print('Returned:', res.content)
+                print('Sending:', j)
+                res = requests.post('http://localhost:80/index', data=j, headers=HEADERS)
+                print('Returned:', res.content)
 
