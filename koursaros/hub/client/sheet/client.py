@@ -4,6 +4,7 @@ import pathlib
 import pandas as pd
 import os
 import json
+import time
 
 HEADERS = {'Content-Type': 'application/json'}
 
@@ -47,7 +48,7 @@ class Client:
         while True:
             for i in range(len(self.df)):
                 j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
-
+                time.sleep(2)
                 print('Sending:', j)
                 res = requests.post('http://localhost:80/index', data=j, headers=HEADERS)
                 print('Returned:', res.content)
