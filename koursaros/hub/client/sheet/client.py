@@ -13,7 +13,11 @@ class Client:
     def __init__(self, path, mode):
         self.path = pathlib.Path(path)
         self.mode = mode
-        self.df = pd.read_csv(self.path)
+        try:
+            self.df = pd.read_csv(self.path)
+        except UnicodeDecodeError:
+            self.df = pd.read_csv(self.path, encoding='ISO-8859-1')
+            
         self.cols = len(self.df.columns)
         self.height, self.width = self.terminal_width
 
