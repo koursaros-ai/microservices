@@ -1,5 +1,6 @@
 from typing import List
 from collections import defaultdict, OrderedDict
+import json
 
 from gnes.router.base import BaseReduceRouter
 from gnes.proto import gnes_pb2
@@ -46,11 +47,12 @@ class RerankRouter(BaseReduceRouter):
         if len(msg.request.train.docs) > 0:  # training samples are given
             inputs = [
                 self.tokenizer.encode_plus(
-                    *[chunk.text for chunk in doc.chunks],
+                    json.loads(doc.raw_text)['query'],
+                    json.loads(doc.raw_text)['cand'],
                     add_special_tokens=True
                 ) for doc in msg.request.train.docs
             ]
-            labels = torch.tensor([doc.weight for doc in msg.request.train.docs],
+            labels = torch.tensor([json.loads(doc.raw_text)['label'] for doc in msg.request.train.docs],
                                   dtype=torch.float).to(self.device)
         else:
             inputs = [

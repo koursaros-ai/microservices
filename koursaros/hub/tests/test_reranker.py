@@ -1,5 +1,6 @@
 import os
 import unittest
+import json
 
 from gnes.proto import gnes_pb2
 from gnes.client.base import ZmqClient
@@ -41,13 +42,11 @@ class TestReranker(unittest.TestCase):
                 doc = msg.request.train.docs.add()
                 msg.request.train.flush = True
                 doc.doc_id = i
-                doc.weight = 1.0
-                query_chunk = doc.chunks.add()
-                query_chunk.text = 'Query'
-                query_chunk.offset = 0
-                candidate_chunk = doc.chunks.add()
-                candidate_chunk.text = line
-                candidate_chunk.offset = 1
+                doc.raw_text = json.dumps({
+                    'query' : 'test query',
+                    'cand' : line,
+                    'label' : 1.0
+                })
 
             msg.envelope.num_part.extend([1])
             c1.send_message(msg)
