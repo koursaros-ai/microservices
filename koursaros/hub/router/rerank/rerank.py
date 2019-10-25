@@ -62,7 +62,7 @@ class RerankRouter(BaseReduceRouter):
                     add_special_tokens=True,
                 ) for sr in all_scored_results]
             labels = None
-            
+
         else:
             return
 
