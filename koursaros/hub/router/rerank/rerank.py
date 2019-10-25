@@ -45,6 +45,8 @@ class RerankRouter(BaseReduceRouter):
         score_dict = defaultdict(list)
 
         if len(msg.request.train.docs) > 0:  # training samples are given
+            for doc in msg.request.train.docs:
+                print(doc.raw_text)
             inputs = [
                 self.tokenizer.encode_plus(
                     json.loads(doc.raw_text)['query'],
