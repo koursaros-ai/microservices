@@ -48,11 +48,11 @@ class Client:
                     'label': d(label_col, i)
                 }
             })
-            print(dump)
+            print('Sending:', dump)
             res = requests.post(
                 'http://localhost:80/query',
                 data=dump,
                 headers={'Content-Type': 'application/json'}
             )
-            print(res.content)
+            print('Returned:', res.content)
 
