@@ -46,7 +46,7 @@ class Client:
             raise SystemExit
 
         while True:
-            for i in range(len(self.df)):
+            for i in [1]:
                 j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
                 time.sleep(2)
                 print('Sending:', j)
