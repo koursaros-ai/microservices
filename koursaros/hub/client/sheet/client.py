@@ -48,7 +48,7 @@ class Client:
                     'label': d(label_col, i)
                 }
             })
-
+            print(dump)
             res = requests.post('http://localhost:80/index', data=dump)
             print(res.content)
 
