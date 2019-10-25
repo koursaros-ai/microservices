@@ -63,6 +63,10 @@ class RerankRouter(BaseReduceRouter):
                 ) for sr in all_scored_results]
             labels = None
 
+        if len(inputs) == 0:
+            print("Warning: empty input set, ignoring.")
+            super().apply(msg, accum_msgs)
+
         max_len = max(len(t['input_ids']) for t in inputs)
         input_ids = [t['input_ids'] + [0] * (max_len - len(t['input_ids'])) for t in inputs]
         token_type_ids = [t['token_type_ids'] + [0] * (max_len - len(t['token_type_ids'])) for t in inputs]
