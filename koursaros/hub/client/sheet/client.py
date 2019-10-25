@@ -42,12 +42,12 @@ class Client:
         d = lambda x, y: str(x.iloc[y].values[0])
 
         for i in range(len(self.df)):
-            dump = json.dumps({
+            dump = {
                 'docs': {
                     'data': d(data_col, i),
                     'label': d(label_col, i)
                 }
-            })
+            }
             print(dump)
             res = requests.post(
                 'http://localhost:80/index',
