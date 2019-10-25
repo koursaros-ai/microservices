@@ -9,10 +9,10 @@ services:
     image: gnes/gnes:latest-alpine
     command: frontend --port_in 57205 --port_out 63834 --port_ctrl 56065
   Router0:
-    image: gnes/gnes:latest-alpine
-    command: route --port_in 63834 --port_out 52555 --socket_in PULL_CONNECT --socket_out
-      PUB_BIND --port_ctrl 61778 --parallel_backend process
-      --yaml_path BaseRouter --host_in Frontend0
+    image: hub-router:latest-log
+    command: --verbose route --port_in 63834 --port_out 52555 --socket_in PULL_CONNECT --socket_out
+      PUB_BIND --port_ctrl 61778 --parallel_backend process --yaml_path LogRouter
+      --host_in Frontend0
   Preprocessor0:
     image: hub-preprocessor:latest-unary
     command: --port_in 52555 --port_out 64310 --socket_in SUB_CONNECT --port_ctrl
