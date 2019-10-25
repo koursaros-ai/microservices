@@ -50,5 +50,5 @@ class Client:
             })
 
             res = requests.post('http://localhost:80/index', data=dump)
-            import pdb; pdb.set_trace()
+            print(res.content)
 
