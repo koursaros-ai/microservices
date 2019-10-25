@@ -21,7 +21,7 @@ services:
   textbyte:
     image: hub-encoder:latest-textbyte
     command: --port_in 64310 --port_out 59056 --socket_in PULL_CONNECT --port_ctrl
-      56228 --parallel_backend process --yaml_path max256.yml
+      56228 --parallel_backend process --yaml_path max1024.yml
       --host_in Preprocessor0
   keyword:
     image: hub-indexer:latest-keyword
