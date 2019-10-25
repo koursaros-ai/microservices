@@ -17,7 +17,7 @@ class Client:
             self.df = pd.read_csv(self.path)
         except UnicodeDecodeError:
             self.df = pd.read_csv(self.path, encoding='ISO-8859-1')
-            
+
         self.cols = len(self.df.columns)
         self.height, self.width = self.terminal_width
 
@@ -32,7 +32,7 @@ class Client:
         print(tabulate(
             self.df.head(round(self.height / 25))
                 .astype(str)
-                .apply(lambda x: x.str[:round(self.height/self.cols)]),
+                .apply(lambda x: x.str[:round(self.width/self.cols)]),
             headers='keys',
             tablefmt='fancy_grid')
         )
