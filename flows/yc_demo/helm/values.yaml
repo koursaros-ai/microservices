@@ -17,22 +17,20 @@ services:
   - name: Frontend0
     app: frontend
     model: base
-    port_in: 64624
-    port_out: 51065
+    port_in: 54266
+    port_out: 52390
     ctrl_port:
     grpc_port:
     command:
     - frontend
     - --port_in
-    - '64624'
+    - '54266'
     - --port_out
-    - '51065'
+    - '52390'
     - --port_ctrl
-    - '51536'
+    - '63570'
     - --parallel_backend
     - process
-    - --check_version
-    - 'False'
     replicas: 1
     storage: 500Mi
     memory: 500Mi
@@ -42,26 +40,24 @@ services:
   - name: Router0
     app: router
     model: base
-    port_in: 51065
-    port_out: 61501
+    port_in: 52390
+    port_out: 55304
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '51065'
+    - '52390'
     - --port_out
-    - '61501'
+    - '55304'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUB_BIND
     - --port_ctrl
-    - '57702'
+    - '56595'
     - --parallel_backend
     - process
-    - --check_version
-    - 'False'
     - --yaml_path
     - BaseRouter
     replicas: 1
@@ -72,26 +68,24 @@ services:
   - name: Router1
     app: router
     model: base
-    port_in: 61501
-    port_out: 60257
+    port_in: 55304
+    port_out: 52861
     ctrl_port:
     grpc_port:
     command:
     - route
     - --port_in
-    - '61501'
+    - '55304'
     - --port_out
-    - '60257'
+    - '52861'
     - --socket_in
     - SUB_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '50529'
+    - '64227'
     - --parallel_backend
     - process
-    - --check_version
-    - 'False'
     - --yaml_path
     - BaseRouter
     replicas: 1
@@ -102,23 +96,21 @@ services:
   - name: rerank
     app: router
     model: rerank
-    port_in: 60257
-    port_out: 64624
+    port_in: 52861
+    port_out: 54266
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '60257'
+    - '52861'
     - --port_out
-    - '64624'
+    - '54266'
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '50945'
+    - '54494'
     - --parallel_backend
     - process
-    - --check_version
-    - 'False'
     - --yaml_path
     - base.yml
     replicas: 1
@@ -126,27 +118,51 @@ services:
     memory: 500Mi
     cpu: 300m
     image: hub-router:latest-rerank
-  encoder:
-  - name: textbyte
-    app: encoder
-    model: textbyte
-    port_in: 61501
-    port_out: 52405
+  preprocessor:
+  - name: unary
+    app: preprocessor
+    model: unary
+    port_in: 55304
+    port_out: 55226
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '61501'
+    - '55304'
     - --port_out
-    - '52405'
+    - '55226'
     - --socket_in
     - SUB_CONNECT
     - --port_ctrl
-    - '65455'
+    - '53692'
     - --parallel_backend
     - process
-    - --check_version
-    - 'False'
+    - --yaml_path
+    - text.yml
+    replicas: 1
+    storage: 500Mi
+    memory: 500Mi
+    cpu: 300m
+    image: hub-preprocessor:latest-unary
+  encoder:
+  - name: textbyte
+    app: encoder
+    model: textbyte
+    port_in: 55226
+    port_out: 64316
+    ctrl_port:
+    grpc_port:
+    command:
+    - --port_in
+    - '55226'
+    - --port_out
+    - '64316'
+    - --socket_in
+    - PULL_CONNECT
+    - --port_ctrl
+    - '62595'
+    - --parallel_backend
+    - process
     - --yaml_path
     - max256.yml
     replicas: 1
@@ -158,25 +174,23 @@ services:
   - name: keyword
     app: indexer
     model: keyword
-    port_in: 52405
-    port_out: 60257
+    port_in: 64316
+    port_out: 52861
     ctrl_port:
     grpc_port:
     command:
     - --port_in
-    - '52405'
+    - '64316'
     - --port_out
-    - '60257'
+    - '52861'
     - --socket_in
     - PULL_CONNECT
     - --socket_out
     - PUSH_CONNECT
     - --port_ctrl
-    - '49331'
+    - '60264'
     - --parallel_backend
     - process
-    - --check_version
-    - 'False'
     - --yaml_path
     - base.yml
     replicas: 1
