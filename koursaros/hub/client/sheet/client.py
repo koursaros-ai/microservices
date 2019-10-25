@@ -51,9 +51,8 @@ class Client:
             raise SystemExit
 
         while True:
-            for i in [1]:
+            for i in range(len(self.df)):
                 j = json.dumps({col_name: str(col.iloc[i].values[0]) for col_name, col in cols.items()})
-                time.sleep(2)
                 print('Sending:', j)
                 res = requests.post('http://localhost:80/%s' % self.mode, data=j, headers=HEADERS)
                 print('Returned:', res.content)
