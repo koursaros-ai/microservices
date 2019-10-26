@@ -32,7 +32,7 @@ class Client:
             i += 1
 
     def index(self, row):
-        self.post(list(row.values())[0], 'index')
+        self.post(list(row.values())[1], 'index')
 
     def train(self, row):
         self.post(json.dumps(row), 'train')
