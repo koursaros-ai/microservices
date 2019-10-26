@@ -22,7 +22,7 @@ class Client:
     def post(data, method):
         print('Posting:', data)
         response = requests.post('http://localhost:80/%s' % method, data=data, headers=HEADERS)
-        res = json.loads(response.content)[0]
+        res = json.loads(response.content)['res'][0]
         result = json.loads(res)
         print('Returned:', result)
 
