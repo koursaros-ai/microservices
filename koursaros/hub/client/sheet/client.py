@@ -22,10 +22,11 @@ class Client:
     def post(data, method):
         print('Posting:', data)
         response = requests.post('http://localhost:80/%s' % method, data=data, headers=HEADERS)
-        import pdb
-        pdb.set_trace()
-        res = json.loads(response.content)['res'][0]
-        result = json.loads(res)
+        res = json.loads(response.content)
+        if 'res' in res:
+            result = json.loads(res['res'][0])
+        else:
+            result = res
         print('Returned:', result)
 
     def iter_csv(self, fn):
