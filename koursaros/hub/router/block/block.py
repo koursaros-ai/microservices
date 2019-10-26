@@ -17,11 +17,11 @@ class BlockRouter(BaseRouter):
 
         self.routes = {
             gnes_pb2.Request.TrainRequest: lambda: block_if('train'),
-            gnes_pb2.Request.TrainResponse: lambda: block_if('train'),
+            gnes_pb2.Response.TrainResponse: lambda: block_if('train'),
             gnes_pb2.Request.IndexRequest: lambda: block_if('index'),
-            gnes_pb2.Request.IndexResponse: lambda: block_if('index'),
+            gnes_pb2.Response.IndexResponse: lambda: block_if('index'),
             gnes_pb2.Request.QueryRequest: lambda: block_if('query'),
-            gnes_pb2.Request.QueryResponse: lambda: block_if('query')
+            gnes_pb2.Response.QueryResponse: lambda: block_if('query')
         }
 
     def apply(self, msg: 'gnes_pb2.Message', *args, **kwargs):
