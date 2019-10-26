@@ -7,34 +7,36 @@ services:
     - 80:80
   Frontend0:
     image: gnes/gnes:latest-alpine
-    command: frontend --port_in 57205 --port_out 63834 --port_ctrl 56065
+    command: frontend --port_in 57105 --port_out 65502 --port_ctrl 55166 --parallel_backend
+      process
   Router0:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 63834 --port_out 52555 --socket_in PULL_CONNECT --socket_out
-      PUB_BIND --port_ctrl 61778 --parallel_backend process --yaml_path BaseRouter
+    command: route --port_in 65502 --port_out 58609 --socket_in PULL_CONNECT --socket_out
+      PUB_BIND --port_ctrl 49407 --parallel_backend process --yaml_path BaseRouter
       --host_in Frontend0
-  Preprocessor0:
+  block:
+    image: hub-router:latest-block
+    command: --port_in 58609 --port_out 53283 --socket_in SUB_CONNECT --port_ctrl
+      52423 --parallel_backend process --yaml_path block_train.yml --host_in Router0
+  unary:
     image: hub-preprocessor:latest-unary
-    command: --port_in 52555 --port_out 64310 --socket_in SUB_CONNECT --port_ctrl
-      54215 --parallel_backend process --yaml_path UnaryPreprocessor --host_in Router0
-      --yaml_path text.yml
+    command: --port_in 53283 --port_out 51714 --socket_in PULL_CONNECT --port_ctrl
+      55377 --parallel_backend process --yaml_path text.yml --host_in block
   textbyte:
     image: hub-encoder:latest-textbyte
-    command: --port_in 64310 --port_out 59056 --socket_in PULL_CONNECT --port_ctrl
-      56228 --parallel_backend process --yaml_path max1024.yml
-      --host_in Preprocessor0
+    command: --port_in 51714 --port_out 62690 --socket_in PULL_CONNECT --port_ctrl
+      57360 --parallel_backend process --yaml_path max1024.yml --host_in unary
   keyword:
     image: hub-indexer:latest-keyword
-    command: --port_in 59056 --port_out 63725 --socket_in PULL_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 52363 --parallel_backend process
-      --yaml_path base.yml --host_in textbyte --host_out rerank
+    command: --port_in 62690 --port_out 62155 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 60258 --parallel_backend process --yaml_path base.yml
+      --host_in textbyte --host_out rerank
   Router1:
     image: gnes/gnes:latest-alpine
-    command: route --port_in 52555 --port_out 63725 --socket_in SUB_CONNECT --socket_out
-      PUSH_CONNECT --port_ctrl 63115 --parallel_backend process
-      --yaml_path BaseRouter --host_in Router0 --host_out rerank
+    command: route --port_in 58609 --port_out 62155 --socket_in SUB_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 50381 --parallel_backend process --yaml_path BaseRouter
+      --host_in block --host_out rerank
   rerank:
     image: hub-router:latest-rerank
-    command: --port_in 63725 --port_out 57205 --socket_out PUSH_CONNECT --port_ctrl
-      61030 --parallel_backend process --yaml_path base.yml
-      --host_out Frontend0
+    command: --port_in 62155 --port_out 57105 --socket_out PUSH_CONNECT --port_ctrl
+      56641 --parallel_backend process --yaml_path base.yml --host_out Frontend0
