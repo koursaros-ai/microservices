@@ -14,7 +14,7 @@ from whoosh import collectors
 from gnes.indexer.base import BaseChunkIndexer as BCI
 
 
-class KeywordIndexer(BCI):
+class WhooshIndexer(BCI):
 
     def __init__(self, *args, **kwargs):
         """
