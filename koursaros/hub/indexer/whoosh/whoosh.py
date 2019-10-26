@@ -1,11 +1,15 @@
 from typing import List, Tuple
 import numpy as np
-from collections import defaultdict
 import os, os.path
 from whoosh import index, scoring
-from whoosh.fields import Schema, TEXT, ID
+from whoosh.fields import Schema, TEXT, NUMERIC
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.qparser import QueryParser
+from whoosh.writing import SegmentWriter
+from whoosh.codec import default_codec
+from whoosh.automata import lev
+from whoosh.searching import Searcher
+from whoosh import collectors
 
 from gnes.indexer.base import BaseChunkIndexer as BCI
 
@@ -20,8 +24,8 @@ class KeywordIndexer(BCI):
         if not os.path.exists("indexdir"):
             os.mkdir("indexdir")
 
-        schema = Schema(doc_id=ID(stored=True),
-                        offset=ID(stored=True),
+        schema = Schema(doc_id=NUMERIC(stored=True),
+                        offset=NUMERIC(stored=True),
                         body=TEXT(analyzer=StemmingAnalyzer()))
 
         self.ix = index.create_in("indexdir", schema)
@@ -49,6 +53,7 @@ class KeywordIndexer(BCI):
                 ret.append([
                     (result['doc_id'],result['offset'], 1.0, 1.0)
                     for result in searcher.search(query, limit=top_k)])
+        print(ret)
         return ret
 
     @staticmethod
