@@ -32,10 +32,10 @@ class Client:
             i += 1
 
     def index(self, row):
-        self.post(bytes(list(row.values())[1]), 'index')
+        self.post(list(row.values())[1].encode(), 'index')
 
     def train(self, row):
-        self.post(bytes(json.dumps(row)), 'train')
+        self.post(json.dumps(row, ensure_ascii=False).encode(), 'train')
 
     def query(self, row):
-        self.post(bytes(list(row.values())[0]), 'query')
+        self.post(list(row.values())[0].encode(), 'query')
