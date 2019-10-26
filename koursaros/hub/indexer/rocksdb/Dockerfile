@@ -1,5 +1,6 @@
 FROM gnes/gnes:latest-buster
 
+RUN apt-get update
 RUN apt-get install python-virtualenv python-dev librocksdb-dev
 RUN pip install python-rocksdb
 
