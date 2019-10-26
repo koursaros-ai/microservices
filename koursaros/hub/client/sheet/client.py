@@ -4,7 +4,7 @@ import csv
 import json
 
 HEADERS = {'Content-Type': 'application/json'}
-MODES = ['json', 'bytes']
+MODES = ['index', 'train', 'query']
 
 
 class Client:
@@ -18,16 +18,19 @@ class Client:
         getattr(self, mode)()
 
     @staticmethod
-    def post(data):
+    def post(data, method):
         print('Posting:', data)
-        method = 'index'
         res = requests.post('http://localhost:80/%s' % method, data=data, headers=HEADERS)
         print('Returned:', res.content)
 
-    def bytes(self):
+    def index(self):
         for row in self.csv:
-            self.post(list(row.values())[0])
+            self.post(list(row.values())[0], 'index')
 
-    def json(self):
+    def train(self):
         for row in self.csv:
-            self.post(json.dumps(row))
+            self.post(json.dumps(row), 'train')
+
+    def query(self):
+        for row in self.csv:
+            self.post(list(row.values())[0], 'query')
