@@ -22,7 +22,7 @@ class Client:
     def post(data, method):
         print('Posting:', data)
         res = requests.post('http://localhost:80/%s' % method, data=data, headers=HEADERS)
-        print('Returned:', res.content)
+        print('Returned:', json.loads(res.content))
 
     def iter_csv(self, fn):
         i = 0
