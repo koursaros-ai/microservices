@@ -12,5 +12,5 @@ flow = (
     .add_indexer(name='whoosh', yaml_path='base.yml')
     .add_indexer(name='rocksdb', yaml_path='base.yml')
     .add_router(yaml_path='BaseRouter', recv_from=['Router0'])
-    .add_router(name='rerank', yaml_path='base.yml', recv_from=['whoosh', 'Router1'])
+    .add_router(name='rerank', yaml_path='base.yml', recv_from=['rocksdb', 'Router1'])
 )
