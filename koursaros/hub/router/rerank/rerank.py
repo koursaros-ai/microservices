@@ -52,7 +52,7 @@ class RerankRouter(BaseReduceRouter):
             labels = []
 
             for doc in msg.request.train.docs:
-                ex =  json.loads(doc.raw_bytes)
+                ex = json.loads(doc.raw_bytes)
                 inputs.append(
                     self.tokenizer.encode_plus(ex['Query'], ex['Candidate'], add_special_tokens=True))
                 labels.append(float(ex['Label']))
@@ -60,6 +60,7 @@ class RerankRouter(BaseReduceRouter):
             labels = torch.tensor(labels, dtype=torch.float).to(self.device)
 
         elif len(all_scored_results) > 0:
+
             inputs = [
                 self.tokenizer.encode_plus(
                     msg.request.search.query.raw_text,
