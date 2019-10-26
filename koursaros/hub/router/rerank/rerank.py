@@ -46,15 +46,15 @@ class RerankRouter(BaseReduceRouter):
 
         if len(msg.request.train.docs) > 0:  # training samples are given
             for doc in msg.request.train.docs:
-                print(doc.raw_text)
+                print(doc.raw_bytes)
             inputs = [
                 self.tokenizer.encode_plus(
-                    json.loads(doc.raw_text)['query'],
-                    json.loads(doc.raw_text)['cand'],
+                    json.loads(doc.raw_bytes)['Query'],
+                    json.loads(doc.raw_bytes)['Candidate'],
                     add_special_tokens=True
                 ) for doc in msg.request.train.docs
             ]
-            labels = torch.tensor([json.loads(doc.raw_text)['label'] for doc in msg.request.train.docs],
+            labels = torch.tensor([json.loads(doc.raw_text)['Label'] for doc in msg.request.train.docs],
                                   dtype=torch.float).to(self.device)
         elif len(all_scored_results) > 0:
             inputs = [

@@ -49,6 +49,9 @@ class KeywordIndexer(BCI):
 
         return ret
 
+    def train(self, msg):
+        pass
+
     @staticmethod
     def decode_textbytes(vector: np.ndarray):
         return vector.tobytes().rstrip(b'\x00').decode()
