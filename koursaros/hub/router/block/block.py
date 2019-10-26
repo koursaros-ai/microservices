@@ -29,4 +29,4 @@ class BlockRouter(BaseRouter):
         Log the incoming message
         :param msg: incoming message
         """
-        self.routes[getattr(msg, msg.WhichOneof('body'))]()
+        self.routes[type(getattr(msg, msg.WhichOneof('body')))]()
