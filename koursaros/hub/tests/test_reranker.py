@@ -42,18 +42,18 @@ class TestReranker(unittest.TestCase):
                 doc = msg.request.train.docs.add()
                 msg.request.train.flush = True
                 doc.doc_id = i
-                doc.raw_text = json.dumps({
-                    'query' : 'test query',
-                    'cand' : line,
-                    'label' : 1.0
-                })
+                doc.raw_bytes = json.dumps({
+                    'Query' : 'test query',
+                    'Candidate' : line,
+                    'Label' : 1.0
+                }).encode('utf-8')
 
             msg.envelope.num_part.extend([1])
             c1.send_message(msg)
             r = c1.recv_message()
             print(r)
 
-    # @unittest.skip("SKIPPING QUERY TEST")
+    @unittest.skip("SKIPPING QUERY TEST")
     def test_rerank(self):
         with RouterService(self.args), ZmqClient(self.c_args) as c1:
             msg = gnes_pb2.Message()
