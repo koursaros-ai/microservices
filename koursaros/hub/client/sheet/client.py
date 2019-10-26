@@ -9,13 +9,14 @@ MODES = ['index', 'train', 'query']
 
 class Client:
 
-    def __init__(self, mode, path):
+    def __init__(self, mode, path, limit=None):
         self.path = pathlib.Path(path)
         self.csv = csv.DictReader(self.path.open())
+        self.limit = limit
         if mode not in MODES:
             raise ValueError('%s is not valid. Please choose one of %s' % (mode, MODES))
 
-        getattr(self, mode)()
+        self.iter_csv(getattr(self, mode))
 
     @staticmethod
     def post(data, method):
@@ -23,14 +24,18 @@ class Client:
         res = requests.post('http://localhost:80/%s' % method, data=data, headers=HEADERS)
         print('Returned:', res.content)
 
-    def index(self):
+    def iter_csv(self, fn):
+        i = 0
         for row in self.csv:
-            self.post(list(row.values())[0], 'index')
+            fn(row)
+            if self.limit is not None and i > self.limit: break
+            i += 1
 
-    def train(self):
-        for row in self.csv:
-            self.post(json.dumps(row), 'train')
+    def index(self, row):
+        self.post(list(row.values())[0], 'index')
 
-    def query(self):
-        for row in self.csv:
-            self.post(list(row.values())[0], 'query')
+    def train(self, row):
+        self.post(json.dumps(row), 'train')
+
+    def query(self, row):
+        self.post(list(row.values())[0], 'query')
