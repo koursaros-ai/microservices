@@ -11,5 +11,5 @@ flow = (
     .add_encoder(name='textbyte', yaml_path='max1024.yml')
     .add_indexer(name='whoosh', yaml_path='base.yml') # aho corosick
     .add_router(yaml_path='BaseRouter', recv_from=['Router0'])
-    .add_router(name='rerank', yaml_path='base.yml', recv_from=['keyword', 'Router1'])
+    .add_router(name='rerank', yaml_path='base.yml', recv_from=['whoosh', 'Router1'])
 )
