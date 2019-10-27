@@ -28,11 +28,11 @@ class WhooshIndexer(BCI):
                         body=TEXT(analyzer=StemmingAnalyzer()))
         if not os.path.exists(data_path):
             os.mkdir(data_path)
-
+            self.logger.error('Please mount volume for persisting index.')
+        try:
+            self.ix = index.open_dir(data_path)
+        except:
             self.ix = index.create_in(data_path, schema)
-        else:
-            print(glob.glob(data_path))
-            self.ix = index.open_dir(data_path, schema)
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
         self.logger.error('Recieved add index request')
