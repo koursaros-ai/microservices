@@ -16,7 +16,7 @@ from gnes.indexer.base import BaseChunkIndexer as BCI
 
 class WhooshIndexer(BCI):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, data_path, *args, **kwargs):
         """
         Initialize an indexer that implements the AhoCorasick Algorithm
         """
@@ -28,8 +28,7 @@ class WhooshIndexer(BCI):
                         offset=NUMERIC(stored=True),
                         body=TEXT(analyzer=StemmingAnalyzer()))
 
-        self.ix = index.create_in("indexdir", schema)
-        print('INITING WHOOSH INDEX')
+        self.ix = index.create_in(data_path, schema)
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
         print('Recieved add index request')
