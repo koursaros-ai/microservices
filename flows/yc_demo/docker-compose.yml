@@ -30,8 +30,7 @@ services:
   whoosh:
     image: hub-indexer:latest-whoosh
     command: --port_in 62690 --port_out 62155 --socket_in PULL_CONNECT --port_ctrl
-    60258 --parallel_backend process --yaml_path base.yml --host_in textbyte --socket_out
-    PUSH_CONNECT
+    60258 --parallel_backend process --yaml_path base.yml --host_in textbyte --socket_out PUSH_CONNECT
   rocksdb:
     image: hub-indexer:latest-rocksdb
     command: --port_in 62155 --port_out 62155 --socket_in PULL_CONNECT --socket_out
