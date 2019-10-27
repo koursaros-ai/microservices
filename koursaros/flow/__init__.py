@@ -68,7 +68,7 @@ class Flow:
         self.services = dict()
         self.ports = defaultdict(
             lambda: {'ins': set(), 'outs': set()})
-
+        self.path = path
         self.lines = []
         self.p = list(range(53001, 65001))
         random.shuffle(self.p)
