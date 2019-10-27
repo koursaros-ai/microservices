@@ -14,7 +14,6 @@ class TextByteEncoder(BaseTextEncoder):
         super().__init__(*args, **kwargs)
         self._msl = max_seq_len
 
-    @batching
     def encode(self, text: List[str], *args, **kwargs) -> np.ndarray:
         encoded = np.stack([np.frombuffer(
                 sent.encode()[:self._msl] + b'\x00' * (self._msl - len(sent)),
