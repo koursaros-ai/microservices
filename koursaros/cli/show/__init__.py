@@ -14,7 +14,7 @@ def show():
 @click.pass_obj
 def flow(app_manager, flow_name):
     """Deploy a pipeline with compose or k8s. """
-    url = app_manager.get_flow(flow_name).build().to_url()
+    url = app_manager.get_flow(flow_name).mermaid_url
 
     try:
         webbrowser.open_new_tab(url)

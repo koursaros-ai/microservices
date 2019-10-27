@@ -44,7 +44,7 @@ class AppManager:
 
     def get_flow(self, name: str) -> 'Flow':
         os.chdir(str(self.cache))
-        path = self.git_root.joinpath('flows', name, 'flow.py')
+        path = self.git_root.joinpath('flows', name, 'flow.k')
         self.check_exists(path)
         flow = machinery.SourceFileLoader('flow', str(path)).load_module().flow
         flow.path = path
