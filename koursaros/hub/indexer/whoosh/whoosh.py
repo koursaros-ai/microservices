@@ -41,7 +41,6 @@ class WhooshIndexer(BCI):
         writer = self.ix.writer()
         for key, vector in zip(keys, vectors):
             body = self.decode_textbytes(vector)
-            self.logger.error(body)
             writer.add_document(doc_id=key[0],offset=key[1],body=body)
 
         writer.commit()
