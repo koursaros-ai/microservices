@@ -163,8 +163,6 @@ class Flow:
                 rn=right_s['name']
             )]
 
-        pprint.pprint(self.services, indent=4)
-        pprint.pprint(self.ports, indent=4)
         for bound_id, port in self.ports.items():
             bound_s = self.services[bound_id]
             # lines += ['subgraph %s' % bound_s['name']]
@@ -182,7 +180,7 @@ class Flow:
         for s in self.services.values():
             lines += ['class {} {};'.format(s['name'], s['app'])]
 
-        return 'https://mermaidjs.github.io/mermaid-live-editor/#/view/' + b64encode('\n'.join(lines).encode())
+        return 'https://mermaidjs.github.io/mermaid-live-editor/#/view/' + b64encode('\n'.join(lines).encode()).decode()
 
 
 
