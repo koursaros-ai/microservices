@@ -20,11 +20,11 @@ services:
       52423 --parallel_backend process --yaml_path block_train.yml --host_in Router0
   unary:
     image: hub-preprocessor:latest-unary
-    command: --port_in 53283 --port_out 51714 --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --port_ctrl
+    command: --port_in 53283 --port_out 51714 --socket_in PULL_CONNECT --port_ctrl
       55377 --parallel_backend process --yaml_path text.yml --host_in block
   textbyte:
     image: hub-encoder:latest-textbyte
-    command: --port_in 51714 --port_out 62690 --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --port_ctrl
+    command: --port_in 51714 --port_out 62690 --socket_in PULL_CONNECT --port_ctrl
       57360 --parallel_backend process --yaml_path max1024.yml --host_in unary
   whoosh:
     image: hub-indexer:latest-whoosh
