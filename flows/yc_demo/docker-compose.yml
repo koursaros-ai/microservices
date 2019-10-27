@@ -32,7 +32,7 @@ services:
       60258 --parallel_backend process --yaml_path base.yml --host_in textbyte
   rocksdb:
     image: hub-indexer:latest-rocksdb
-    command: --port_in 62155 --port_out 62155 --socket_in PULL_CONNECT
+    command: --port_in 62155 --port_out 64532 --socket_in PULL_CONNECT
       --port_ctrl 60258 --parallel_backend process --yaml_path base.yml
       --host_in whoosh --host_out rerank
 #  Router1:
