@@ -17,6 +17,6 @@ class TextByteEncoder(BaseTextEncoder):
     @batching
     def encode(self, text: List[str], *args, **kwargs) -> np.ndarray:
         return np.array([np.frombuffer(
-                sent.encode()[:self._msl-1] + b'\x00' * (self._msl - len(sent)),
+                sent.encode()[:self._msl] + b'\x00' * (self._msl - len(sent)),
                 dtype=np.uint8
         ) for sent in text])
