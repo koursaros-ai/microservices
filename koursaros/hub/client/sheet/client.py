@@ -46,3 +46,13 @@ class Client:
 
     def query(self, row):
         return list(row.values())[0]
+
+    def query_one(self, text):
+        self.mode = 'query'
+        response = self.post(text.encode)
+        res = json.loads(response.content)
+        self.result = json.loads(res['res'][0])
+        return self.text()
+
+    def text(self):
+        return self.result['search']['topkResults'][0]['doc']['chunks'][0]['text']
