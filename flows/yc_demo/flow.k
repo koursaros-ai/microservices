@@ -1,5 +1,5 @@
 # | APP         | MODEL     | REPS  | YAML_PATH         | IN            | OUT      | CMD
-1 | http_client | http      | 1     |                   | RPC:          | RPC:2    |
+1 | httpclient  | http      | 1     |                   | RPC:          | RPC:2    |
 2 | frontend    |           | 1     |                   | PULL:         | PUSH:    |
 3 | router      |           | 1     | BaseRouter        | PULL:2        | PUB:     |
 4 | router      | block     | 1     | block_train.yml   | SUB:3         | PUSH:    |

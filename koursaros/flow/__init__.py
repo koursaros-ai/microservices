@@ -140,7 +140,7 @@ class Flow:
     @property
     def mermaid_url(self):
         app_colors = dict(
-            http_client=('#FFE0E0', '#000', '1px'),
+            httpclient=('#FFE0E0', '#000', '1px'),
             frontend=('#FFE0E0', '#000', '1px'),
             router=('#C9E8D2', '#000', '1px'),
             encoder=('#FFDAAF', '#000', '1px'),
