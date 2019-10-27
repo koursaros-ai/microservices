@@ -41,12 +41,12 @@ services:
   # FOR QUERYING
   whoosh:
     image: hub-indexer:latest-whoosh
-    command: --port_in 62690 --port_out 55678 --socket_in PULL_CONNECT --port_ctrl
+    command: --port_in 62690 --port_out 61233 --socket_in PULL_CONNECT --port_ctrl
       60258 --parallel_backend process --yaml_path base.yml --host_in textbyte
-      --socket_out PUSH_CONNECT
+      --host_out rocksdb --socket_out PUSH_CONNECT
   rocksdb:
     image: hub-indexer:latest-rocksdb
-    command: --port_in 55678 --port_out 57105 --socket_in PULL_CONNECT --port_ctrl
+    command: --port_in 61233 --port_out 57105 --socket_in PULL_CONNECT --port_ctrl
       60258 --parallel_backend process --yaml_path base.yml --host_in whoosh
       --host_out Frontend0 --socket_out PUSH_CONNECT
 #  Router1:
