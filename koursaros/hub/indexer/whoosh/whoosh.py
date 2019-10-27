@@ -33,15 +33,15 @@ class WhooshIndexer(BCI):
             self.ix = index.open_dir(data_path)
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
-        print('Recieved add index request')
-        print(keys)
+        self.logger.error('Recieved add index request')
+        self.logger.error(keys)
         if vectors.dtype != np.uint8:
             raise ValueError('vectors should be ndarray of uint8')
 
         writer = self.ix.writer()
         for key, vector in zip(keys, vectors):
             body = self.decode_textbytes(vector)
-            print(body)
+            self.logger.error(body)
             writer.add_document(doc_id=key[0],offset=key[1],body=body)
 
         writer.commit()
@@ -58,7 +58,7 @@ class WhooshIndexer(BCI):
                 ret.append([
                     (result['doc_id'],result['offset'], 1.0, 1.0)
                     for result in searcher.search(query, limit=top_k)])
-        print(ret)
+        self.logger.error(ret)
         return ret
 
     @staticmethod
