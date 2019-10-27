@@ -24,10 +24,10 @@ class Client:
         response = requests.post('http://localhost:80/%s' % self.mode, data=data, headers=HEADERS)
         res = json.loads(response.content)
         if 'res' in res:
-            result = json.loads(res['res'][0])
+            self.result = json.loads(res['res'][0])
         else:
-            result = res
-        print('Returned:', result)
+            self.result = res
+        print('Returned:', self.result)
 
     def iter_csv(self, get_body_from_row):
         i = 0
