@@ -21,8 +21,8 @@ class WhooshIndexer(BCI):
         Initialize an indexer that implements the AhoCorasick Algorithm
         """
         super().__init__(*args, **kwargs)
-        if not os.path.exists("indexdir"):
-            os.mkdir("indexdir")
+        if not os.path.exists(data_path):
+            os.mkdir(data_path)
 
         schema = Schema(doc_id=NUMERIC(stored=True),
                         offset=NUMERIC(stored=True),

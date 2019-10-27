@@ -1,1 +1,3 @@
-!WhooshIndexer {}
+!WhooshIndexer
+parameters:
+  data_path: ./idx.doc_content
