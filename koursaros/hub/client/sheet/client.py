@@ -36,13 +36,13 @@ class Client:
             to_send.append(get_body_from_row(row))
             if self.limit is not None and i > self.limit: break
             i += 1
-        self.post('\n'.join(to_send))
+        self.post('\n'.join(to_send).encode())
 
     def index(self, row):
-        return list(row.values())[1].encode()
+        return list(row.values())[1]
 
     def train(self, row):
-        return json.dumps(row, ensure_ascii=False).encode()
+        return json.dumps(row, ensure_ascii=False)
 
     def query(self, row):
-        return list(row.values())[0].encode()
+        return list(row.values())[0]
