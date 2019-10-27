@@ -5,7 +5,7 @@ from collections import defaultdict
 from base64 import b64encode
 import ruamel
 
-APPS = ['http_client', 'frontend', 'router', 'preprocessor', 'encoder', 'indexer']
+APPS = ['httpclient', 'frontend', 'router', 'preprocessor', 'encoder', 'indexer']
 IN_SOCKS = ['PULL', 'SUB', 'RPC']
 OUT_SOCKS = ['PUSH', 'PUB', 'RPC']
 
@@ -23,7 +23,7 @@ def parse_line(line):
 
         app = line[1]
         if not app in APPS:
-            raise ValueError('app must be in %s' % line[1])
+            raise ValueError('app must be in %s not %s' % (APPS, line[1]))
 
         model = line[2] if line[2] else None
         if model and not model.isidentifier():
