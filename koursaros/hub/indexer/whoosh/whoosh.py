@@ -32,11 +32,12 @@ class WhooshIndexer(BCI):
         print('INITING WHOOSH INDEX')
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
+        print('Recieved add index request')
+        print(keys)
         if vectors.dtype != np.uint8:
             raise ValueError('vectors should be ndarray of uint8')
 
         writer = self.ix.writer()
-        print(keys)
         for key, vector in zip(keys, vectors):
             body = self.decode_textbytes(vector)
             print(body)
