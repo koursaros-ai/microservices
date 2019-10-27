@@ -8,7 +8,7 @@ class TestTextByte(unittest.TestCase):
 
     def test_textbyte(self):
         vectors = self.model.encode([
-            "This is a really long sentence it's really long ",
+            "This is a really long sentence it's really long, I can't even tell you how long it is.",
             "This is a shorter sentence",
             "This"])
         for vec in vectors:
