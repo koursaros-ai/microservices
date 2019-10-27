@@ -29,7 +29,7 @@ def flow(app_manager, flow_name, push, creds, no_caches):
 
     _flow = app_manager.get_flow(flow_name)
 
-    for service in _flow.services:
+    for service in _flow.services.values():
         if '/' not in service['image']:
             path = str(app_manager.find_model(service['app'], service['model']))
             tag = service['image']
