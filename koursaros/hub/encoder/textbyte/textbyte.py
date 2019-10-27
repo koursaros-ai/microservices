@@ -21,4 +21,5 @@ class TextByteEncoder(BaseTextEncoder):
                 dtype=np.uint8
         ) for sent in text])
         self.logger.error(encoded.shape)
+        return encoded
 
