@@ -29,6 +29,8 @@ def parse_line(line):
         if model and not model.isidentifier():
             raise ValueError('model must be python identifier "%s"' % line[2])
 
+        image = 'hub-%s:latest-%s' % (app, model) if model else 'gnes/gnes:latest-alpine'
+
         if not line[3].isnumeric():
             raise ValueError('replicas must be numeric not "%s"' % line[3])
         reps = int(line[3])
@@ -127,11 +129,6 @@ class Flow:
             else:
                 new['command'] += ['--port_out', s['local_out']]
                 new['ports'] += ['%s:%s' % (s['local_out'], s['local_out'])]
-
-            if s['model']:
-                new['image'] = 'hub-%s:latest-%s' % (s['app'], s['model'])
-            else:
-                new['image'] = 'gnes/gnes:latest-alpine'
 
             if not new['ports']:
                 new.pop('ports')
