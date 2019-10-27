@@ -35,6 +35,7 @@ class WhooshIndexer(BCI):
             raise ValueError('vectors should be ndarray of uint8')
 
         writer = self.ix.writer()
+        print(keys)
         for key, vector in zip(keys, vectors):
             body = self.decode_textbytes(vector)
             print(body)
