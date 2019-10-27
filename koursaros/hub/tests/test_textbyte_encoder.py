@@ -14,7 +14,7 @@ class TestTextByte(unittest.TestCase):
     def test_textbyte(self):
         to_encode = []
         for row in self.csv:
-            to_encode = list(row.values())[1]
+            to_encode.append(list(row.values())[1])
         vectors = self.model.encode(to_encode)
         for vec in vectors:
             self.assertEqual(len(vec), self.msl)
