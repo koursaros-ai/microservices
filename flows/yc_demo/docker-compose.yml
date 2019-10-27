@@ -30,7 +30,12 @@ services:
     image: hub-indexer:latest-whoosh
     command: --port_in 62690 --port_out 62155 --socket_in PULL_CONNECT --socket_out
       PUSH_CONNECT --port_ctrl 60258 --parallel_backend process --yaml_path base.yml
-      --host_in textbyte --host_out rerank
+      --host_in textbyte --host_out rocksdb
+  rocksdb:
+    image: hub-indexer:latest-rocksdb
+    command: --port_in 62155 --port_out 62155 --socket_in PULL_CONNECT --socket_out
+      PUSH_CONNECT --port_ctrl 60258 --parallel_backend process --yaml_path base.yml
+      --host_in whoosh --host_out rerank
   Router1:
     image: gnes/gnes:latest-alpine
     command: route --port_in 58609 --port_out 62155 --socket_in SUB_CONNECT --socket_out
