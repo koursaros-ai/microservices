@@ -4,7 +4,8 @@ from koursaros.hub.encoder.textbyte.textbyte import TextByteEncoder
 class TestTextByte(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.model = TextByteEncoder(64)
+        self.msl = 64
+        self.model = TextByteEncoder(self.msl)
 
     def test_textbyte(self):
         vectors = self.model.encode([
@@ -12,4 +13,4 @@ class TestTextByte(unittest.TestCase):
             "This is a shorter sentence",
             "This"])
         for vec in vectors:
-            print(len(vec))
+            self.assertEqual(len(vec), self.msl)
