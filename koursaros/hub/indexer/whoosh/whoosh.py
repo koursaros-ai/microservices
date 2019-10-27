@@ -24,11 +24,13 @@ class WhooshIndexer(BCI):
         if not os.path.exists(data_path):
             os.mkdir(data_path)
 
-        schema = Schema(doc_id=NUMERIC(stored=True),
-                        offset=NUMERIC(stored=True),
-                        body=TEXT(analyzer=StemmingAnalyzer()))
+            schema = Schema(doc_id=NUMERIC(stored=True),
+                            offset=NUMERIC(stored=True),
+                            body=TEXT(analyzer=StemmingAnalyzer()))
 
-        self.ix = index.create_in(data_path, schema)
+            self.ix = index.create_in(data_path, schema)
+        else:
+            self.ix = index.open_dir(data_path)
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
         print('Recieved add index request')
@@ -62,3 +64,9 @@ class WhooshIndexer(BCI):
     @staticmethod
     def decode_textbytes(vector: np.ndarray):
         return vector.tobytes().rstrip(b'\x00').decode()
+
+    # def __getstate__(self):
+    #     import faiss
+    #     d = super().__getstate__()
+    #     faiss.write_index(self._faiss_index, self.data_path)
+    #     return d
