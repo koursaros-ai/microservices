@@ -44,7 +44,9 @@ class RerankRouter(BaseReduceRouter):
         all_scored_results = [sr for m in accum_msgs for sr in m.response.search.topk_results]
         score_dict = defaultdict(list)
 
-        if len(msg.request.train.docs) > 0:  # training samples are given
+        runtime = getattr(msg, msg.WhichOneof('body')).WhichOneof('body')
+
+        if runtime is 'train':  # training samples are given
             for doc in msg.request.train.docs:
                 print(doc.raw_bytes)
 
@@ -52,14 +54,15 @@ class RerankRouter(BaseReduceRouter):
             labels = []
 
             for doc in msg.request.train.docs:
-                ex =  json.loads(doc.raw_bytes)
+                ex = json.loads(doc.raw_bytes)
                 inputs.append(
                     self.tokenizer.encode_plus(ex['Query'], ex['Candidate'], add_special_tokens=True))
-                labels.append(ex['Label'])
+                labels.append(float(ex['Label']))
 
             labels = torch.tensor(labels, dtype=torch.float).to(self.device)
 
-        elif len(all_scored_results) > 0:
+        elif runtime is 'search':
+
             inputs = [
                 self.tokenizer.encode_plus(
                     msg.request.search.query.raw_text,

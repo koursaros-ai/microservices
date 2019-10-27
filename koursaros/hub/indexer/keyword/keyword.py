@@ -1,4 +1,3 @@
-
 from typing import List, Tuple
 import numpy as np
 from collections import defaultdict
@@ -48,9 +47,6 @@ class KeywordIndexer(BCI):
             ret.append(sorted(results, reverse=True, key=lambda x: x[-1])[:top_k])
 
         return ret
-
-    def train(self, msg):
-        pass
 
     @staticmethod
     def decode_textbytes(vector: np.ndarray):

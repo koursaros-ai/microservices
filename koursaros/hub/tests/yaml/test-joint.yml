@@ -1,0 +1,8 @@
+!JointIndexer
+components:
+  - !RocksDBIndexer
+    parameters:
+      data_path: ./idx.doc_content
+  - !WhooshIndexer
+    parameters:
+      data_path: ./idx.whoosh

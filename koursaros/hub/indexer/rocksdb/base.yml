@@ -1,0 +1,3 @@
+!RocksDBIndexer
+parameters:
+  data_path: /workspace

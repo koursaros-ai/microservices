@@ -14,9 +14,16 @@ class TextByteEncoder(BaseTextEncoder):
         super().__init__(*args, **kwargs)
         self._msl = max_seq_len
 
-    @batching
+    def pad_and_vector(self, sent):
+        padded = sent.encode()[:self._msl] + b'\x00' * (self._msl - len(sent.encode()))
+        try:
+            bytes(padded).decode()
+            return np.frombuffer(padded, dtype=np.uint8)
+        except:  # split aup a multibyte character, so take off one more
+            padded = padded[:-2] + b'\x00' * 2
+            return self.pad_and_vector(padded.decode())
+
     def encode(self, text: List[str], *args, **kwargs) -> np.ndarray:
-        return np.array([np.frombuffer(
-                sent.encode()[:self._msl-1] + b'\x00' * (self._msl - len(sent)),
-                dtype=np.uint8
-        ) for sent in text])
+        encoded = np.stack([self.pad_and_vector(sent) for sent in text])
+        return encoded
+
