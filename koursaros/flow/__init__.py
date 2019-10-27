@@ -182,7 +182,7 @@ class Flow:
         for s in self.services.values():
             lines += ['class {} {};'.format(s['name'], s['app'])]
 
-        return 'https://mermaidjs.github.io/mermaid-live-editor/#/view/' + b64encode('\n'.join(lines))
+        return 'https://mermaidjs.github.io/mermaid-live-editor/#/view/' + b64encode('\n'.join(lines).encode())
 
 
 
