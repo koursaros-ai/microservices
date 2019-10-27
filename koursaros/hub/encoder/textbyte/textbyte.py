@@ -18,7 +18,7 @@ class TextByteEncoder(BaseTextEncoder):
         padded = sent.encode()[:self._msl] + b'\x00' * (self._msl - len(sent.encode()))
         try:
             bytes(padded).decode()
-            return np.frombuffer(padded, dtype=np.int8)
+            return np.frombuffer(padded, dtype=np.uint8)
         except:  # split aup a multibyte character, so take off one more
             padded = padded[:-2] + b'\x00' * 2
             return self.pad_and_vector(padded.decode())
