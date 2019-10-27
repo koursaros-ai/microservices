@@ -49,7 +49,7 @@ class Client:
 
     def query_one(self, text):
         self.mode = 'query'
-        response = self.post(text.encode)
+        response = self.post(text.encode())
         res = json.loads(response.content)
         self.result = json.loads(res['res'][0])
         return self.text()
