@@ -11,6 +11,8 @@ from whoosh.automata import lev
 from whoosh.searching import Searcher
 from whoosh import collectors
 
+import glob
+
 from gnes.indexer.base import BaseChunkIndexer as BCI
 
 
@@ -21,16 +23,16 @@ class WhooshIndexer(BCI):
         Initialize an indexer that implements the AhoCorasick Algorithm
         """
         super().__init__(*args, **kwargs)
+        schema = Schema(doc_id=NUMERIC(stored=True),
+                        offset=NUMERIC(stored=True),
+                        body=TEXT(analyzer=StemmingAnalyzer()))
         if not os.path.exists(data_path):
             os.mkdir(data_path)
 
-            schema = Schema(doc_id=NUMERIC(stored=True),
-                            offset=NUMERIC(stored=True),
-                            body=TEXT(analyzer=StemmingAnalyzer()))
-
             self.ix = index.create_in(data_path, schema)
         else:
-            self.ix = index.open_dir(data_path)
+            print(glob.glob(data_path))
+            self.ix = index.open_dir(data_path, schema)
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
         self.logger.error('Recieved add index request')
