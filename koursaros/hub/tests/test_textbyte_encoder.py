@@ -3,6 +3,8 @@ from koursaros.hub.encoder.textbyte.textbyte import TextByteEncoder
 import pathlib
 import csv
 
+import numpy as np
+
 class TestTextByte(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -18,3 +20,10 @@ class TestTextByte(unittest.TestCase):
         vectors = self.model.encode(to_encode)
         for vec in vectors:
             self.assertEqual(len(vec), self.msl)
+        for vector in vectors:
+            self.decode_textbytes(vector)
+        self.decode_textbytes(vectors)
+
+    @staticmethod
+    def decode_textbytes(vector: np.ndarray):
+        return vector.tobytes().rstrip(b'\x00').decode()
