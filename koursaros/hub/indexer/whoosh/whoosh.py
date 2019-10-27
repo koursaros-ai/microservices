@@ -29,6 +29,7 @@ class WhooshIndexer(BCI):
                         body=TEXT(analyzer=StemmingAnalyzer()))
 
         self.ix = index.create_in("indexdir", schema)
+        print('INITING WHOOSH INDEX')
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
         if vectors.dtype != np.uint8:
