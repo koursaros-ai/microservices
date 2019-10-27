@@ -1,3 +1,3 @@
 !RocksDBIndexer
 parameters:
-  data_path: /idx.docs
+  data_path: /workspace
