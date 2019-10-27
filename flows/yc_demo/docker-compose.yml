@@ -60,7 +60,7 @@ services:
 #    command: route --port_in 58609 --port_out 62155 --socket_in SUB_CONNECT --socket_out
 #      PUSH_CONNECT --port_ctrl 50381 --parallel_backend process --yaml_path BaseRouter
 #      --host_in Router0 --host_out rerank
-#  rerank:
-#    image: hub-router:latest-rerank
-#    command: --port_in 62155 --port_out 57105 --socket_out PUSH_CONNECT --port_ctrl
-#      56641 --parallel_backend process --yaml_path base.yml --host_out Frontend0
+  rerank:
+    image: hub-router:latest-rerank
+    command: --port_in 62155 --port_out 57105 --socket_out PUSH_CONNECT --port_ctrl
+      56641 --parallel_backend process --yaml_path base.yml --host_out Frontend0
