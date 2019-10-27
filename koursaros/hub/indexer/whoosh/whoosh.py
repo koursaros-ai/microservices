@@ -32,6 +32,7 @@ class WhooshIndexer(BCI):
         try:
             self.ix = index.open_dir(data_path)
         except:
+            self.logger.warning('Creating empty whoosh index')
             self.ix = index.create_in(data_path, schema)
 
     def add(self, keys: List[Tuple[int, int]], vectors: np.ndarray, _, *args, **kwargs):
