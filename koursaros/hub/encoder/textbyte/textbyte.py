@@ -15,12 +15,9 @@ class TextByteEncoder(BaseTextEncoder):
         self._msl = max_seq_len
 
     def encode(self, text: List[str], *args, **kwargs) -> np.ndarray:
-        self.logger.error(text)
         encoded = np.stack([np.frombuffer(
-                sent.encode()[:self._msl] + b'\x00' * (self._msl - len(sent)),
+                sent.encode()[:self._msl] + b'\x00' * (self._msl - len(sent.encode())),
                 dtype=np.uint8
         ) for sent in text])
-        self.logger.error(encoded)
-        self.logger.error(encoded.shape)
         return encoded
 
