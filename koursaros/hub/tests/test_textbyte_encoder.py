@@ -1,16 +1,20 @@
 import unittest
 from koursaros.hub.encoder.textbyte.textbyte import TextByteEncoder
+import pathlib
+import csv
 
 class TestTextByte(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.msl = 64
+        self.msl = 1024
         self.model = TextByteEncoder(self.msl)
+        self.path = pathlib.Path('reviews_sample.csv')
+        self.csv = csv.DictReader(self.path.open())
 
     def test_textbyte(self):
-        vectors = self.model.encode([
-            "This is a really long sentence it's really long, I can't even tell you how long it is.",
-            "This is a shorter sentence",
-            "This"])
+        to_encode = []
+        for row in self.csv:
+            to_encode = list(row.values())[1]
+        vectors = self.model.encode(to_encode)
         for vec in vectors:
             self.assertEqual(len(vec), self.msl)
