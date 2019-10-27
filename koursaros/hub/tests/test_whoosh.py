@@ -31,7 +31,6 @@ class TestWhoosh(unittest.TestCase):
                 ))
                 self.test_str.append(line)
 
-    @SkipTest
     def test_whoosh(self):
         args = set_router_parser().parse_args([
             '--yaml_path', self.yaml,
@@ -83,6 +82,7 @@ class TestWhoosh(unittest.TestCase):
                 except:
                     pass
 
+    @SkipTest
     def test_joint(self):
         args = set_router_parser().parse_args([
             '--yaml_path', self.yaml_joint,
