@@ -1,4 +1,4 @@
-FROM pytorch/pytorch
+FROM pytorch/pytorch:cuda
 
 RUN pip install -U transformers gnes --no-cache-dir --compile
 
