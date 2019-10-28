@@ -3,7 +3,6 @@ import random
 from collections import defaultdict
 from base64 import b64encode
 from ruamel.yaml import YAML
-from io import StringIO
 
 APPS = ['httpclient', 'frontend', 'router', 'preprocessor', 'encoder', 'indexer']
 IN_SOCKS = ['PULL', 'SUB', 'RPC']
@@ -134,10 +133,7 @@ class Flow:
             new['command'] = ' '.join([str(x) for x in new['command']])
             y['services'][s['name']] = new
 
-        s = StringIO()
-        YAML().dump(y, s)
-        import pdb; pdb.set_trace()
-        return s.read()
+        YAML().dump(y, open('docker-compose.yml', 'w'))
 
     @property
     def mermaid_url(self):
