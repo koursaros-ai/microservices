@@ -26,7 +26,8 @@ class RerankRouter(BaseRouter):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if self.device == "cpu": self.logger.error("RUNING ON CPU")
         self.rerank_model = AutoModelForSequenceClassification.from_pretrained(self.model_name,
-                                                                               config=model_config)
+                                                                               config=model_config,
+                                                                               cache_dir='/workspace')
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.rerank_model.to(self.device)
 
