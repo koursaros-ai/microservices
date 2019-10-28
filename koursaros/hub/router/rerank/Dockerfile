@@ -2,7 +2,7 @@ FROM pytorch/pytorch
 
 RUN pip install -U transformers gnes --no-cache-dir --compile
 
-RUN mkdir /workspace
+RUN mkdir -p /workspace
 WORKDIR /workspace
 
 ADD *.py *.yml ./
