@@ -2,7 +2,8 @@ from pathlib import Path
 import random
 from collections import defaultdict
 from base64 import b64encode
-import ruamel
+from ruamel.yaml import YAML
+from io import StringIO
 
 APPS = ['httpclient', 'frontend', 'router', 'preprocessor', 'encoder', 'indexer']
 IN_SOCKS = ['PULL', 'SUB', 'RPC']
@@ -133,7 +134,9 @@ class Flow:
             new['command'] = ' '.join([str(x) for x in new['command']])
             y['services'][s['name']] = new
 
-        return ruamel.yaml.dump(y)
+        s = StringIO()
+        YAML().dump(y, s)
+        return s
 
     @property
     def mermaid_url(self):
