@@ -2,7 +2,7 @@ from pathlib import Path
 import random
 from collections import defaultdict
 from base64 import b64encode
-import ruamel
+from ruamel.yaml import YAML
 
 APPS = ['httpclient', 'frontend', 'router', 'preprocessor', 'encoder', 'indexer']
 IN_SOCKS = ['PULL', 'SUB', 'RPC']
@@ -98,13 +98,15 @@ class Flow:
         s['local_out'] = self.p.pop()
         self.services[s['id']] = s
 
-    @property
     def swarm(self):
-        y = {'version': 3.4, 'services': {}}
+        y = {'version': '3.4', 'services': {}}
         for s in self.services.values():
-            new = dict(ports=[], volumes='./.cache:/workspace')
+            new = dict(volumes=['./.cache:/workspace'], image=s['image'])
             new['command'] = [s['command']] if s['command'] else []
             new['command'] += ['--socket_in', s['i'][0], '--socket_out', s['o'][0]]
+
+            if s['app'] == 'frontend':
+                new['ports'] = ['80:80']
 
             if s['yaml_path']:
                 new['command'] += ['--yaml_path', s['yaml_path']]
@@ -117,7 +119,6 @@ class Flow:
             # if binding in
             else:
                 new['command'] += ['--port_in', s['local_in']]
-                new['ports'] += ['%s:%s' % (s['local_in'], s['local_in'])]
 
             # if connecting out
             out_id = s['o'][1]
@@ -127,14 +128,11 @@ class Flow:
             # if binding out
             else:
                 new['command'] += ['--port_out', s['local_out']]
-                new['ports'] += ['%s:%s' % (s['local_out'], s['local_out'])]
 
-            if not new['ports']:
-                new.pop('ports')
             new['command'] = ' '.join([str(x) for x in new['command']])
             y['services'][s['name']] = new
 
-        return ruamel.yaml.dump(y)
+        YAML().dump(y, open('docker-compose.yml', 'w'))
 
     @property
     def mermaid_url(self):
