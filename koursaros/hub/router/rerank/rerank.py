@@ -53,8 +53,10 @@ class RerankRouter(BaseRouter):
                 inputs.append(
                     self.tokenizer.encode_plus(ex['Query'], ex['Candidate'], add_special_tokens=True))
                 labels.append(float(ex['Label']))
+            self.logger.error(inputs)
 
             labels = torch.tensor(labels, dtype=torch.float).to(self.device)
+            self.logger.error(labels)
 
         elif runtime == 'search':
             inputs = [
