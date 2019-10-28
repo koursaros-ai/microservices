@@ -136,6 +136,7 @@ class Flow:
 
         s = StringIO()
         YAML().dump(y, s)
+        import pdb; pdb.set_trace()
         return s.read()
 
     @property
