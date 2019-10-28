@@ -18,6 +18,7 @@ class BlockRouter(BaseRouter):
         """
 
         runtime = getattr(msg, msg.WhichOneof('body')).WhichOneof('body')
+        self.logger.error(runtime)
 
         if runtime in self.block:
             self.logger.info('Blocking %s msg...' % runtime)
