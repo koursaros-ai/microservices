@@ -1,5 +1,4 @@
 from pathlib import Path
-import pprint
 import random
 from collections import defaultdict
 from base64 import b64encode
@@ -101,7 +100,7 @@ class Flow:
 
     @property
     def swarm(self):
-        y = {'version': 3.4}
+        y = {'version': 3.4, 'services': {}}
         for s in self.services.values():
             new = dict(ports=[])
             new['command'] = [s['command']] if s['command'] else []
@@ -133,7 +132,7 @@ class Flow:
             if not new['ports']:
                 new.pop('ports')
             new['command'] = ' '.join([str(x) for x in new['command']])
-            y[s['name']] = new
+            y['services'][s['name']] = new
 
         return ruamel.yaml.dump(y)
 
