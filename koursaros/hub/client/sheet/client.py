@@ -39,7 +39,10 @@ class Client:
         self.post('\n'.join(to_send).encode())
 
     def index(self, row):
-        return list(row.values())[1]
+        body = list(row.values())[1]
+        req = dict(data=body)
+        req.update(row)
+        return json.dumps(req, ensure_ascii=False)
 
     def train(self, row):
         return json.dumps(row, ensure_ascii=False)
