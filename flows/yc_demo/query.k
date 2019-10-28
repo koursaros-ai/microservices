@@ -7,4 +7,4 @@
 6 | encoder     | textbyte  | 1     | max1024.yml       | PULL:5    | PUSH:    |
 7 | indexer     | whoosh    | 1     | base.yml          | PULL:6    | PUSH:    |
 8 | indexer     | rocksdb   | 1     | base.yml          | PULL:7    | PUSH:    |
-9 | router      | rerank    | 1     | base.yml          | PULL:8    | PUSH:2
+9 | router      | rerank    | 1     | base.yml          | PULL:8    | PUSH:2   |
