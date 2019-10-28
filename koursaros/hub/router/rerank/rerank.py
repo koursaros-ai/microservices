@@ -65,7 +65,8 @@ class RerankRouter(BaseRouter):
                     sr.chunk.text,
                     add_special_tokens=True,
                 ) for sr in all_scored_results]
-            self.logger.error(msg.request.search.query.raw_text)
+            self.logger.error(msg.request.search.query.chunks[0].text)
+            self.logger.error(inputs)
             labels = None
 
         else:
