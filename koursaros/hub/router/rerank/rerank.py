@@ -74,7 +74,7 @@ class RerankRouter(BaseRouter):
                     self.query_dict[msg.request.request_id] = all_scored_results
                     raise BlockMessage
                 else:
-                    query = self.query_dict[msg.repsonse.request_id]
+                    query = self.query_dict[msg.response.request_id]
             inputs = [
                 self.tokenizer.encode_plus(
                     query,
