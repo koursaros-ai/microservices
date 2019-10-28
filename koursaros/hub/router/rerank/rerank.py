@@ -14,9 +14,10 @@ import numpy as np
 
 class RerankRouter(BaseRouter):
 
-    def __init__(self, model_name: str = None, *args, **kwargs):
+    def __init__(self, model_name: str = None, data_dir: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model_name = model_name
+        self.data_dir = data_dir
         self.max_grad_norm = 1.0
         self.lr = 1e-3
 
@@ -27,7 +28,7 @@ class RerankRouter(BaseRouter):
         if self.device == "cpu": self.logger.error("RUNING ON CPU")
         self.rerank_model = AutoModelForSequenceClassification.from_pretrained(self.model_name,
                                                                                config=model_config,
-                                                                               cache_dir='/workspace')
+                                                                               cache_dir=self.data_dir)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.rerank_model.to(self.device)
 

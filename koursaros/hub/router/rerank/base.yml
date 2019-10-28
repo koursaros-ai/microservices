@@ -1,3 +1,4 @@
 !RerankRouter
 parameters:
   model_name: bert-base-uncased
+  data_dir: /workspace
