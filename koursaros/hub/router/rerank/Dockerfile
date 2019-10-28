@@ -3,7 +3,6 @@ FROM pytorch/pytorch
 RUN pip install -U transformers gnes --no-cache-dir --compile
 
 ADD *.py *.yml ./
+RUN pwd && echo 'yo'
 
-RUN pwd
-
-ENTRYPOINT ["ls"] # "gnes", "route", "--py_path", "rerank.py
+ENTRYPOINT ["pwd"] # "gnes", "route", "--py_path", "rerank.py
