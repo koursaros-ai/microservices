@@ -120,7 +120,6 @@ class Flow:
             # if binding in
             else:
                 new['command'] += ['--port_in', s['local_in']]
-                new['ports'] += ['%s:%s' % (s['local_in'], s['local_in'])]
 
             # if connecting out
             out_id = s['o'][1]
@@ -130,7 +129,6 @@ class Flow:
             # if binding out
             else:
                 new['command'] += ['--port_out', s['local_out']]
-                new['ports'] += ['%s:%s' % (s['local_out'], s['local_out'])]
 
             if not new['ports']:
                 new.pop('ports')
