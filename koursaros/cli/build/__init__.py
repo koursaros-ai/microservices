@@ -43,8 +43,8 @@ def flow(app_manager, flow_path, push, creds, no_caches):
                 app_manager.call('docker push %s/%s' % (push, tag), shell=True)
 
     """save swarm yaml"""
-    _flow.swarm
-    app_manager.logger.critical('Saved swarm yaml to %s' % str(out_path))
+    _flow.swarm()
+    # app_manager.logger.critical('Saved swarm yaml to %s' % str(out_path))
 
     """save helm chart"""
     # out_path = _flow.path.parent.joinpath('helm')

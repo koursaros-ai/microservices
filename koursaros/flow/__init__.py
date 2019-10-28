@@ -98,7 +98,6 @@ class Flow:
         s['local_out'] = self.p.pop()
         self.services[s['id']] = s
 
-    @property
     def swarm(self):
         y = {'version': 3.4, 'services': {}}
         for s in self.services.values():
