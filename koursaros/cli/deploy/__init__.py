@@ -19,10 +19,10 @@ deploy.add_command(flow)
 
 
 @flow.command()
-@click.argument('flow_name')
+@click.argument('flow_path')
 @click.pass_obj
-def compose(app_manager, flow_name):
-    path = app_manager.get_flow(flow_name).path.parent.joinpath('docker-compose.yml')
+def compose(app_manager, flow_path):
+    path = app_manager.get_flow(flow_path).path.parent.joinpath('docker-compose.yml')
     down = 'docker-compose -f %s down' % str(path)
     app_manager.call(down, shell=True)
     up = 'docker-compose -f %s up' % str(path)

@@ -42,8 +42,6 @@ class AppManager:
         self.check_exists(path)
         return path
 
-    def get_flow(self, name: str) -> 'Flow':
-        os.chdir(str(self.cache))
-        path = self.git_root.joinpath('flows', name, 'flow.k')
+    def get_flow(self, path: 'Path') -> 'Flow':
         self.check_exists(path)
         return Flow(path)

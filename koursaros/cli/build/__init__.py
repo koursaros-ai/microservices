@@ -9,12 +9,12 @@ def build():
 
 
 @build.command()
-@click.argument('flow_name')
+@click.argument('flow_path')
 @click.option('-p', '--push')
 @click.option('-c', '--creds')
 @click.option('-n', '--no-caches', multiple=True)
 @click.pass_obj
-def flow(app_manager, flow_name, push, creds, no_caches):
+def flow(app_manager, flow_path, push, creds, no_caches):
     """Build images for a pipeline. """
 
     if push:
@@ -27,7 +27,7 @@ def flow(app_manager, flow_name, push, creds, no_caches):
 
     # app_manager.call('eval $(minikube docker-env)', shell=True)
 
-    _flow = app_manager.get_flow(flow_name)
+    _flow = app_manager.get_flow(flow_path)
 
     for service in _flow.services.values():
         if '/' not in service['image']:

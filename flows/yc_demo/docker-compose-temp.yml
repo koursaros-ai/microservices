@@ -1,33 +1,34 @@
-block4:
-  command: --socket_in SUB_CONNECT --socket_out PUSH_BIND --yaml_path block_train.yml
-    --host_in router3 --port_in 60428 --port_out 60183
-  ports: [60183:60183]
-frontend2:
-  command: --socket_in PULL_BIND --socket_out PUSH_BIND --port_in 57581 --port_out
-    54311
-  ports: [57581:57581, 54311:54311]
-http1:
-  command: --socket_in RPC_BIND --socket_out RPC_CONNECT --port_in 56685 --host_out
-    frontend2 --port_out 57581
-  ports: [56685:56685]
-keyword7: {command: --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --yaml_path
-    base.yml --host_in textbyte6 --port_in 54988 --host_out rerank9 --port_out 57858}
-rerank9: {command: --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --yaml_path
-    base.yml --host_in router8 --port_in 60989 --host_out frontend2 --port_out 57581}
-router3:
-  command: --socket_in PULL_CONNECT --socket_out PUB_BIND --yaml_path BaseRouter --host_in
-    frontend2 --port_in 54311 --port_out 60428
-  ports: [60428:60428]
-router8:
-  command: --socket_in SUB_CONNECT --socket_out PUSH_BIND --yaml_path BaseRouter --host_in
-    router3 --port_in 60428 --port_out 60989
-  ports: [60989:60989]
-textbyte6:
-  command: --socket_in PULL_CONNECT --socket_out PUSH_BIND --yaml_path max1024.yml
-    --host_in unary5 --port_in 54718 --port_out 54988
-  ports: [54988:54988]
-unary5:
-  command: doc_type=1 --socket_in PULL_CONNECT --socket_out PUSH_BIND --yaml_path
-    text.yml --host_in block4 --port_in 60183 --port_out 54718
-  ports: [54718:54718]
+services:
+  block4:
+    command: --socket_in SUB_CONNECT --socket_out PUSH_BIND --yaml_path block_train.yml
+      --host_in router3 --port_in 58842 --port_out 55503
+    ports: [55503:55503]
+  frontend2:
+    command: --socket_in PULL_BIND --socket_out PUSH_BIND --port_in 64750 --port_out
+      56531
+    ports: [64750:64750, 56531:56531]
+  http1:
+    command: --socket_in RPC_BIND --socket_out RPC_CONNECT --port_in 61501 --host_out
+      frontend2 --port_out 64750
+    ports: [61501:61501]
+  keyword7: {command: --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --yaml_path
+      base.yml --host_in textbyte6 --port_in 59483 --host_out rerank9 --port_out 64772}
+  rerank9: {command: --socket_in PULL_CONNECT --socket_out PUSH_CONNECT --yaml_path
+      base.yml --host_in router8 --port_in 56224 --host_out frontend2 --port_out 64750}
+  router3:
+    command: --socket_in PULL_CONNECT --socket_out PUB_BIND --yaml_path BaseRouter
+      --host_in frontend2 --port_in 56531 --port_out 58842
+    ports: [58842:58842]
+  router8:
+    command: --socket_in SUB_CONNECT --socket_out PUSH_BIND --yaml_path BaseRouter
+      --host_in router3 --port_in 58842 --port_out 56224
+    ports: [56224:56224]
+  textbyte6:
+    command: --socket_in PULL_CONNECT --socket_out PUSH_BIND --yaml_path max1024.yml
+      --host_in unary5 --port_in 64036 --port_out 59483
+    ports: [59483:59483]
+  unary5:
+    command: doc_type=1 --socket_in PULL_CONNECT --socket_out PUSH_BIND --yaml_path
+      text.yml --host_in block4 --port_in 55503 --port_out 64036
+    ports: [64036:64036]
 version: 3.4
