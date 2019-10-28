@@ -34,6 +34,7 @@ class TestReranker(unittest.TestCase):
             '--socket_in', str(SocketType.SUB_CONNECT)
         ])
 
+    # @unittest.skip('SKIPPING TRAIN TEST')
     def test_rerank_train(self):
         with RouterService(self.args), ZmqClient(self.c_args) as c1:
             msg = gnes_pb2.Message()
@@ -53,7 +54,7 @@ class TestReranker(unittest.TestCase):
             r = c1.recv_message()
             print(r)
 
-    @unittest.skip("SKIPPING QUERY TEST")
+    # @unittest.skip("SKIPPING QUERY TEST")
     def test_rerank(self):
         with RouterService(self.args), ZmqClient(self.c_args) as c1:
             msg = gnes_pb2.Message()
@@ -71,6 +72,8 @@ class TestReranker(unittest.TestCase):
             c1.send_message(msg)
 
             r = c1.recv_message()
+            # import pdb
+            # pdb.set_trace()
             self.assertSequenceEqual(r.envelope.num_part, [1])
             self.assertEqual(len(r.response.search.topk_results), 5)
 

@@ -2,7 +2,7 @@ from typing import List
 from collections import defaultdict, OrderedDict
 import json
 
-from gnes.router.base import BaseReduceRouter
+from gnes.router.base import BaseRouter
 from gnes.proto import gnes_pb2
 from gnes.helper import batching
 
@@ -12,7 +12,7 @@ import torch.nn
 import numpy as np
 
 
-class RerankRouter(BaseReduceRouter):
+class RerankRouter(BaseRouter):
 
     def __init__(self, model_name: str = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,21 +38,15 @@ class RerankRouter(BaseReduceRouter):
     def set_key(self, x: 'gnes_pb2.Response.QueryResponse.ScoredResult', k: str) -> None:
         x.doc.doc_id = k
 
-    @batching
-    def apply(self, msg: 'gnes_pb2.Message', accum_msgs: List['gnes_pb2.Message'], *args, **kwargs):
+    # @batching
+    def apply(self, msg: 'gnes_pb2.Message', *args, **kwargs):
 
-        all_scored_results = [sr for m in accum_msgs for sr in m.response.search.topk_results]
-        score_dict = defaultdict(list)
-
+        all_scored_results = [sr for sr in msg.response.search.topk_results]
         runtime = getattr(msg, msg.WhichOneof('body')).WhichOneof('body')
 
-        if runtime is 'train':  # training samples are given
-            for doc in msg.request.train.docs:
-                print(doc.raw_bytes)
-
+        if runtime == 'train':  # training samples are given
             inputs = []
             labels = []
-
             for doc in msg.request.train.docs:
                 ex = json.loads(doc.raw_bytes)
                 inputs.append(
@@ -61,8 +55,7 @@ class RerankRouter(BaseReduceRouter):
 
             labels = torch.tensor(labels, dtype=torch.float).to(self.device)
 
-        elif runtime is 'search':
-
+        elif runtime == 'search':
             inputs = [
                 self.tokenizer.encode_plus(
                     msg.request.search.query.raw_text,
@@ -76,13 +69,12 @@ class RerankRouter(BaseReduceRouter):
 
         if len(inputs) == 0:
             print("Warning: empty input set, ignoring.")
-            super().apply(msg, accum_msgs)
             return
 
         max_len = max(len(t['input_ids']) for t in inputs)
         input_ids = [t['input_ids'] + [0] * (max_len - len(t['input_ids'])) for t in inputs]
         token_type_ids = [t['token_type_ids'] + [0] * (max_len - len(t['token_type_ids'])) for t in inputs]
-        attention_mask = [[1]*len(t['input_ids']) + [0] * (max_len - len(t['input_ids'])) for t in inputs]
+        attention_mask = [[1] * len(t['input_ids']) + [0] * (max_len - len(t['input_ids'])) for t in inputs]
 
         input_ids = torch.tensor(input_ids).to(self.device)
         token_type_ids = torch.tensor(token_type_ids).to(self.device)
@@ -90,7 +82,7 @@ class RerankRouter(BaseReduceRouter):
 
         if labels is not None:
             loss = self.rerank_model(input_ids, token_type_ids=token_type_ids,
-                                        labels=labels, attention_mask=attention_mask)[0]
+                                     labels=labels, attention_mask=attention_mask)[0]
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.rerank_model.parameters(), self.max_grad_norm)
             self.optimizer.step()
@@ -104,19 +96,15 @@ class RerankRouter(BaseReduceRouter):
                                            attention_mask=attention_mask)[0]
                 scores = np.squeeze(logits.detach().cpu().numpy())
 
-            for c, score in zip(all_scored_results, scores):
-                score_dict[self.get_key(c)].append(score)
-
-            for k, v in score_dict.items():
-                score_dict[k] = sum(v)
+            ranked_results = []
+            for sr, score in zip(all_scored_results, scores):
+                ranked_results.append((sr.doc, score))
 
             k = msg.response.search.top_k
-            score_dict = OrderedDict(sorted(score_dict.items(), key=lambda x: x[1], reverse=True)[:k])
+            top_k = sorted(ranked_results, key=lambda x: x[1], reverse=True)[:k]
 
             msg.response.search.ClearField('topk_results')
-            for k, v in score_dict.items():
-                r = msg.response.search.topk_results.add()
-                r.score.value = float(v)
-                self.set_key(r, k)
-
-        super().apply(msg, accum_msgs)
+            for doc, score in top_k:
+                sr = msg.response.search.topk_results.add()
+                sr.score.value = float(score)
+                sr.doc.CopyFrom(doc)
