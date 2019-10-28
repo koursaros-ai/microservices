@@ -61,12 +61,23 @@ class RerankRouter(BaseRouter):
 
         elif runtime == 'search':
             if msg.WhichOneof('body') == 'request':
-                self.logger.error('request into dict')
-                self.query_dict[msg.request.request_id] = msg.request.search.query.raw_bytes.decode()
-                raise BlockMessage
+                self.logger.error('got request')
+                if not msg.request.request_id in self.query_dict:
+                    self.query_dict[msg.request.request_id] = msg.request.search.query.raw_bytes.decode()
+                    raise BlockMessage
+                else:
+                    query = msg.request.search.query.raw_bytes.decode()
+                    all_scored_results = self.query_dict[msg.request.request_id]
+            else:
+                self.logger.error('got response')
+                if not msg.response.request_id in self.query_dict:
+                    self.query_dict[msg.request.request_id] = all_scored_results
+                    raise BlockMessage
+                else:
+                    query = self.query_dict[msg.repsonse.request_id]
             inputs = [
                 self.tokenizer.encode_plus(
-                    self.query_dict[msg.repsonse.request_id],
+                    query,
                     sr.chunks[0].text,
                     add_special_tokens=True,
                 ) for sr in all_scored_results]
