@@ -102,9 +102,12 @@ class Flow:
     def swarm(self):
         y = {'version': 3.4, 'services': {}}
         for s in self.services.values():
-            new = dict(ports=[], volumes='./.cache:/workspace')
+            new = dict(volumes='./.cache:/workspace')
             new['command'] = [s['command']] if s['command'] else []
             new['command'] += ['--socket_in', s['i'][0], '--socket_out', s['o'][0]]
+
+            if s['app'] == 'frontend':
+                new['ports'] = [{80: 80}]
 
             if s['yaml_path']:
                 new['command'] += ['--yaml_path', s['yaml_path']]
