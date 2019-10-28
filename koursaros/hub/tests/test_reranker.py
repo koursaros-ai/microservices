@@ -80,7 +80,7 @@ class TestReranker(unittest.TestCase):
             msg = gnes_pb2.Message()
             msg.response.search.ClearField('topk_results')
 
-            for i, line in enumerate(self.test_str[:3]):
+            for i, line in enumerate(self.test_str[:1]):
                 s = msg.response.search.topk_results.add()
                 s.score.value = 0.1
                 s.doc.doc_id = i
@@ -92,7 +92,7 @@ class TestReranker(unittest.TestCase):
 
             r = c1.recv_message()
             self.assertSequenceEqual(r.envelope.num_part, [1])
-            self.assertEqual(len(r.response.search.topk_results), 3)
+            self.assertEqual(len(r.response.search.topk_results), 1)
 
     def tearDown(self):
         pass

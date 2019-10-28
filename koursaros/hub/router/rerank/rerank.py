@@ -95,7 +95,8 @@ class RerankRouter(BaseRouter):
                 logits = self.rerank_model(input_ids, token_type_ids=token_type_ids,
                                            attention_mask=attention_mask)[0]
                 scores = np.squeeze(logits.detach().cpu().numpy())
-
+                if len(logits) == 1:
+                    scores = [scores]
             ranked_results = []
             for sr, score in zip(all_scored_results, scores):
                 ranked_results.append((sr.doc, score))
