@@ -107,7 +107,7 @@ class Flow:
             new['command'] += ['--socket_in', s['i'][0], '--socket_out', s['o'][0]]
 
             if s['app'] == 'frontend':
-                new['ports'] = [{80: 80}]
+                new['ports'] = ['80:80']
 
             if s['yaml_path']:
                 new['command'] += ['--yaml_path', s['yaml_path']]
