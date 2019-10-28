@@ -77,6 +77,8 @@ class TestWhoosh(unittest.TestCase):
                 c.text = self.test_str[i]
                 c1.send_message(msg)
                 r = c1.recv_message()
+                import pdb
+                pdb.set_trace()
                 try:
                     self.assert_(r.response.search.topk_results[0].chunk.doc_id == i)
                 except:

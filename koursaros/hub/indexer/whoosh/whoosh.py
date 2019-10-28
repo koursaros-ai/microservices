@@ -58,7 +58,7 @@ class WhooshIndexer(BCI):
             for key in keys:
                 query = qp.parse(self.decode_textbytes(key))
                 ret.append([
-                    (result['doc_id'],result['doc_id'], 1.0, 1.0)
+                    (result['doc_id'],result['offset'], 1.0, 1.0)
                     for result in searcher.search(query, limit=top_k)])
         self.logger.error(ret)
         return ret
