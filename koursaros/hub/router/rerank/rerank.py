@@ -78,7 +78,7 @@ class RerankRouter(BaseRouter):
             inputs = [
                 self.tokenizer.encode_plus(
                     query,
-                    sr.chunks[0].text,
+                    sr.doc.chunks[0].text,
                     add_special_tokens=True,
                 ) for sr in all_scored_results]
             self.logger.error(inputs)
