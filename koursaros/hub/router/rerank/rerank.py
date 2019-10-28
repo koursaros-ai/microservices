@@ -20,6 +20,7 @@ class RerankRouter(BaseRouter):
         self.data_dir = data_dir
         self.max_grad_norm = 1.0
         self.lr = 1e-3
+        self.query_dict = dict()
 
     def post_init(self):
         model_config = AutoConfig.from_pretrained(self.model_name, cache_dir=self.data_dir)
@@ -59,11 +60,14 @@ class RerankRouter(BaseRouter):
             labels = torch.tensor(labels, dtype=torch.float).to(self.device)
 
         elif runtime == 'search':
-            self.logger.error(msg)
+            if msg.WhichOneof('body') == 'request':
+                self.logger.error('request into dict')
+                self.query_dict[msg.request.request_id] = msg.request.search.query.raw_bytes.decode()
+                raise BlockMessage
             inputs = [
                 self.tokenizer.encode_plus(
-                    msg.request.search.query.raw_bytes.decode(),
-                    sr.chunk.text,
+                    self.query_dict[msg.repsonse.request_id],
+                    sr.chunks[0].text,
                     add_special_tokens=True,
                 ) for sr in all_scored_results]
             self.logger.error(inputs)
