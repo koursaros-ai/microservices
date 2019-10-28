@@ -130,8 +130,6 @@ class Flow:
             else:
                 new['command'] += ['--port_out', s['local_out']]
 
-            if not new['ports']:
-                new.pop('ports')
             new['command'] = ' '.join([str(x) for x in new['command']])
             y['services'][s['name']] = new
 
