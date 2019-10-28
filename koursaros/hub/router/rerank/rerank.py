@@ -1,10 +1,10 @@
-from typing import List
-from collections import defaultdict, OrderedDict
 import json
 
 from gnes.router.base import BaseRouter
 from gnes.proto import gnes_pb2
 from gnes.helper import batching
+from gnes.service.base import BlockMessage
+
 
 from transformers import *
 import torch
@@ -66,7 +66,7 @@ class RerankRouter(BaseRouter):
             labels = None
 
         else:
-            return
+            raise BlockMessage
 
         if len(inputs) == 0:
             print("Warning: empty input set, ignoring.")
