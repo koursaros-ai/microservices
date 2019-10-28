@@ -35,7 +35,7 @@ class AppManager:
     @staticmethod
     def check_exists(path: 'Path'):
         if not path.exists():
-            raise FileNotFoundError(path)
+            raise FileNotFoundError(path.absolute())
 
     def find_model(self, app: str, model: str) -> 'Path':
         path = self.pkg_root.joinpath('hub', app, model)
