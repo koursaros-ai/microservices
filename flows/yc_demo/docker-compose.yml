@@ -50,9 +50,9 @@ services:
       - ./.cache:/workspace
   rocksdb:
     image: hub-indexer:latest-rocksdb
-    command: --port_in 61233 --port_out 57105 --socket_in PULL_CONNECT --port_ctrl
+    command: --port_in 61233 --port_out 62155 --socket_in PULL_CONNECT --port_ctrl
       60234 --parallel_backend process --yaml_path base.yml --host_in whoosh
-      --host_out Frontend0 --socket_out PUSH_CONNECT
+      --host_out rerank --socket_out PUSH_CONNECT
     volumes:
       - ./.cache:/workspace
 #  Router1:
