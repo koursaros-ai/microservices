@@ -99,7 +99,7 @@ class Flow:
         self.services[s['id']] = s
 
     def swarm(self):
-        y = {'version': 3.4, 'services': {}}
+        y = {'version': '3.4', 'services': {}}
         for s in self.services.values():
             new = dict(volumes='./.cache:/workspace')
             new['command'] = [s['command']] if s['command'] else []
