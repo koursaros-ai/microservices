@@ -19,7 +19,7 @@ class RerankRouter(BaseRouter):
         self.model_name = model_name
         self.data_dir = data_dir
         self.max_grad_norm = 1.0
-        self.lr = 1e-3
+        self.lr = 1e-2
         self.query_dict = dict()
 
     def post_init(self):
