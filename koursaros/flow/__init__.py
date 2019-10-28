@@ -136,7 +136,7 @@ class Flow:
 
         s = StringIO()
         YAML().dump(y, s)
-        return str(s)
+        return s.read()
 
     @property
     def mermaid_url(self):
