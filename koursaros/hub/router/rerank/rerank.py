@@ -24,6 +24,7 @@ class RerankRouter(BaseRouter):
         model_config = AutoConfig.from_pretrained(self.model_name)
         model_config.num_labels = 1 # set up for regression
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if self.device == "cpu": self.logger.error("RUNING ON CPU")
         self.rerank_model = AutoModelForSequenceClassification.from_pretrained(self.model_name,
                                                                                config=model_config)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
