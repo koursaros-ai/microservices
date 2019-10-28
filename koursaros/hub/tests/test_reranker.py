@@ -38,15 +38,31 @@ class TestReranker(unittest.TestCase):
     def test_rerank_train(self):
         with RouterService(self.args), ZmqClient(self.c_args) as c1:
             msg = gnes_pb2.Message()
+            msg.response.search.ClearField('topk_results')
+            msg.request.search.query.raw_text = 'This is a query'
+
+            for i, line in enumerate(self.test_str[:5]):
+                s = msg.response.search.topk_results.add()
+                s.score.value = 0.1
+                s.doc.doc_id = i
+                s.doc.raw_text = line
+
+            msg.envelope.num_part.extend([1])
+            msg.response.search.top_k = 5
+            c1.send_message(msg)
+
+            r = c1.recv_message()
+            print(r)
+
+            msg = gnes_pb2.Message()
 
             for i, line in enumerate(self.test_str):
                 doc = msg.request.train.docs.add()
-                msg.request.train.flush = True
                 doc.doc_id = i
                 doc.raw_bytes = json.dumps({
                     'Query' : 'test query',
                     'Candidate' : line,
-                    'Label' : 1.0
+                    'Label' : 1.0 if i % 2 == 0 else 0.0
                 }).encode('utf-8')
 
             msg.envelope.num_part.extend([1])
@@ -54,7 +70,7 @@ class TestReranker(unittest.TestCase):
             r = c1.recv_message()
             print(r)
 
-    # @unittest.skip("SKIPPING QUERY TEST")
+    @unittest.skip("SKIPPING QUERY TEST")
     def test_rerank(self):
         with RouterService(self.args), ZmqClient(self.c_args) as c1:
             msg = gnes_pb2.Message()
