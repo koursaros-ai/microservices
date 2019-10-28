@@ -103,31 +103,34 @@ class Flow:
         for s in self.services.values():
             new = dict(volumes=['./.cache:/workspace'], image=s['image'])
             new['command'] = [s['command']] if s['command'] else []
-            new['command'] += ['--socket_in', s['i'][0], '--socket_out', s['o'][0]]
 
-            if s['app'] == 'frontend':
-                new['ports'] = ['80:80']
+            if s['app'] != 'httpclient':
 
-            if s['yaml_path']:
-                new['command'] += ['--yaml_path', s['yaml_path']]
+                new['command'] += ['--socket_in', s['i'][0], '--socket_out', s['o'][0]]
 
-            # if connecting in
-            in_id = s['i'][1]
-            if in_id:
-                new['command'] += ['--host_in', self.services[in_id]['name']]
-                new['command'] += ['--port_in', self.services[in_id]['local_out']]
-            # if binding in
-            else:
-                new['command'] += ['--port_in', s['local_in']]
+                if s['app'] == 'frontend':
+                    new['ports'] = ['80:80']
 
-            # if connecting out
-            out_id = s['o'][1]
-            if out_id:
-                new['command'] += ['--host_out', self.services[out_id]['name']]
-                new['command'] += ['--port_out', self.services[out_id]['local_in']]
-            # if binding out
-            else:
-                new['command'] += ['--port_out', s['local_out']]
+                if s['yaml_path']:
+                    new['command'] += ['--yaml_path', s['yaml_path']]
+
+                # if connecting in
+                in_id = s['i'][1]
+                if in_id:
+                    new['command'] += ['--host_in', self.services[in_id]['name']]
+                    new['command'] += ['--port_in', self.services[in_id]['local_out']]
+                # if binding in
+                else:
+                    new['command'] += ['--port_in', s['local_in']]
+
+                # if connecting out
+                out_id = s['o'][1]
+                if out_id:
+                    new['command'] += ['--host_out', self.services[out_id]['name']]
+                    new['command'] += ['--port_out', self.services[out_id]['local_in']]
+                # if binding out
+                else:
+                    new['command'] += ['--port_out', s['local_out']]
 
             new['command'] = ' '.join([str(x) for x in new['command']])
             y['services'][s['name']] = new
