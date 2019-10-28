@@ -5,6 +5,7 @@
 4 | router      | block     | 1     | block_train.yml   | SUB:3         | PUSH:    |
 5 | preprocessor| unary     | 1     | text.yml          | PULL:4        | PUSH:    | doc_type=1
 6 | encoder     | textbyte  | 1     | max1024.yml       | PULL:5        | PUSH:    |
-7 | indexer     | keyword   | 3     | base.yml          | PULL:6        | PUSH:9   |
-8 | router      |           | 1     | BaseRouter        | SUB:3         | PUSH:    |
-9 | router      | rerank    | 1     | base.yml          | PULL:8        | PUSH:2   |
+7 | indexer     | whoosh    | 1     | base.yml          | PULL:6        | PUSH:9   |
+8 | indexer     |simple_dict| 1     | base.yml          | PULL:6        | PUSH:9   |
+9 | router      |           | 1     | BaseRouter        | SUB:3         | PUSH:    |
+10| router      | rerank    | 1     | base.yml          | PULL:8        | PUSH:2   |
