@@ -42,6 +42,7 @@ class AppManager:
         self.check_exists(path)
         return path
 
-    def get_flow(self, path: 'Path') -> 'Flow':
+    def get_flow(self, path) -> 'Flow':
+        path = Path(path)
         self.check_exists(path)
         return Flow(path)
