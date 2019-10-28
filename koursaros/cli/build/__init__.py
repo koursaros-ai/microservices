@@ -27,15 +27,10 @@ def flow(app_manager, flow_name, push, creds, no_caches):
 
     # app_manager.call('eval $(minikube docker-env)', shell=True)
 
-    _flow = app_manager.get_flow(flow_name).build()
-    helm_yaml = _flow.to_helm_yaml()
+    _flow = app_manager.get_flow(flow_name)
 
-    services = [apps for app in _flow.helm_yaml['services'].values() for apps in app]
-
-    for service in services:
-        if '/' in service['image']:
-            app_manager.call('docker pull %s' % service['image'], shell=True)
-        else:
+    for service in _flow.services.values():
+        if '/' not in service['image']:
             path = str(app_manager.find_model(service['app'], service['model']))
             tag = service['image']
             app_manager.logger.critical('Building %s from %s...' % (tag, path))
@@ -49,12 +44,12 @@ def flow(app_manager, flow_name, push, creds, no_caches):
 
     """save swarm yaml"""
     out_path = _flow.path.parent.joinpath('docker-compose-temp.yml')
-    out_path.write_text(_flow.to_swarm_yaml())
+    out_path.write_text(_flow.swarm)
     app_manager.logger.critical('Saved swarm yaml to %s' % str(out_path))
 
     """save helm chart"""
-    out_path = _flow.path.parent.joinpath('helm')
-    rmtree(str(out_path), ignore_errors=True)
-    copytree(str(app_manager.pkg_root.joinpath('chart')), str(out_path))
-    _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
-    app_manager.logger.critical('Saved helm chart to %s' % str(out_path))
+    # out_path = _flow.path.parent.joinpath('helm')
+    # rmtree(str(out_path), ignore_errors=True)
+    # copytree(str(app_manager.pkg_root.joinpath('chart')), str(out_path))
+    # _flow.path.parent.joinpath('helm/values.yaml').write_text(helm_yaml)
+    # app_manager.logger.critical('Saved helm chart to %s' % str(out_path))

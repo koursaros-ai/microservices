@@ -2,7 +2,7 @@
 
 from gnes.helper import set_logger
 from importlib import machinery
-from gnes.flow import Flow
+from koursaros.flow import Flow
 from pathlib import Path
 from typing import List
 import subprocess
@@ -44,8 +44,6 @@ class AppManager:
 
     def get_flow(self, name: str) -> 'Flow':
         os.chdir(str(self.cache))
-        path = self.git_root.joinpath('flows', name, 'flow.py')
+        path = self.git_root.joinpath('flows', name, 'flow.k')
         self.check_exists(path)
-        flow = machinery.SourceFileLoader('flow', str(path)).load_module().flow
-        flow.path = path
-        return flow
+        return Flow(path)
