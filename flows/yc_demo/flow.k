@@ -6,4 +6,4 @@
 5 | preprocessor| unary     | 1     | text.yml          | PULL:4        | PUSH:    | doc_type=1
 6 | encoder     | textbyte  | 1     | max1024.yml       | PULL:5        | PUSH:    |
 7 | indexer     | whoosh    | 1     | base.yml          | SUB:6         | PUSH:2   |
-8 | indexer     | keyword   | 1     | base.yml          | SUB:6         | PUSH:2   |
+8 | indexer     |simple_dict| 1     | base.yml          | SUB:6         | PUSH:2   |
