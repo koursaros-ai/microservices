@@ -1,5 +1,4 @@
-FROM pytorch/pytorch:1.2-cuda10.0-cudnn7-devel
-
+FROM pytorch/pytorch:1.2-cuda10.0-cudnn7-runtime
 
 RUN pip install -U transformers gnes --no-cache-dir --compile
 
