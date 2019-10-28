@@ -1,6 +1,8 @@
 FROM gnes/gnes:latest-buster
 
-RUN echo 'yo'
+RUN pip install grpcio pyzmq protobuf ruamel.yaml ruamel.yaml.clib aiohttp
+RUN echo 14
+RUN pip install git+https://github.com/colethienes/gnes.git --no-cache-dir --compile
 
 ADD *.py *.yml ./
 
